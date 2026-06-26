@@ -1,0 +1,16 @@
+{
+  "name": "ha-shared",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    "./vitest.base.mjs": "./vitest.base.mjs",
+    "./rollup.base.mjs": "./rollup.base.mjs"
+  },
+  "peerDependencies": {
+    "@rollup/plugin-node-resolve": ">=15",
+    "@rollup/plugin-terser": ">=0.4",
+    "@rollup/plugin-typescript": ">=11",
+    "rollup": ">=4",
+    "vitest": ">=2"
+  }
+}

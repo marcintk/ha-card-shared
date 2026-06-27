@@ -38,6 +38,8 @@ Reusable GitHub Actions workflows for consumer card projects:
 
 - `shared-build-and-test.yml` — lint, typecheck, test with coverage report
 - `shared-publish-release.yml` — validate tag, build bundle, create GitHub Release
+- `shared-deploy-demo-page.yml` — build and deploy GitHub Pages demo
+- `shared-hacs-validation.yml` — validate HACS compatibility
 
 ```yaml
 jobs:

@@ -30,7 +30,22 @@ git config core.hooksPath node_modules/ha-shared/.githooks
 ```
 
 - `pre-commit` — enforces code quality on every commit
-- `pre-push` — enforces passing tests before push; blocks a tag push if it doesn't match `package.json` version
+- `pre-push` — enforces passing tests before push
+
+## Shared workflows
+
+Reusable GitHub Actions workflows for consumer card projects:
+
+- `shared-build-and-test.yml` — lint, typecheck, test with coverage report
+- `shared-publish-release.yml` — validate tag, build bundle, create GitHub Release
+
+```yaml
+jobs:
+  build:
+    uses: marcintk/ha-shared/.github/workflows/shared-build-and-test.yml@main
+  release:
+    uses: marcintk/ha-shared/.github/workflows/shared-publish-release.yml@main
+```
 
 ## Release workflow
 

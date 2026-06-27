@@ -41,12 +41,36 @@ Reusable GitHub Actions workflows for consumer card projects:
 - `shared-deploy-demo-page.yml` — build and deploy GitHub Pages demo
 - `shared-hacs-validation.yml` — validate HACS compatibility
 
+Pin workflow refs to a release tag — dependabot will keep them updated:
+
 ```yaml
 jobs:
   build:
-    uses: marcintk/ha-shared/.github/workflows/shared-build-and-test.yml@main
+    uses: marcintk/ha-shared/.github/workflows/shared-build-and-test.yml@v1.0.0
   release:
-    uses: marcintk/ha-shared/.github/workflows/shared-publish-release.yml@main
+    uses: marcintk/ha-shared/.github/workflows/shared-publish-release.yml@v1.0.0
+```
+
+## Migrating from SHA/main to versioned releases
+
+One-time migration for projects that consumed `ha-shared` before versioning was introduced.
+After this, dependabot handles future updates automatically.
+
+```bash
+# 1. Pin package.json
+npm install github:marcintk/ha-shared#v1.0.0 --save-dev
+
+# 2. Rename + pin workflow references in one pass
+sed -i \
+  -e 's|ha-shared/.github/workflows/build-and-test.yml@[^ "]*|ha-shared/.github/workflows/shared-build-and-test.yml@v1.0.0|g' \
+  -e 's|ha-shared/.github/workflows/hacs-validation.yml@[^ "]*|ha-shared/.github/workflows/shared-hacs-validation.yml@v1.0.0|g' \
+  -e 's|ha-shared/.github/workflows/publish-release.yml@[^ "]*|ha-shared/.github/workflows/shared-publish-release.yml@v1.0.0|g' \
+  -e 's|ha-shared/.github/workflows/deploy-demo-page.yml@[^ "]*|ha-shared/.github/workflows/shared-deploy-demo-page.yml@v1.0.0|g' \
+  .github/workflows/*.yml
+
+# 3. Commit
+git add package.json .github/workflows/
+git commit -m "chore: migrate ha-shared to v1.0.0"
 ```
 
 ## Release workflow
@@ -57,13 +81,17 @@ Releases are tag-driven. Pushing a `vX.Y.Z` tag triggers CI and creates a GitHub
 # 1. Bump version (patch | minor | major)
 npm version patch --no-git-tag-version
 
-# 2. Commit the version bump
-git add package.json
-git commit -m "chore: bump version to $(node -p "require('./package.json').version")"
+# 2. Update the action ref inside shared-publish-release.yml to match
+VER=$(node -p "require('./package.json').version")
+sed -i "s|actions/validate-tag@v[^ ]*|actions/validate-tag@v${VER}|g" .github/workflows/shared-publish-release.yml
 
-# 3. Tag and push together — the pre-push hook enforces tag ↔ package.json match
-git tag v$(node -p "require('./package.json').version")
-git push origin main v$(node -p "require('./package.json').version")
+# 3. Commit
+git add package.json .github/workflows/shared-publish-release.yml
+git commit -m "chore: bump version to ${VER}"
+
+# 4. Tag and push
+git tag v${VER}
+git push origin main v${VER}
 ```
 
 CI will validate that the tag is strictly greater than the previous release, run tests, and publish the GitHub Release.

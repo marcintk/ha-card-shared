@@ -4,7 +4,9 @@
   "type": "module",
   "exports": {
     "./vitest.base.mjs": "./vitest.base.mjs",
-    "./rollup.base.mjs": "./rollup.base.mjs"
+    "./rollup.base.mjs": "./rollup.base.mjs",
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./biome.json": "./biome.json"
   },
   "peerDependencies": {
     "@rollup/plugin-node-resolve": ">=15",

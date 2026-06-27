@@ -1,47 +1,37 @@
 # ha-shared
 
-Shared build toolchain for HA card projects: TypeScript, Rollup, Vitest, and Biome configs.
+Shared build toolchain for `ha-*` Home Assistant card projects: TypeScript, Rollup, Vitest, Biome,
+and Prettier configs, plus reusable GitHub Actions workflows and git hooks.
 
 ## Install
 
-Pin to a release tag — never use a bare SHA or `main`:
+Always pin to a release tag — never a bare SHA or `main`. Updating is the same command with a newer
+tag (dependabot does it for you once pinned).
 
 ```bash
 npm install github:marcintk/ha-shared#v1.0.0 --save-dev
 ```
 
-## Update
-
-```bash
-npm install github:marcintk/ha-shared#vX.Y.Z --save-dev
-```
+The exported configs expect these tools installed in the consumer (declared as peer deps): `rollup`
++ `@rollup/plugin-{node-resolve,terser,typescript}`, `typescript`, `vitest`,
+`@vitest/coverage-v8`, `jsdom`, `@biomejs/biome`, `prettier`.
 
 ## Exports
 
-- `ha-shared/tsconfig.base.json` — TypeScript compiler baseline, extend in `tsconfig.json`
-- `ha-shared/rollup.base.mjs` — production bundle (`src/index.ts` → `dist/card.js`), use named export `cardBundle` in `rollup.config.mjs`
-- `ha-shared/vitest.base.mjs` — test runner and coverage enforcement, extend in `vitest.config.mjs`
-- `ha-shared/biome.json` — linter and formatter, extend in `biome.json`
-- `ha-shared/prettier.config.json` — markdown/prose formatting, reference in `package.json`
-- `ha-shared/globals.d.ts` — ambient types every card needs (`__CARD_VERSION__`, `customCards`)
+Use each export by extending or referencing it from the matching consumer file:
 
-### Prettier
+| Export | Wire-up in consumer |
+|---|---|
+| `ha-shared/tsconfig.base.json` | `"extends"` in `tsconfig.json` |
+| `ha-shared/rollup.base.mjs` | `export default cardBundle()` in `rollup.config.mjs` |
+| `ha-shared/vitest.base.mjs` | `defineConfig(baseVitestConfig)` in `vitest.config.mjs` |
+| `ha-shared/biome.json` | `"extends"` in `biome.json` |
+| `ha-shared/prettier.config.json` | `"prettier": "ha-shared/prettier.config.json"` in `package.json` |
+| `ha-shared/globals.d.ts` | `/// <reference path="../node_modules/ha-shared/globals.d.ts" />` in `src/index.ts` |
 
-Point prettier at the shared config in `package.json` (drop any local `.prettierrc`):
-
-```json
-{ "prettier": "ha-shared/prettier.config.json" }
-```
-
-### Ambient globals
-
-`__CARD_VERSION__` is injected by `cardBundle` (rollup) and `baseVitestConfig` (vitest). Pull the
-shared declarations into your entry file with one triple-slash reference (replaces a local
-`global.d.ts`):
-
-```ts
-/// <reference path="../node_modules/ha-shared/globals.d.ts" />
-```
+`cardBundle` bundles `src/index.ts` → `dist/card.js` and stamps `__CARD_VERSION__` from the
+`VERSION` env (set from the git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest).
+`globals.d.ts` types that global plus the HA `customCards` window hook.
 
 ## Git hooks
 
@@ -49,59 +39,47 @@ shared declarations into your entry file with one triple-slash reference (replac
 git config core.hooksPath node_modules/ha-shared/.githooks
 ```
 
-- `pre-commit` — enforces code quality on every commit
-- `pre-push` — enforces passing tests before push
+- `pre-commit` — biome check + prettier (markdown) + typecheck
+- `pre-push` — tests at 100% coverage
 
 ## Shared workflows
 
-Reusable GitHub Actions workflows for consumer card projects:
+Reusable workflows for consumer repos. Pin refs to a release tag — dependabot keeps them current.
 
-- `shared-build-and-test.yml` — lint, typecheck, test with coverage report
-- `shared-publish-release.yml` — validate tag, build bundle, create GitHub Release
-- `shared-deploy-demo-page.yml` — build and deploy GitHub Pages demo
-- `shared-hacs-validation.yml` — validate HACS compatibility
-
-Pin workflow refs to a release tag — dependabot will keep them updated:
+| Workflow | Purpose |
+|---|---|
+| `shared-build-and-test.yml` | lint, typecheck, test with coverage report |
+| `shared-publish-release.yml` | validate tag, build bundle, create GitHub Release |
+| `shared-deploy-demo-page.yml` | build + deploy GitHub Pages demo (requires `docs/index.html`) |
+| `shared-hacs-validation.yml` | validate HACS compatibility |
 
 ```yaml
 jobs:
   build:
     uses: marcintk/ha-shared/.github/workflows/shared-build-and-test.yml@v1.0.0
-  release:
-    uses: marcintk/ha-shared/.github/workflows/shared-publish-release.yml@v1.0.0
 ```
 
 ## Migrating consumers
 
 Step-by-step migrations live in [`recipes/`](recipes/), one file per version transition:
 
-- [`recipe.SHA_1.00.md`](recipes/recipe.SHA_1.00.md) — SHA/`main` → v1.0.0 (pin package + workflows,
-  adopt shared prettier + globals).
+- [`recipe.SHA_1.00.md`](recipes/recipe.SHA_1.00.md) — SHA/`main` → v1.0.0.
 
-## Release workflow
+## Releasing ha-shared
 
-Releases are tag-driven. Pushing a `vX.Y.Z` tag triggers CI and creates a GitHub Release automatically.
+Tag-driven. Every change reaches `main` through a PR, where `self-check.yml` runs actionlint,
+shellcheck, and the smoke build. Pushing a `vX.Y.Z` tag then runs `release.yml`, which validates the
+tag is a valid semver strictly greater than the previous release and publishes a GitHub Release
+(pre-release tags like `v1.0.0-beta.1` publish as GitHub pre-releases).
 
 ```bash
-# 1. Bump version (patch | minor | major)
-npm version patch --no-git-tag-version
-
-# 2. Update the action ref inside shared-publish-release.yml to match
+npm version patch --no-git-tag-version   # patch | minor | major — see table below
 VER=$(node -p "require('./package.json').version")
+# keep the composite-action ref in lockstep with the new version
 sed -i "s|actions/validate-tag@v[^ ]*|actions/validate-tag@v${VER}|g" .github/workflows/shared-publish-release.yml
-
-# 3. Commit
-git add package.json .github/workflows/shared-publish-release.yml
-git commit -m "chore: bump version to ${VER}"
-
-# 4. Tag and push
-git tag v${VER}
-git push origin main v${VER}
+git commit -am "chore: bump version to ${VER}"
+git tag "v${VER}" && git push origin main "v${VER}"
 ```
-
-CI will validate that the tag is strictly greater than the previous release, run tests, and publish the GitHub Release.
-
-### Version bumping rules
 
 | Change | Bump |
 |---|---|

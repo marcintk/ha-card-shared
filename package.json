@@ -17,10 +17,15 @@
     "smoke:test": "vitest run --root fixtures/smoke --coverage"
   },
   "peerDependencies": {
+    "@biomejs/biome": ">=2",
     "@rollup/plugin-node-resolve": ">=15",
     "@rollup/plugin-terser": ">=0.4",
     "@rollup/plugin-typescript": ">=11",
+    "@vitest/coverage-v8": ">=2",
+    "jsdom": ">=22",
+    "prettier": ">=3",
     "rollup": ">=4",
+    "typescript": ">=5",
     "vitest": ">=2"
   },
   "devDependencies": {

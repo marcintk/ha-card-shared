@@ -44,27 +44,9 @@ jobs:
           fi
           echo "Tag v$CURR is valid (previous release: v$PREV)"
 
-      - uses: actions/setup-node@v5
-        with:
-          node-version: "24.x"
-          cache: npm
-
-      - run: npm ci
-      - run: npm test
-
-      - name: Derive version from tag
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
-
-      - name: Build production bundle
-        run: npm run build:prod
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
-          files: dist/card.js
           generate_release_notes: true
           prerelease: ${{ steps.prerelease.outputs.is_prerelease }}

@@ -1,0 +1,38 @@
+name: Self Check
+
+# Guards the shared toolchain itself: a broken config or workflow here breaks every consumer.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: actionlint
+        # Validates workflow + composite-action YAML and shellchecks their embedded run: scripts.
+        uses: raven-actions/actionlint@v2
+
+      - name: shellcheck git hooks
+        run: shellcheck .githooks/pre-commit .githooks/pre-push
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - run: npm ci
+      # Compiles the fixture card through the actual exported configs — catches a breaking
+      # change to rollup/tsconfig/vitest/globals before a consumer does.
+      - run: npm run smoke

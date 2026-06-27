@@ -22,6 +22,26 @@ npm install github:marcintk/ha-shared#vX.Y.Z --save-dev
 - `ha-shared/rollup.base.mjs` — production bundle (`src/index.ts` → `dist/card.js`), use named export `cardBundle` in `rollup.config.mjs`
 - `ha-shared/vitest.base.mjs` — test runner and coverage enforcement, extend in `vitest.config.mjs`
 - `ha-shared/biome.json` — linter and formatter, extend in `biome.json`
+- `ha-shared/prettier.config.json` — markdown/prose formatting, reference in `package.json`
+- `ha-shared/globals.d.ts` — ambient types every card needs (`__CARD_VERSION__`, `customCards`)
+
+### Prettier
+
+Point prettier at the shared config in `package.json` (drop any local `.prettierrc`):
+
+```json
+{ "prettier": "ha-shared/prettier.config.json" }
+```
+
+### Ambient globals
+
+`__CARD_VERSION__` is injected by `cardBundle` (rollup) and `baseVitestConfig` (vitest). Pull the
+shared declarations into your entry file with one triple-slash reference (replaces a local
+`global.d.ts`):
+
+```ts
+/// <reference path="../node_modules/ha-shared/globals.d.ts" />
+```
 
 ## Git hooks
 
@@ -51,27 +71,12 @@ jobs:
     uses: marcintk/ha-shared/.github/workflows/shared-publish-release.yml@v1.0.0
 ```
 
-## Migrating from SHA/main to versioned releases
+## Migrating consumers
 
-One-time migration for projects that consumed `ha-shared` before versioning was introduced.
-After this, dependabot handles future updates automatically.
+Step-by-step migrations live in [`recipes/`](recipes/), one file per version transition:
 
-```bash
-# 1. Pin package.json
-npm install github:marcintk/ha-shared#v1.0.0 --save-dev
-
-# 2. Rename + pin workflow references in one pass
-sed -i \
-  -e 's|ha-shared/.github/workflows/build-and-test.yml@[^ "]*|ha-shared/.github/workflows/shared-build-and-test.yml@v1.0.0|g' \
-  -e 's|ha-shared/.github/workflows/hacs-validation.yml@[^ "]*|ha-shared/.github/workflows/shared-hacs-validation.yml@v1.0.0|g' \
-  -e 's|ha-shared/.github/workflows/publish-release.yml@[^ "]*|ha-shared/.github/workflows/shared-publish-release.yml@v1.0.0|g' \
-  -e 's|ha-shared/.github/workflows/deploy-demo-page.yml@[^ "]*|ha-shared/.github/workflows/shared-deploy-demo-page.yml@v1.0.0|g' \
-  .github/workflows/*.yml
-
-# 3. Commit
-git add package.json .github/workflows/
-git commit -m "chore: migrate ha-shared to v1.0.0"
-```
+- [`recipe.SHA_1.00.md`](recipes/recipe.SHA_1.00.md) — SHA/`main` → v1.0.0 (pin package + workflows,
+  adopt shared prettier + globals).
 
 ## Release workflow
 

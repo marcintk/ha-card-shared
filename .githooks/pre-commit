@@ -1,6 +1,6 @@
 #!/bin/sh
-set -e
-npm run check
-npm run --if-present format:md
-git add -u
-npm run typecheck
+set -e                           # abort on first failure — no partial commits
+npm run check                    # biome: lint + auto-fix formatting in src/ and test/
+npm run --if-present format:md   # prettier: auto-fix markdown (skipped if script absent)
+git add -u                       # re-stage files changed by the auto-fixers above
+npm run typecheck                # tsc --noEmit: fail if types don't compile

@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e                       # abort on first failure — no partial pushes
+npm run test:coverage        # run tests + enforce 100% coverage threshold
+
+# When pushing a vX.Y.Z tag, package.json version must match
+while IFS=' ' read -r local_ref _local_sha remote_ref _remote_sha; do
+  case "$remote_ref" in
+    refs/tags/v*)
+      TAG="${remote_ref#refs/tags/v}"
+      PKG=$(node -p "require('./package.json').version")
+      if [ "$TAG" != "$PKG" ]; then
+        echo "Error: tag v$TAG doesn't match package.json version $PKG"
+        echo "Fix:   npm version $TAG --no-git-tag-version && git add package.json && git commit --amend --no-edit"
+        exit 1
+      fi
+      ;;
+  esac
+done

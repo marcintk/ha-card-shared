@@ -14,9 +14,9 @@ runs:
       shell: bash
       run: |
         if [[ "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
-          echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
         else
-          echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Validate tag is strictly greater than previous release

@@ -6,7 +6,15 @@
     "./vitest.base.mjs": "./vitest.base.mjs",
     "./rollup.base.mjs": "./rollup.base.mjs",
     "./tsconfig.base.json": "./tsconfig.base.json",
-    "./biome.json": "./biome.json"
+    "./biome.json": "./biome.json",
+    "./prettier.config.json": "./prettier.config.json",
+    "./globals.d.ts": "./globals.d.ts"
+  },
+  "scripts": {
+    "smoke": "npm run smoke:typecheck && npm run smoke:build && npm run smoke:test",
+    "smoke:typecheck": "tsc --noEmit -p fixtures/smoke/tsconfig.json",
+    "smoke:build": "cd fixtures/smoke && rollup -c",
+    "smoke:test": "vitest run --root fixtures/smoke --coverage"
   },
   "peerDependencies": {
     "@rollup/plugin-node-resolve": ">=15",
@@ -14,5 +22,17 @@
     "@rollup/plugin-typescript": ">=11",
     "rollup": ">=4",
     "vitest": ">=2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@vitest/coverage-v8": "^4.1.8",
+    "jsdom": "^28.1.0",
+    "prettier": "^3.9.0",
+    "rollup": "^4.0.0",
+    "tslib": "^2.8.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
   }
 }

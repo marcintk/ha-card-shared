@@ -1,5 +1,18 @@
 # Keeping ha-card-shared current with Dependabot
 
+## Upgrading (one command)
+
+Run this once per consumer repo to bump to a new version and wire Dependabot for all future releases:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/marcintk/ha-card-shared/main/scripts/upgrade.sh) vX.Y.Z
+```
+
+The script: branches → bumps → runs checks → commits → sets up Dependabot → opens a PR. After the
+PR is merged, all future releases arrive automatically as Dependabot PRs — no manual steps needed.
+
+## How Dependabot works here
+
 Dependabot bumps version numbers; it does not run recipes. After the one-time
 [SHA → v1.0.0 migration](recipe.SHA_1.00.md), Dependabot keeps a consumer current on its own — but
 only if **both** ecosystems are configured. The npm block bumps the `ha-card-shared` git tag in

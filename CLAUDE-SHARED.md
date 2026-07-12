@@ -42,7 +42,7 @@ Before signalling ready for review, ensure pre-commit and pre-push hooks both pa
 
 Give a brief summary of how the goal was achieved. Wait for explicit user approval before proceeding.
 
-### Phase 5 — Ship
+### Phase 5 — Merge
 
 One concern per PR — no bundling of feature changes with refactors.
 
@@ -53,7 +53,7 @@ gh pr merge --squash --delete-branch
 git checkout main && git pull
 ```
 
-### Phase 6 — Release *(skip unless 3–5 PRs have merged since the last release)*
+### Phase 6 — Ship *(skip unless 3–5 PRs have merged since the last release)*
 
 Never trigger autonomously — recommend to the user, then wait for approval.
 

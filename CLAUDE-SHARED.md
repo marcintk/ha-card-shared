@@ -35,36 +35,33 @@ Follow this process for every task.
 
 ### Phase 1 — Clarify before coding
 
-- Restate what you understood the task to be: the approach, which files will be touched, and any trade-offs.
-- Ask any open questions.
-- Only proceed when the user explicitly says to go ahead.
+- Restate the task: approach, files touched, trade-offs.
+- Grill the user — ask every open question until nothing is ambiguous.
+- One concern per PR — if scope creeps, push extras to `TODO.md` and proceed with one.
+- Do not code until the user says go ahead.
 
 ### Phase 2 — Implementation
 
-- Work on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`).
-- Direct push to `main` is allowed only for documentation, rules, and TODO updates — for those, push directly — no PR or review needed. Phase 1 still applies.
-- For any code change: add the test to `test/*.test.ts` first, confirm it fails (`npm test`), then implement until it passes.
+- Create or ensure you are on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`) — except docs, rules, and TODO updates: push directly to `main`, no PR needed.
+- Add the failing test first (`test/*.test.ts`), then implement until it passes.
+- Commit and push — loop until pre-commit and pre-push hooks both pass.
+- Once green: update `README.md` and `TODO.md` if behavior or interface changed.
 
-### Phase 3 — Pre-review gate
+### Phase 3 — User review
 
-- Ensure pre-commit and pre-push hooks both pass.
-- Verify `README.md` and `TODO.md` are current with any behavior or interface changes.
-
-### Phase 4 — User review
-
-- Give a brief summary of how the goal was achieved.
+- Summarise how the goal was achieved.
 - Wait for explicit user approval before proceeding.
 
-### Phase 5 — Merge
+### Phase 4 — Merge
 
-- One concern per PR — no bundling of feature changes with refactors.
 - `gh pr create`
-- `gh run watch` — blocks until CI completes; all checks must pass before merging.
+- `gh run watch` — blocks until CI is green.
 - `gh pr merge --squash --delete-branch`
 - `git checkout main && git pull`
 
-### Phase 6 — Ship *(only when 3–5 PRs have merged since the last release — not before, not after)*
+### Phase 5 — Ship
 
+- Only when 3–5 PRs have merged since the last release.
 - Never trigger autonomously — recommend to the user, then wait for approval.
 - Verify all recent CI runs on `main` show ✓: `gh run list --branch main --limit 5`
 - Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z` *(replace X.Y.Z with the actual version)*

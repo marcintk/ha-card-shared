@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="${1:?Usage: bash upgrade.sh <version>  (e.g. v1.1.0)}"
+VERSION="${1:?Usage: bash upgrade.sh <version>  (e.g. v1.1.1)}"
 BRANCH="chore/ha-card-shared-${VERSION}"
 
 git checkout -b "$BRANCH"

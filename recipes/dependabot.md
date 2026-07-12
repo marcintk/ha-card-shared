@@ -43,6 +43,10 @@ updates:
 
 ## What each release delivers on bump
 
+### v1.1.1
+- **Fix** — `.githooks/` was missing from the npm `files` allowlist in v1.1.0; consumers received no
+  pre-commit hooks on install. Now included.
+
 ### v1.1.0
 - **Postinstall hook** — `npm install` now silently merges a `SessionStart` hook into `.claude/settings.json`
   that warns at session start if ponytail or caveman are not installed globally.

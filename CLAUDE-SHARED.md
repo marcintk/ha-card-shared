@@ -42,24 +42,32 @@ Follow this process for every task.
 
 ### Phase 2 — Implementation
 
-- Create or ensure you are on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`) — except when the **entire** change is docs, rules, or TODO updates: push directly to `main` and skip Phases 3–4.
-- Add the failing test first (`test/*.test.ts`), then implement until it passes. Skip for docs/rules/TODO-only changes.
-- Commit and push — loop until pre-commit and pre-push hooks both pass.
-- Once green: update `README.md` and `TODO.md` if behavior or interface changed.
+- Create or ensure you are on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`) — except when the **entire** change is docs, rules, or TODO updates: push directly to `main` and skip Phases 3–5.
+- Add the failing test first (`test/*.test.ts`). Skip for docs/rules/TODO-only changes.
+- Implement; loop locally until all pass: `npm test && npm run test:coverage && npm run check:ci`.
+- Do not commit anything yet.
 
 ### Phase 3 — User review
 
 - Summarise how the goal was achieved.
 - Wait for explicit user approval before proceeding.
 
-### Phase 4 — Merge
+### Phase 4 — Post Implementation
+
+- Commit all implementation work; loop until pre-commit hooks pass for each commit.
+- Update `README.md` and `TODO.md` if behavior or interface changed; commit.
+- Ensure working tree is clean — nothing uncommitted before audit.
+- Run `/ponytail-audit`; apply each fix as its own commit, re-run `npm run check:ci` after each. Repeat the full audit up to 2–3 rounds total.
+- Push branch.
+
+### Phase 5 — Merge
 
 - `gh pr create`
 - `gh run watch` — blocks until CI is green. If red: fix on the branch, push, re-run `gh run watch`.
 - `gh pr merge --squash --delete-branch`
 - `git checkout main && git pull`
 
-### Phase 5 — Ship
+### Phase 6 — Ship
 
 - Only when 3–5 PRs have merged since the last release.
 - Never trigger autonomously — recommend to the user, then wait for approval.

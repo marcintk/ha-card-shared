@@ -53,11 +53,9 @@ gh pr merge --squash --delete-branch
 git checkout main && git pull
 ```
 
-## Releasing
+### Phase 6 — Release *(skip unless 3–5 PRs have merged since the last release)*
 
-Never trigger a release autonomously. After 3–5 merged PRs, recommend cutting one.
-
-Verify `main` is green, then push a semver tag — the release workflow fires automatically:
+Never trigger autonomously — recommend to the user, then wait for approval.
 
 ```bash
 gh run list --branch main --limit 5   # all must show ✓

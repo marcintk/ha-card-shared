@@ -42,7 +42,7 @@ Follow this process for every task.
 
 ### Phase 2 — Implementation
 
-- Create or ensure you are on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`) — except when the **entire** change is docs, rules, or TODO updates: push directly to `main` and skip Phases 3–5.
+- Never commit directly to `main` — always work on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`).
 - Add the failing test first (`test/*.test.ts`). Skip for docs/rules/TODO-only changes.
 - Implement; loop locally until all pass: `npm test && npm run test:coverage && npm run check:ci`.
 - Do not commit anything yet.

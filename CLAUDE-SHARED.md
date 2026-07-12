@@ -55,9 +55,11 @@ Follow this process for every task.
 
 Before writing any code: restate what you understood the task to be and how you plan to achieve it — the approach, which files will be touched, and any trade-offs. Ask any open questions. Only proceed when the user explicitly says to go ahead.
 
-### Phase 2 — Branch discipline
+### Phase 2 — Implementation
 
 Work on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`). Direct push to `main` is allowed only for documentation, rules, and TODO updates.
+
+For any code change: add the test to `test/*.test.ts` first, confirm it fails (`npm test`), then implement until it passes.
 
 ### Phase 3 — Pre-review gate
 
@@ -76,12 +78,9 @@ gh pr merge --squash --delete-branch
 git checkout main && git pull
 ```
 
-## TDD Workflow
+## Changing this workflow
 
-Write the failing test first, confirm it fails (`npm test`), then implement until it passes.
-
-Before touching `src/`, add the test to the matching `test/*.test.ts`. Run `npm test` and confirm
-the new assertion fails. Only then write the implementation.
+This file lives in `ha-card-shared`. To change any rule here: locate the `ha-card-shared` repo locally, edit `CLAUDE-SHARED.md` there, and tag a new release. If the repo cannot be found locally, stop and ask the user before making any changes.
 
 ## Releasing
 

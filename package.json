@@ -11,6 +11,7 @@
     "./globals.d.ts": "./globals.d.ts"
   },
   "scripts": {
+    "postinstall": "node scripts/setup-claude.js",
     "smoke": "npm run smoke:typecheck && npm run smoke:build && npm run smoke:test",
     "smoke:typecheck": "tsc --noEmit -p fixtures/smoke/tsconfig.json",
     "smoke:build": "cd fixtures/smoke && rollup -c",

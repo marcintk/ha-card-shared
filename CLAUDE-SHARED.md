@@ -20,9 +20,16 @@ npm run check:ci       # CI gate: typecheck + biome check + prettier check
 
 ## Claude Code plugins
 
-Required:
-- **ponytail** — `/ponytail-audit` is called in Phase 4
-- **Caveman** — `/caveman-commit` is called in Phase 4; 65% fewer output tokens, zero technical loss
+Required — install before use, missing plugins are warned at session start:
+
+- **ponytail** — active all session (lazy senior dev mode); `/ponytail-audit` runs in Phase 4
+  ```bash
+  claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail
+  ```
+- **Caveman** — active all session (65% fewer output tokens); `/caveman-commit` runs in Phase 4
+  ```bash
+  claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman
+  ```
 
 Recommended:
 - **Serena** — MCP server; symbol search and diagnostics during implementation

@@ -18,6 +18,15 @@ npm run format:md      # prettier for markdown files
 npm run check:ci       # CI gate: typecheck + biome check + prettier check
 ```
 
+## Required files
+
+Every project using this shared context must have both files at the repo root:
+
+- **`README.md`** — describes the card's purpose, configuration, and usage.
+- **`TODO.md`** — tracks planned work, known issues, and deferred tasks.
+
+If either is missing, stop and report it to the user before proceeding.
+
 ## Workflow
 
 > To change this workflow, edit `CLAUDE-SHARED.md` in the `ha-card-shared` repo. Iterate until the content is final, then tag **once**. Do not tag intermediate states. If the repo isn't accessible locally, stop and ask the user.
@@ -26,38 +35,36 @@ Follow this process for every task.
 
 ### Phase 1 — Clarify before coding
 
-Before writing any code: restate what you understood the task to be and how you plan to achieve it — the approach, which files will be touched, and any trade-offs. Ask any open questions. Only proceed when the user explicitly says to go ahead.
+- Restate what you understood the task to be: the approach, which files will be touched, and any trade-offs.
+- Ask any open questions.
+- Only proceed when the user explicitly says to go ahead.
 
 ### Phase 2 — Implementation
 
-Work on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`). Direct push to `main` is allowed only for documentation, rules, and TODO updates.
-
-For any code change: add the test to `test/*.test.ts` first, confirm it fails (`npm test`), then implement until it passes.
+- Work on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`).
+- Direct push to `main` is allowed only for documentation, rules, and TODO updates — for those, push directly — no PR or review needed.
+- For any code change: add the test to `test/*.test.ts` first, confirm it fails (`npm test`), then implement until it passes.
 
 ### Phase 3 — Pre-review gate
 
-Before signalling ready for review, ensure pre-commit and pre-push hooks both pass. Verify that `README.md` and `TODO.md` are current with any behavior or interface changes.
+- Ensure pre-commit and pre-push hooks both pass.
+- Verify `README.md` and `TODO.md` are current with any behavior or interface changes.
 
 ### Phase 4 — User review
 
-Give a brief summary of how the goal was achieved. Wait for explicit user approval before proceeding.
+- Give a brief summary of how the goal was achieved.
+- Wait for explicit user approval before proceeding.
 
 ### Phase 5 — Merge
 
-One concern per PR — no bundling of feature changes with refactors.
-
-```bash
-gh pr create
-gh run list --limit 5   # wait for CI green before merging
-gh pr merge --squash --delete-branch
-git checkout main && git pull
-```
+- One concern per PR — no bundling of feature changes with refactors.
+- `gh pr create`
+- `gh run watch` — blocks until CI completes; all checks must pass before merging.
+- `gh pr merge --squash --delete-branch`
+- `git checkout main && git pull`
 
 ### Phase 6 — Ship *(skip unless 3–5 PRs have merged since the last release)*
 
-Never trigger autonomously — recommend to the user, then wait for approval.
-
-```bash
-gh run list --branch main --limit 5   # all must show ✓
-git tag v1.0.0 && git push origin v1.0.0
-```
+- Never trigger autonomously — recommend to the user, then wait for approval.
+- Verify all recent CI runs on `main` show ✓: `gh run list --branch main --limit 5`
+- Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z` *(replace X.Y.Z with the actual version)*

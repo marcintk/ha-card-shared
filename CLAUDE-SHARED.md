@@ -18,6 +18,16 @@ npm run format:md      # prettier for markdown files
 npm run check:ci       # CI gate: typecheck + biome check + prettier check
 ```
 
+## Claude Code plugins
+
+Required:
+- **ponytail** — `/ponytail-audit` is called in Phase 4
+
+Recommended:
+- **Serena** — MCP server; symbol search and diagnostics during implementation
+- **RTK** — token proxy; reduces API usage transparently via hooks
+- **Caveman** — terse communication style; pair with ponytail for minimal prose
+
 ## Required files
 
 Every project using this shared context must have both files at the repo root:

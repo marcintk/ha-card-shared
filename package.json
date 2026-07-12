@@ -2,6 +2,19 @@
   "name": "ha-card-shared",
   "version": "1.1.0",
   "type": "module",
+  "files": [
+    "biome.json",
+    "globals.d.ts",
+    "prettier.config.json",
+    "rollup.base.mjs",
+    "tsconfig.base.json",
+    "vitest.base.mjs",
+    "CLAUDE.md",
+    "CLAUDE-SHARED.md",
+    "README.md",
+    "recipes/",
+    "scripts/"
+  ],
   "exports": {
     "./vitest.base.mjs": "./vitest.base.mjs",
     "./rollup.base.mjs": "./rollup.base.mjs",

@@ -55,27 +55,11 @@ git checkout main && git pull
 
 ## Releasing
 
-`dist/` is not committed — built by CI on every release and attached as a GitHub Release asset that HACS downloads. `package.json` version is always `0.0.0-dev`; the git tag is the single source of truth.
+Never trigger a release autonomously. After 3–5 merged PRs, recommend cutting one.
 
-After 3–5 merged PRs, recommend cutting a release. Never trigger the release workflow autonomously.
-
-Verify `main` CI is green first:
+Verify `main` is green, then push a semver tag — the release workflow fires automatically:
 
 ```bash
-gh run list --branch main --limit 5   # all runs must show ✓
-gh release list --limit 5             # confirm current latest before incrementing
+gh run list --branch main --limit 5   # all must show ✓
+git tag v1.0.0 && git push origin v1.0.0
 ```
-
-Push a semver tag — the release workflow fires automatically:
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-Pre-release tags (`v1.0.0-beta.1`) are supported — published as GitHub pre-releases, not shown to
-HACS users by default.
-
-The workflow validates the tag is strictly greater than the previous release, runs tests, builds
-`dist/card.js` with the version stamped from the tag, and publishes a GitHub Release with
-`dist/card.js` as the downloadable asset.

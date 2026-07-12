@@ -22,11 +22,11 @@ npm run check:ci       # CI gate: typecheck + biome check + prettier check
 
 Required:
 - **ponytail** — `/ponytail-audit` is called in Phase 4
+- **Caveman** — `/caveman-commit` is called in Phase 4; 65% fewer output tokens, zero technical loss
 
 Recommended:
 - **Serena** — MCP server; symbol search and diagnostics during implementation
 - **RTK** — token proxy; reduces API usage transparently via hooks
-- **Caveman** — terse communication style; pair with ponytail for minimal prose
 
 ## Required files
 
@@ -64,7 +64,7 @@ Follow this process for every task.
 
 ### Phase 4 — Post Implementation
 
-- Commit all implementation work; loop until pre-commit hooks pass for each commit.
+- Commit all implementation work using `/caveman-commit`; loop until pre-commit hooks pass for each commit.
 - Update `README.md` and `TODO.md` if behavior or interface changed; commit.
 - Ensure working tree is clean — nothing uncommitted before audit.
 - Run `/ponytail-audit`; apply each fix as its own commit, re-run `npm run check:ci` after each. Repeat the full audit up to 2–3 rounds total.

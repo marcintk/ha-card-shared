@@ -20,7 +20,7 @@ npm run check:ci       # CI gate: typecheck + biome check + prettier check
 
 ## Workflow
 
-> To change this workflow, edit `CLAUDE-SHARED.md` in the `ha-card-shared` repo and tag a new release. If the repo isn't accessible locally, stop and ask the user.
+> To change this workflow, edit `CLAUDE-SHARED.md` in the `ha-card-shared` repo. Iterate until the content is final, then tag **once**. Do not tag intermediate states. If the repo isn't accessible locally, stop and ask the user.
 
 Follow this process for every task.
 

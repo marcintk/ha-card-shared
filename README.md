@@ -9,7 +9,7 @@ Always pin to a release tag — never a bare SHA or `main`. Updating is the same
 tag (dependabot does it for you once pinned).
 
 ```bash
-npm install github:marcintk/ha-card-shared#v1.0.0 --save-dev
+npm install github:marcintk/ha-card-shared#vX.Y.Z --save-dev
 ```
 
 The exported configs expect these tools installed in the consumer (declared as peer deps): `rollup`
@@ -56,7 +56,7 @@ Reusable workflows for consumer repos. Pin refs to a release tag — dependabot 
 ```yaml
 jobs:
   build:
-    uses: marcintk/ha-card-shared/.github/workflows/shared-build-and-test.yml@v1.0.0
+    uses: marcintk/ha-card-shared/.github/workflows/shared-build-and-test.yml@vX.Y.Z
 ```
 
 ## Migrating consumers
@@ -72,7 +72,7 @@ After migrating, keep consumers current automatically: [`recipes/dependabot.md`]
 Tag-driven. Every change reaches `main` through a PR, where `self-check.yml` runs actionlint,
 shellcheck, and the smoke build. Pushing a `vX.Y.Z` tag then runs `release.yml`, which validates the
 tag is a valid semver strictly greater than the previous release and publishes a GitHub Release
-(pre-release tags like `v1.0.0-beta.1` publish as GitHub pre-releases).
+(pre-release tags like `vX.Y.Z-beta.1` publish as GitHub pre-releases).
 
 ```bash
 npm version patch --no-git-tag-version   # patch | minor | major — see table below

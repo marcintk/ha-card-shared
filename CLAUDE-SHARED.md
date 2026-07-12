@@ -42,8 +42,8 @@ Follow this process for every task.
 
 ### Phase 2 — Implementation
 
-- Create or ensure you are on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`) — except docs, rules, and TODO updates: push directly to `main`, no PR needed.
-- Add the failing test first (`test/*.test.ts`), then implement until it passes.
+- Create or ensure you are on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`) — except when the **entire** change is docs, rules, or TODO updates: push directly to `main` and skip Phases 3–4.
+- Add the failing test first (`test/*.test.ts`), then implement until it passes. Skip for docs/rules/TODO-only changes.
 - Commit and push — loop until pre-commit and pre-push hooks both pass.
 - Once green: update `README.md` and `TODO.md` if behavior or interface changed.
 
@@ -55,7 +55,7 @@ Follow this process for every task.
 ### Phase 4 — Merge
 
 - `gh pr create`
-- `gh run watch` — blocks until CI is green.
+- `gh run watch` — blocks until CI is green. If red: fix on the branch, push, re-run `gh run watch`.
 - `gh pr merge --squash --delete-branch`
 - `git checkout main && git pull`
 

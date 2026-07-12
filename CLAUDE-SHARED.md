@@ -42,7 +42,7 @@ Follow this process for every task.
 ### Phase 2 — Implementation
 
 - Work on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`).
-- Direct push to `main` is allowed only for documentation, rules, and TODO updates — for those, push directly — no PR or review needed.
+- Direct push to `main` is allowed only for documentation, rules, and TODO updates — for those, push directly — no PR or review needed. Phase 1 still applies.
 - For any code change: add the test to `test/*.test.ts` first, confirm it fails (`npm test`), then implement until it passes.
 
 ### Phase 3 — Pre-review gate
@@ -63,7 +63,7 @@ Follow this process for every task.
 - `gh pr merge --squash --delete-branch`
 - `git checkout main && git pull`
 
-### Phase 6 — Ship *(skip unless 3–5 PRs have merged since the last release)*
+### Phase 6 — Ship *(only when 3–5 PRs have merged since the last release — not before, not after)*
 
 - Never trigger autonomously — recommend to the user, then wait for approval.
 - Verify all recent CI runs on `main` show ✓: `gh run list --branch main --limit 5`

@@ -13,7 +13,8 @@
     "CLAUDE-SHARED.md",
     "README.md",
     "recipes/",
-    "scripts/"
+    "scripts/",
+    ".githooks/"
   ],
   "exports": {
     "./vitest.base.mjs": "./vitest.base.mjs",

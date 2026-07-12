@@ -47,6 +47,35 @@ thresholds are enforced at 100% — `npm run test:coverage` fails (and blocks CI
 - **Release cadence.** After 3–5 merged PRs, recommend cutting a release. Never trigger the release
   workflow autonomously.
 
+## Workflow
+
+Follow this process for every task.
+
+### Phase 1 — Clarify before coding
+
+Before writing any code: restate what you understood the task to be and how you plan to achieve it — the approach, which files will be touched, and any trade-offs. Ask any open questions. Only proceed when the user explicitly says to go ahead.
+
+### Phase 2 — Branch discipline
+
+Work on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`). Direct push to `main` is allowed only for documentation, rules, and TODO updates.
+
+### Phase 3 — Pre-review gate
+
+Before signalling ready for review, ensure pre-commit and pre-push hooks both pass. Verify that `README.md` and `TODO.md` are current with any behavior or interface changes.
+
+### Phase 4 — User review
+
+Give a brief summary of how the goal was achieved. Wait for explicit user approval before proceeding.
+
+### Phase 5 — Ship
+
+```bash
+gh pr create
+gh run list --limit 5   # wait for CI green
+gh pr merge --squash --delete-branch
+git checkout main && git pull
+```
+
 ## TDD Workflow
 
 Write the failing test first, confirm it fails (`npm test`), then implement until it passes.

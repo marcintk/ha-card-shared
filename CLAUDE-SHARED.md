@@ -18,36 +18,9 @@ npm run format:md      # prettier for markdown files
 npm run check:ci       # CI gate: typecheck + biome check + prettier check
 ```
 
-`dist/` is **not committed**. Built by CI on every release, attached as a GitHub Release asset that
-HACS downloads. `package.json` version is always `0.0.0-dev` — the git tag is the single source of
-truth for the version.
-
-## Contributing
-
-> **Never commit directly to `main`.** Every change goes through a pull request.
-
-```bash
-git checkout -b feat/my-feature   # or fix/, docs/, chore/
-git push -u origin feat/my-feature
-gh pr create
-```
-
-CI runs build, lint, and tests on every PR. Every feature or bug fix must include tests. Coverage
-thresholds are enforced at 100% — `npm run test:coverage` fails (and blocks CI) if coverage drops.
-
-### PR discipline
-
-- **One concern per PR.** Refactor PRs must not bundle feature changes, and vice versa.
-- **Never push or merge without explicit user permission.** Do not run `git push`, `gh pr create`,
-  or merge a PR unless explicitly asked.
-- **Verify docs before every PR.** Check that `README.md` and `CLAUDE.md` reflect any behavior
-  changes — updated option defaults, new config keys, changed architecture.
-- **Always wait for GHA before closing a topic.** After a PR is merged or tag is pushed, run
-  `gh run list --limit 5` and wait for all triggered workflows to complete before declaring done.
-- **Release cadence.** After 3–5 merged PRs, recommend cutting a release. Never trigger the release
-  workflow autonomously.
-
 ## Workflow
+
+> To change this workflow, edit `CLAUDE-SHARED.md` in the `ha-card-shared` repo and tag a new release. If the repo isn't accessible locally, stop and ask the user.
 
 Follow this process for every task.
 
@@ -71,18 +44,20 @@ Give a brief summary of how the goal was achieved. Wait for explicit user approv
 
 ### Phase 5 — Ship
 
+One concern per PR — no bundling of feature changes with refactors.
+
 ```bash
 gh pr create
-gh run list --limit 5   # wait for CI green
+gh run list --limit 5   # wait for CI green before merging
 gh pr merge --squash --delete-branch
 git checkout main && git pull
 ```
 
-## Changing this workflow
-
-This file lives in `ha-card-shared`. To change any rule here: locate the `ha-card-shared` repo locally, edit `CLAUDE-SHARED.md` there, and tag a new release. If the repo cannot be found locally, stop and ask the user before making any changes.
-
 ## Releasing
+
+`dist/` is not committed — built by CI on every release and attached as a GitHub Release asset that HACS downloads. `package.json` version is always `0.0.0-dev`; the git tag is the single source of truth.
+
+After 3–5 merged PRs, recommend cutting a release. Never trigger the release workflow autonomously.
 
 Verify `main` CI is green first:
 

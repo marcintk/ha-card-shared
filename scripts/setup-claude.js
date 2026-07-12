@@ -17,9 +17,7 @@ const settingsPath = join(claudeDir, 'settings.json');
 let settings = {};
 try {
   settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
-} catch {
-  // file missing or invalid JSON — start fresh
-}
+} catch {}
 
 settings.hooks ??= {};
 settings.hooks.SessionStart ??= [];
@@ -31,10 +29,8 @@ if (!entry) {
 }
 entry.hooks ??= [];
 
-// Replace existing marker hook so updates propagate on npm install
 entry.hooks = entry.hooks.filter(h => h.statusMessage !== MARKER);
 entry.hooks.push(HOOK);
 
 mkdirSync(claudeDir, { recursive: true });
 writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
-console.log('ha-card-shared: plugin check hook installed in .claude/settings.json');

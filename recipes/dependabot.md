@@ -27,3 +27,15 @@ updates:
 - **Boundary:** patch/minor bumps must need zero consumer edits, so Dependabot can merge them green.
   A bump that requires consumer changes is a `major` — it ships a new `recipe.<from>_<to>.md` that a
   human applies on the Dependabot major PR.
+
+## What each release delivers on bump
+
+### v1.1.0
+- **Postinstall hook** — `npm install` now silently merges a `SessionStart` hook into `.claude/settings.json`
+  that warns at session start if ponytail or caveman are not installed globally.
+- **Required plugins** — ponytail and caveman must be installed once per machine:
+  ```bash
+  claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail
+  claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman
+  ```
+- **Workflow restructured** — 6-phase flow in `CLAUDE-SHARED.md`; never commit to main directly.

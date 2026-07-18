@@ -71,7 +71,8 @@ After migrating, keep consumers current automatically: [`recipes/dependabot.md`]
 ## Releasing ha-card-shared
 
 Tag-driven. Every change reaches `main` through a PR, where `self-check.yml` runs actionlint,
-shellcheck, and the smoke build. Pushing a `vX.Y.Z` tag then runs `release.yml`, which validates the
+shellcheck, the smoke build, and verifies committed `dist/` matches a fresh build (rebuild with
+`npm run build` and commit if it drifts). Pushing a `vX.Y.Z` tag then runs `release.yml`, which validates the
 tag is a valid semver strictly greater than the previous release and publishes a GitHub Release
 (pre-release tags like `vX.Y.Z-beta.1` publish as GitHub pre-releases).
 

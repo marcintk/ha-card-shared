@@ -1,7 +1,6 @@
 type MetricKey = "events" | "filtered" | "rendered";
 export declare class DebugMetrics {
     private _data;
-    constructor();
     track(key: MetricKey): void;
     counts(key: MetricKey): {
         min1: number;

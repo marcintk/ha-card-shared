@@ -6,13 +6,8 @@ export interface HasSubscribeEvents {
 }
 
 export class SubscriptionManager {
-  private _gen: number;
-  private _unsub: (() => void) | null;
-
-  constructor() {
-    this._gen = 0;
-    this._unsub = null;
-  }
+  private _gen = 0;
+  private _unsub: (() => void) | null = null;
 
   get active(): boolean {
     return this._unsub !== null;

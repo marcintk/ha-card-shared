@@ -16,7 +16,7 @@ jobs:
 
       - name: Validate tag
         id: tag
-        uses: marcintk/ha-card-shared/.github/actions/validate-tag@v1.0.0
+        uses: marcintk/ha-card-shared/.github/actions/validate-tag@main
 
       - uses: actions/setup-node@v5
         with:

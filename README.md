@@ -12,10 +12,9 @@ tag (dependabot does it for you once pinned).
 npm install github:marcintk/ha-card-shared#vX.Y.Z --save-dev
 ```
 
-The exported configs expect these tools installed in the consumer (declared as peer deps): `rollup`
-
-- `@rollup/plugin-{node-resolve,terser,typescript}`, `typescript`, `vitest`,
-  `@vitest/coverage-v8`, `jsdom`, `@biomejs/biome`, `prettier`.
+The exported configs expect these tools installed in the consumer (declared as peer deps):
+`rollup`, `@rollup/plugin-{node-resolve,terser,typescript}`, `typescript`, `vitest`,
+`@vitest/coverage-v8`, `jsdom`, `@biomejs/biome`, `prettier`.
 
 ## Exports
 
@@ -29,6 +28,7 @@ Use each export by extending or referencing it from the matching consumer file:
 | `ha-card-shared/biome.json`           | `"extends"` in `biome.json`                                                              |
 | `ha-card-shared/prettier.config.json` | `"prettier": "ha-card-shared/prettier.config.json"` in `package.json`                    |
 | `ha-card-shared/globals.d.ts`         | `/// <reference path="../node_modules/ha-card-shared/globals.d.ts" />` in `src/index.ts` |
+| `ha-card-shared/runtime`              | `import { SubscriptionManager, DebugMetrics, timeAgo } from "ha-card-shared/runtime"`    |
 
 `cardBundle` bundles `src/index.ts` → `dist/card.js` and stamps `__CARD_VERSION__` from the
 `VERSION` env (set from the git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest).
@@ -78,8 +78,6 @@ tag is a valid semver strictly greater than the previous release and publishes a
 ```bash
 npm version patch --no-git-tag-version   # patch | minor | major — see table below
 VER=$(node -p "require('./package.json').version")
-# keep the composite-action ref in lockstep with the new version
-sed -i "s|actions/validate-tag@v[^ ]*|actions/validate-tag@v${VER}|g" .github/workflows/shared-publish-release.yml
 git commit -am "chore: bump version to ${VER}"
 git tag "v${VER}" && git push origin main "v${VER}"
 ```

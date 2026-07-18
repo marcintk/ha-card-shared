@@ -32,6 +32,7 @@ Required — install before use, missing plugins are warned at session start:
   ```
 
 Recommended:
+
 - **Serena** — MCP server; symbol search and diagnostics during implementation
 - **RTK** — token proxy; reduces API usage transparently via hooks
 
@@ -89,4 +90,4 @@ Follow this process for every task.
 - Only when 3–5 PRs have merged since the last release.
 - Never trigger autonomously — recommend to the user, then wait for approval.
 - Verify all recent CI runs on `main` show ✓: `gh run list --branch main --limit 5`
-- Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z` *(replace X.Y.Z with the actual version)*
+- Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z` _(replace X.Y.Z with the actual version)_

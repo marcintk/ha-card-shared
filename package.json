@@ -1,9 +1,10 @@
 {
   "name": "ha-card-shared",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "type": "module",
   "files": [
     "biome.json",
+    "dist/",
     "globals.d.ts",
     "prettier.config.json",
     "rollup.base.mjs",
@@ -22,9 +23,20 @@
     "./tsconfig.base.json": "./tsconfig.base.json",
     "./biome.json": "./biome.json",
     "./prettier.config.json": "./prettier.config.json",
-    "./globals.d.ts": "./globals.d.ts"
+    "./globals.d.ts": "./globals.d.ts",
+    "./runtime": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
+    "build": "rollup -c rollup.lib.config.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "check": "biome check --write src/ test/",
+    "check:ci": "tsc --noEmit && biome check src/ test/ && prettier --check \"**/*.md\"",
+    "format:md": "prettier --write \"**/*.md\"",
     "postinstall": "node scripts/setup-claude.js",
     "smoke": "npm run smoke:typecheck && npm run smoke:build && npm run smoke:test",
     "smoke:typecheck": "tsc --noEmit -p fixtures/smoke/tsconfig.json",

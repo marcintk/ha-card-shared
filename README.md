@@ -29,6 +29,7 @@ Use each export by extending or referencing it from the matching consumer file:
 | `ha-card-shared/prettier.config.json` | `"prettier": "ha-card-shared/prettier.config.json"` in `package.json`                    |
 | `ha-card-shared/globals.d.ts`         | `/// <reference path="../node_modules/ha-card-shared/globals.d.ts" />` in `src/index.ts` |
 | `ha-card-shared/runtime`              | `import { SubscriptionManager, DebugMetrics, timeAgo } from "ha-card-shared/runtime"`    |
+| `ha-card-shared/test-utils`           | `import { snapHtml } from "ha-card-shared/test-utils"` in `test/snapshot.test.ts`        |
 
 `cardBundle` bundles `src/index.ts` → `dist/card.js` and stamps `__CARD_VERSION__` from the
 `VERSION` env (set from the git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest).

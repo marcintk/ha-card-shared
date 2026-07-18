@@ -13,9 +13,8 @@ PR is merged, all future releases arrive automatically as Dependabot PRs — no 
 
 ## How Dependabot works here
 
-Dependabot bumps version numbers; it does not run recipes. After the one-time
-[SHA → v1.0.0 migration](recipe.SHA_1.00.md), Dependabot keeps a consumer current on its own — but
-only if **both** ecosystems are configured. The npm block bumps the `ha-card-shared` git tag in
+Dependabot bumps version numbers; it does not run recipes. Dependabot keeps a consumer current on its
+own — but only if **both** ecosystems are configured. The npm block bumps the `ha-card-shared` git tag in
 `package.json`; the github-actions block bumps the `uses: …@vX.Y.Z` workflow refs. Configure only
 one and the two drift apart.
 
@@ -43,18 +42,10 @@ updates:
 
 ## What each release delivers on bump
 
-### v1.1.1
+### v1.2.0
 
-- **Fix** — `.githooks/` was missing from the npm `files` allowlist in v1.1.0; consumers received no
-  pre-commit hooks on install. Now included.
-
-### v1.1.0
-
-- **Postinstall hook** — `npm install` now silently merges a `SessionStart` hook into `.claude/settings.json`
-  that warns at session start if ponytail or caveman are not installed globally.
-- **Required plugins** — ponytail and caveman must be installed once per machine:
-  ```bash
-  claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail
-  claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman
-  ```
-- **Workflow restructured** — 6-phase flow in `CLAUDE-SHARED.md`; never commit to main directly.
+- **Shared runtime** — new `ha-card-shared/runtime` export: `SubscriptionManager`, `DebugMetrics`,
+  `timeAgo`. Consumers with local copies of these can delete them and import from the shared package.
+  See [`recipe.1.1.1_1.2.0.md`](recipe.1.1.1_1.2.0.md) for the migration steps.
+- **CI** — `self-check.yml` now runs a `runtime` job (build + typecheck + coverage) in addition to
+  the existing `lint` and `smoke` jobs.

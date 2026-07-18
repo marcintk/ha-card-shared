@@ -64,7 +64,7 @@ jobs:
 
 Step-by-step migrations live in [`recipes/`](recipes/), one file per version transition:
 
-- [`recipe.SHA_1.00.md`](recipes/recipe.SHA_1.00.md) — SHA/`main` → v1.0.0.
+- [`recipe.1.1.1_1.2.0.md`](recipes/recipe.1.1.1_1.2.0.md) — v1.1.1 → v1.2.0 (adopt shared runtime).
 
 After migrating, keep consumers current automatically: [`recipes/dependabot.md`](recipes/dependabot.md).
 

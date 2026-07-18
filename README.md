@@ -13,21 +13,22 @@ npm install github:marcintk/ha-card-shared#vX.Y.Z --save-dev
 ```
 
 The exported configs expect these tools installed in the consumer (declared as peer deps): `rollup`
-+ `@rollup/plugin-{node-resolve,terser,typescript}`, `typescript`, `vitest`,
-`@vitest/coverage-v8`, `jsdom`, `@biomejs/biome`, `prettier`.
+
+- `@rollup/plugin-{node-resolve,terser,typescript}`, `typescript`, `vitest`,
+  `@vitest/coverage-v8`, `jsdom`, `@biomejs/biome`, `prettier`.
 
 ## Exports
 
 Use each export by extending or referencing it from the matching consumer file:
 
-| Export | Wire-up in consumer |
-|---|---|
-| `ha-card-shared/tsconfig.base.json` | `"extends"` in `tsconfig.json` |
-| `ha-card-shared/rollup.base.mjs` | `export default cardBundle()` in `rollup.config.mjs` |
-| `ha-card-shared/vitest.base.mjs` | `defineConfig(baseVitestConfig)` in `vitest.config.mjs` |
-| `ha-card-shared/biome.json` | `"extends"` in `biome.json` |
-| `ha-card-shared/prettier.config.json` | `"prettier": "ha-card-shared/prettier.config.json"` in `package.json` |
-| `ha-card-shared/globals.d.ts` | `/// <reference path="../node_modules/ha-card-shared/globals.d.ts" />` in `src/index.ts` |
+| Export                                | Wire-up in consumer                                                                      |
+| ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `ha-card-shared/tsconfig.base.json`   | `"extends"` in `tsconfig.json`                                                           |
+| `ha-card-shared/rollup.base.mjs`      | `export default cardBundle()` in `rollup.config.mjs`                                     |
+| `ha-card-shared/vitest.base.mjs`      | `defineConfig(baseVitestConfig)` in `vitest.config.mjs`                                  |
+| `ha-card-shared/biome.json`           | `"extends"` in `biome.json`                                                              |
+| `ha-card-shared/prettier.config.json` | `"prettier": "ha-card-shared/prettier.config.json"` in `package.json`                    |
+| `ha-card-shared/globals.d.ts`         | `/// <reference path="../node_modules/ha-card-shared/globals.d.ts" />` in `src/index.ts` |
 
 `cardBundle` bundles `src/index.ts` → `dist/card.js` and stamps `__CARD_VERSION__` from the
 `VERSION` env (set from the git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest).
@@ -46,12 +47,12 @@ git config core.hooksPath node_modules/ha-card-shared/.githooks
 
 Reusable workflows for consumer repos. Pin refs to a release tag — dependabot keeps them current.
 
-| Workflow | Purpose |
-|---|---|
-| `shared-build-and-test.yml` | lint, typecheck, test with coverage report |
-| `shared-publish-release.yml` | validate tag, build bundle, create GitHub Release |
+| Workflow                      | Purpose                                                       |
+| ----------------------------- | ------------------------------------------------------------- |
+| `shared-build-and-test.yml`   | lint, typecheck, test with coverage report                    |
+| `shared-publish-release.yml`  | validate tag, build bundle, create GitHub Release             |
 | `shared-deploy-demo-page.yml` | build + deploy GitHub Pages demo (requires `docs/index.html`) |
-| `shared-hacs-validation.yml` | validate HACS compatibility |
+| `shared-hacs-validation.yml`  | validate HACS compatibility                                   |
 
 ```yaml
 jobs:
@@ -83,8 +84,8 @@ git commit -am "chore: bump version to ${VER}"
 git tag "v${VER}" && git push origin main "v${VER}"
 ```
 
-| Change | Bump |
-|---|---|
-| Config-only tweak, no consumer impact | `patch` |
-| New export or loosened peer dep | `minor` |
+| Change                                           | Bump    |
+| ------------------------------------------------ | ------- |
+| Config-only tweak, no consumer impact            | `patch` |
+| New export or loosened peer dep                  | `minor` |
 | Renamed/removed export, breaking tsconfig change | `major` |

@@ -1,5 +1,6 @@
 .claude
 .serena/
 node_modules/
+coverage/
 fixtures/**/dist/
 fixtures/**/coverage/

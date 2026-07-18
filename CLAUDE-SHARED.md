@@ -38,18 +38,19 @@ Recommended:
 
 ## Required files
 
-Every project using this shared context must have both files at the repo root:
+Every project must have:
 
-- **`README.md`** — describes the card's purpose, configuration, and usage.
-- **`TODO.md`** — tracks planned work, known issues, and deferred tasks.
+- **`README.md`** — card purpose, configuration, usage.
+- **`TODO.md`** — backlog. Never auto-implement; suggest items only when user asks. Always update when scope changes.
+- **`test/snapshot.test.ts`** — all `toMatchSnapshot()` calls live here and nowhere else. Use `snapHtml` from `ha-card-shared/test-utils` to normalize Lit marker IDs before snapshotting HTML.
 
-If either is missing, stop and report it to the user before proceeding.
+## Task files
+
+- **`PLAN.md`** — fully specified task. Pick it up at session start before anything else. Mid-session: finish current commit unit first, then implement. Delete after pushing the branch.
 
 ## Workflow
 
-> To change this workflow, edit `CLAUDE-SHARED.md` in the `ha-card-shared` repo. Iterate until the content is final, then tag **once**. Do not tag intermediate states. If the repo isn't accessible locally, stop and ask the user.
-
-Follow this process for every task.
+> Edit `CLAUDE-SHARED.md` in `ha-card-shared` to change this workflow. Iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.
 
 ### Phase 1 — Clarify before coding
 
@@ -87,7 +88,10 @@ Follow this process for every task.
 
 ### Phase 6 — Ship
 
-- Only when 3–5 PRs have merged since the last release.
 - Never trigger autonomously — recommend to the user, then wait for approval.
 - Verify all recent CI runs on `main` show ✓: `gh run list --branch main --limit 5`
-- Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z` _(replace X.Y.Z with the actual version)_
+- Bump version following semver:
+  - **patch** — bug fixes, docs, no API change. Batch freely.
+  - **minor** — new export or toolchain feature, backward-compatible. Ship after 2–3 PRs.
+  - **major** — any breaking change (removed/renamed export, changed signature, consumers must update). Ship immediately after merge.
+- Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`

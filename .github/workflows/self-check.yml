@@ -34,6 +34,16 @@ jobs:
 
       - run: npm ci
       - run: npm run build
+
+      - name: Committed dist/ must match the build
+        # Consumers install dist/ from the git tag — a stale commit ships broken runtime.
+        run: |
+          if [ -n "$(git status --porcelain dist/)" ]; then
+            git status --porcelain dist/
+            echo "::error::dist/ is stale — run 'npm run build' and commit the result"
+            exit 1
+          fi
+
       - run: npm run check:ci
       - run: npm run test:coverage
 

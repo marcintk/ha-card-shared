@@ -3,11 +3,7 @@ import { timeAgo } from "./utils.js";
 type MetricKey = "events" | "filtered" | "rendered";
 
 export class DebugMetrics {
-  private _data: Record<MetricKey, number[]>;
-
-  constructor() {
-    this._data = { events: [], filtered: [], rendered: [] };
-  }
+  private _data: Record<MetricKey, number[]> = { events: [], filtered: [], rendered: [] };
 
   track(key: MetricKey): void {
     const now = Date.now();

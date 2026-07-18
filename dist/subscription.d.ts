@@ -8,7 +8,6 @@ export interface HasSubscribeEvents {
 export declare class SubscriptionManager {
     private _gen;
     private _unsub;
-    constructor();
     get active(): boolean;
     subscribe(connection: Partial<HasSubscribeEvents> | null | undefined, trackedIds: Set<string> | null | undefined, onMatch: () => void): void;
     clear(): void;

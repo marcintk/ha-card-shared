@@ -7,10 +7,7 @@ function timeAgo(ms) {
 }
 
 class DebugMetrics {
-    _data;
-    constructor() {
-        this._data = { events: [], filtered: [], rendered: [] };
-    }
+    _data = { events: [], filtered: [], rendered: [] };
     track(key) {
         const now = Date.now();
         this._data[key].push(now);
@@ -57,12 +54,8 @@ class DebugMetrics {
 }
 
 class SubscriptionManager {
-    _gen;
-    _unsub;
-    constructor() {
-        this._gen = 0;
-        this._unsub = null;
-    }
+    _gen = 0;
+    _unsub = null;
     get active() {
         return this._unsub !== null;
     }

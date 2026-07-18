@@ -22,6 +22,21 @@ jobs:
       - name: shellcheck git hooks
         run: shellcheck .githooks/pre-commit .githooks/pre-push
 
+  runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check:ci
+      - run: npm run test:coverage
+
   smoke:
     runs-on: ubuntu-latest
     steps:

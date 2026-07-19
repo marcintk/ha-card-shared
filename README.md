@@ -16,6 +16,18 @@ The exported configs expect these tools installed in the consumer (declared as p
 `rollup`, `@rollup/plugin-{node-resolve,terser,typescript}`, `typescript`, `vitest`,
 `@vitest/coverage-v8`, `jsdom`, `@biomejs/biome`, `prettier`.
 
+### Claude Code plugins
+
+Required by the shared workflow (see `CLAUDE-SHARED.md`). A SessionStart hook warns when either is
+missing.
+
+```bash
+claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail
+claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman
+```
+
+Recommended: **Serena** (MCP symbol search + diagnostics), **RTK** (token proxy via hooks).
+
 ## Exports
 
 Use each export by extending or referencing it from the matching consumer file:

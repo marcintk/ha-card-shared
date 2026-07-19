@@ -34,10 +34,6 @@ Every project must have:
 - **`README.md`** — card purpose, configuration, usage.
 - **`test/snapshot.test.ts`** — all `toMatchSnapshot()` calls live here and nowhere else. Use `snapHtml` from `ha-card-shared/test-utils` to normalize Lit marker IDs before snapshotting HTML.
 
-## Task files
-
-- **`PLAN.md`** — fully specified task. Pick it up at session start before anything else. Mid-session: finish current commit unit first, then implement. Delete after pushing the branch.
-
 ## Workflow
 
 > Edit `CLAUDE-SHARED.md` in `ha-card-shared` to change this workflow. Iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.

@@ -66,11 +66,36 @@ Reusable workflows for consumer repos. Pin refs to a release tag — dependabot 
 | `shared-publish-release.yml`  | validate tag, build bundle, create GitHub Release             |
 | `shared-deploy-demo-page.yml` | build + deploy GitHub Pages demo (requires `docs/index.html`) |
 | `shared-hacs-validation.yml`  | validate HACS compatibility                                   |
+| `shared-migration-check.yml`  | open a tracking issue when a bump needs a manual recipe       |
 
 ```yaml
 jobs:
   build:
     uses: marcintk/ha-card-shared/.github/workflows/shared-build-and-test.yml@vX.Y.Z
+```
+
+### Migration check
+
+`shared-migration-check.yml` is pull-based: the consumer runs it on a schedule
+and it opens an issue **only** when the version you currently pin has a
+`recipe.<pinned>_<next>.md` in this repo — i.e. the bump needs manual steps.
+It walks one step at a time and keeps at most one open `shared-migration`
+issue. Plain ref-bumps (no recipe) are left to Dependabot.
+
+Add this caller to each consumer (`.github/workflows/migration-check.yml`):
+
+```yaml
+name: Migration Check
+on:
+  schedule:
+    - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  check:
+    uses: marcintk/ha-card-shared/.github/workflows/shared-migration-check.yml@vX.Y.Z
 ```
 
 ## Migrating consumers

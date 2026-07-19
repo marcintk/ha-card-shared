@@ -22,7 +22,7 @@ npm run check:ci       # CI gate: typecheck + biome check + prettier check
 
 Required, active all session — install per README. A SessionStart hook warns when either is missing.
 
-- **Ponytail** — lazy senior dev mode; `/ponytail-review` runs in Phase 2, `/ponytail-audit` (optional) in Phase 4.
+- **Ponytail** — lazy senior dev mode; `/ponytail-review` runs in Phase 2, `/ponytail-audit` in Phase 6.
 - **Caveman** — 65% fewer output tokens; `/caveman-commit` runs in Phase 4.
 
 Recommended: **Serena** (MCP symbol search + diagnostics), **RTK** (token proxy via hooks).
@@ -69,18 +69,18 @@ Every project must have:
 
 ### Phase 5 — Merge
 
-- [ ] `gh pr create`
+- [ ] `gh pr create`.
 - [ ] `gh run watch` — blocks until CI is green. If red: fix on the branch, push, re-run `gh run watch`.
-- [ ] `gh pr merge --squash --delete-branch`
-- [ ] `git checkout main && git pull`
+- [ ] `gh pr merge --squash --delete-branch`.
+- [ ] `git checkout main && git pull`.
 
 ### Phase 6 — Ship
 
 - [ ] NEVER trigger autonomously — recommend to the user, then wait for approval.
-- [ ] Verify all recent CI runs on `main` show ✓: `gh run list --branch main --limit 5`
+- [ ] Verify all recent CI runs on `main` show ✓: `gh run list --branch main --limit 5`.
 - [ ] Run `/ponytail-audit` (full repo scan). Any finding → fix on a branch, PR, merge, then re-run. Only continue when the audit comes back clean.
 - [ ] Bump version following semver:
   - **patch** — bug fixes, docs, no API change. Batch freely.
   - **minor** — new export or toolchain feature, backward-compatible. Ship after 2–3 PRs.
   - **major** — any breaking change (removed/renamed export, changed signature, consumers must update). Ship immediately after merge.
-- [ ] Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`
+- [ ] Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.

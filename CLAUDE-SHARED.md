@@ -41,7 +41,6 @@ Recommended:
 Every project must have:
 
 - **`README.md`** — card purpose, configuration, usage.
-- **`TODO.md`** — backlog. Never auto-implement; suggest items only when user asks. Always update when scope changes.
 - **`test/snapshot.test.ts`** — all `toMatchSnapshot()` calls live here and nowhere else. Use `snapHtml` from `ha-card-shared/test-utils` to normalize Lit marker IDs before snapshotting HTML.
 
 ## Task files
@@ -56,13 +55,13 @@ Every project must have:
 
 - Restate the task: approach, files touched, trade-offs.
 - Grill the user — ask every open question until nothing is ambiguous.
-- One concern per PR — if scope creeps, push extras to `TODO.md` and proceed with one.
+- One concern per PR — if scope creeps, open a GH issue for extras and proceed with one.
 - Do not code until the user says go ahead.
 
 ### Phase 2 — Implementation
 
 - Never commit directly to `main` — always work on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`).
-- Add the failing test first (`test/*.test.ts`). Skip for docs/rules/TODO-only changes.
+- Add the failing test first (`test/*.test.ts`). Skip for docs/rules-only changes.
 - Implement; loop locally until all pass: `npm test && npm run test:coverage && npm run check:ci`.
 - Run `/ponytail-review`; apply fixes, re-run `npm test && npm run check:ci`.
 - Do not commit anything yet.
@@ -75,7 +74,7 @@ Every project must have:
 ### Phase 4 — Post Implementation
 
 - Commit all implementation work using `/caveman-commit`; loop until pre-commit hooks pass for each commit.
-- Update `README.md` and `TODO.md` if behavior or interface changed; commit.
+- Update `README.md` if behavior or interface changed; commit.
 - Ensure working tree is clean — nothing uncommitted before audit.
 - Ask user: "Run `/ponytail-audit` (full repo scan)?" — proceed only on yes. Apply each fix as its own commit, re-run `npm run check:ci` after each.
 - Push branch.

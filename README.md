@@ -47,6 +47,21 @@ Use each export by extending or referencing it from the matching consumer file:
 `VERSION` env (set from the git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest).
 `globals.d.ts` types that global plus the HA `customCards` window hook.
 
+## Claude Code config
+
+Symlink the shared `.claude/settings.json` so it stays current after every `npm install`:
+
+```bash
+# one-time setup — or add as postinstall in package.json
+ln -sf ../node_modules/ha-card-shared/.claude/settings.json .claude/settings.json
+```
+
+Add to consumer `package.json` scripts so the symlink is created automatically:
+
+```json
+"postinstall": "ln -sf ../node_modules/ha-card-shared/.claude/settings.json .claude/settings.json"
+```
+
 ## Git hooks
 
 ```bash
@@ -100,9 +115,7 @@ jobs:
 
 ## Migrating consumers
 
-Step-by-step migrations live in [`recipes/`](recipes/), one file per version transition:
-
-- [`recipe.1.3.0_1.4.0.md`](recipes/recipe.1.3.0_1.4.0.md) — v1.3.0 → v1.4.0 (adopt migration-check, drop `TODO.md`).
+Step-by-step migrations live in [`recipes/`](recipes/), one file per version transition.
 
 After migrating, keep consumers current automatically: [`recipes/dependabot.md`](recipes/dependabot.md).
 

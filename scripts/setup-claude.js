@@ -5,7 +5,7 @@ const MARKER = 'ha-card-shared: checking required plugins';
 const MATCHER = 'startup|resume|clear|compact';
 const HOOK = {
   type: 'command',
-  command: 'missing=""; [ -f ~/.claude/.ponytail-active ] || missing="ponytail "; grep -q caveman ~/.claude/settings.json 2>/dev/null || missing="${missing}caveman "; [ -n "$missing" ] && echo "⚠️  Missing required plugins: ${missing}— install per CLAUDE-SHARED.md" || true',
+  command: 'missing=""; [ -f ~/.claude/.ponytail-active ] || missing="ponytail "; grep -q caveman ~/.claude/settings.json 2>/dev/null || missing="${missing}caveman "; [ -n "$missing" ] && echo "⚠️  Missing required plugins: ${missing}— install per ha-card-shared README" || true',
   timeout: 5,
   statusMessage: MARKER,
 };

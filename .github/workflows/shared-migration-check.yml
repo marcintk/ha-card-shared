@@ -1,0 +1,68 @@
+name: Migration Check
+
+# Recipe-gated pull: a consumer runs this on a schedule to learn when a
+# ha-card-shared bump needs manual migration steps. It walks ONE step at a
+# time — from the version the consumer currently pins to the next version that
+# has a recipe — and opens a single tracking issue. No recipe for the current
+# pin means a plain ref-bump (Dependabot's job), so nothing is opened.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SHARED: marcintk/ha-card-shared
+      LABEL: shared-migration
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Open a migration issue when a recipe covers the pinned version
+        run: |
+          set -euo pipefail
+
+          # Version this consumer currently pins for the shared workflows. If
+          # several refs disagree, take the oldest so migration walks forward.
+          pinned=$(grep -rhoE "${SHARED}/.github/workflows/[^@]+@v[0-9]+\.[0-9]+\.[0-9]+" .github/workflows \
+            | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | tr -d v | sort -V | head -1 || true)
+          if [ -z "$pinned" ]; then
+            echo "No pinned ${SHARED} workflow ref found — nothing to check."
+            exit 0
+          fi
+          echo "Pinned at $pinned"
+
+          # A recipe named recipe.<pinned>_<next>.md is the signal that the next
+          # step needs manual work. Exactly one such file should exist.
+          target=$(gh api "repos/${SHARED}/contents/recipes" --jq '.[].name' \
+            | { grep "^recipe\.${pinned}_" || true; } | head -1)
+          if [ -z "$target" ]; then
+            echo "No recipe.${pinned}_*.md — plain ref-bump, nothing to open."
+            exit 0
+          fi
+          next=${target#recipe."${pinned}"_}
+          next=${next%.md}
+          echo "Recipe found: $target ($pinned -> $next)"
+
+          # One issue at a time: if a migration is already tracked, leave it be.
+          if [ "$(gh issue list --label "$LABEL" --state open --json number --jq 'length')" -gt 0 ]; then
+            echo "A $LABEL issue is already open — not stacking another."
+            exit 0
+          fi
+
+          gh issue create \
+            --label "$LABEL" \
+            --title "Migrate ha-card-shared ${pinned} → ${next}" \
+            --body "$(printf '%s\n' \
+              "A new ha-card-shared version needs manual migration." \
+              "" \
+              "**Step:** \`${pinned}\` → \`${next}\`" \
+              "**Recipe:** https://github.com/${SHARED}/blob/main/recipes/${target}" \
+              "" \
+              "Follow the recipe, bump the pinned refs to \`v${next}\`, then close this issue. The next step (if any) opens automatically on the following run." \
+              "" \
+              "All recipes: https://github.com/${SHARED}/tree/main/recipes")"

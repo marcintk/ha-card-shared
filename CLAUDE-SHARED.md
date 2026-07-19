@@ -22,7 +22,7 @@ npm run check:ci       # CI gate: typecheck + biome check + prettier check
 
 Required — install before use, missing plugins are warned at session start:
 
-- **ponytail** — active all session (lazy senior dev mode); `/ponytail-audit` runs in Phase 4
+- **ponytail** — active all session (lazy senior dev mode); `/ponytail-review` runs in Phase 2, `/ponytail-audit` (optional) in Phase 4
   ```bash
   claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail
   ```
@@ -64,6 +64,7 @@ Every project must have:
 - Never commit directly to `main` — always work on a feature branch (`feat/`, `fix/`, `chore/`, `docs/`).
 - Add the failing test first (`test/*.test.ts`). Skip for docs/rules/TODO-only changes.
 - Implement; loop locally until all pass: `npm test && npm run test:coverage && npm run check:ci`.
+- Run `/ponytail-review`; apply fixes, re-run `npm test && npm run check:ci`.
 - Do not commit anything yet.
 
 ### Phase 3 — User review
@@ -76,7 +77,7 @@ Every project must have:
 - Commit all implementation work using `/caveman-commit`; loop until pre-commit hooks pass for each commit.
 - Update `README.md` and `TODO.md` if behavior or interface changed; commit.
 - Ensure working tree is clean — nothing uncommitted before audit.
-- Run `/ponytail-audit`; apply each fix as its own commit, re-run `npm run check:ci` after each. Repeat the full audit up to 2–3 rounds total.
+- Ask user: "Run `/ponytail-audit` (full repo scan)?" — proceed only on yes. Apply each fix as its own commit, re-run `npm run check:ci` after each.
 - Push branch.
 
 ### Phase 5 — Merge

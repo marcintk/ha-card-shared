@@ -64,8 +64,7 @@ Every project must have:
 
 - [ ] Commit all implementation work using `/caveman-commit`; loop until pre-commit hooks pass for each commit.
 - [ ] Update `README.md` if behavior or interface changed; commit.
-- [ ] Ensure working tree is clean — nothing uncommitted before audit.
-- [ ] Ask user: "Run `/ponytail-audit` (full repo scan)?" — proceed only on yes. Apply each fix as its own commit, re-run `npm run check:ci` after each.
+- [ ] Ensure working tree is clean — nothing uncommitted.
 - [ ] Push branch.
 
 ### Phase 5 — Merge
@@ -79,6 +78,7 @@ Every project must have:
 
 - [ ] NEVER trigger autonomously — recommend to the user, then wait for approval.
 - [ ] Verify all recent CI runs on `main` show ✓: `gh run list --branch main --limit 5`
+- [ ] Run `/ponytail-audit` (full repo scan). Any finding → fix on a branch, PR, merge, then re-run. Only continue when the audit comes back clean.
 - [ ] Bump version following semver:
   - **patch** — bug fixes, docs, no API change. Batch freely.
   - **minor** — new export or toolchain feature, backward-compatible. Ship after 2–3 PRs.

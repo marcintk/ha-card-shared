@@ -102,7 +102,7 @@ jobs:
 
 Step-by-step migrations live in [`recipes/`](recipes/), one file per version transition:
 
-- [`recipe.1.1.1_1.2.0.md`](recipes/recipe.1.1.1_1.2.0.md) — v1.1.1 → v1.2.0 (adopt shared runtime).
+- [`recipe.1.3.0_1.4.0.md`](recipes/recipe.1.3.0_1.4.0.md) — v1.3.0 → v1.4.0 (adopt migration-check, drop `TODO.md`).
 
 After migrating, keep consumers current automatically: [`recipes/dependabot.md`](recipes/dependabot.md).
 

@@ -46,6 +46,5 @@ updates:
 
 - **Shared runtime** — new `ha-card-shared/runtime` export: `SubscriptionManager`, `DebugMetrics`,
   `timeAgo`. Consumers with local copies of these can delete them and import from the shared package.
-  See [`recipe.1.1.1_1.2.0.md`](recipe.1.1.1_1.2.0.md) for the migration steps.
 - **CI** — `self-check.yml` now runs a `runtime` job (build + typecheck + coverage) in addition to
   the existing `lint` and `smoke` jobs.

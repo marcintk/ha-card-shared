@@ -47,6 +47,13 @@ Use each export by extending or referencing it from the matching consumer file:
 `VERSION` env (set from the git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest).
 `globals.d.ts` types that global plus the HA `customCards` window hook.
 
+## Claude Code config
+
+`scripts/setup-claude.js` runs automatically as a `postinstall` hook when consumers install
+ha-card-shared. It merges the required SessionStart hook into the consumer's
+`.claude/settings.json`, creating the file if it doesn't exist. No manual setup needed — running
+`npm install` keeps it current.
+
 ## Git hooks
 
 ```bash
@@ -100,9 +107,7 @@ jobs:
 
 ## Migrating consumers
 
-Step-by-step migrations live in [`recipes/`](recipes/), one file per version transition:
-
-- [`recipe.1.3.0_1.4.0.md`](recipes/recipe.1.3.0_1.4.0.md) — v1.3.0 → v1.4.0 (adopt migration-check, drop `TODO.md`).
+Step-by-step migrations live in [`recipes/`](recipes/), one file per version transition.
 
 After migrating, keep consumers current automatically: [`recipes/dependabot.md`](recipes/dependabot.md).
 

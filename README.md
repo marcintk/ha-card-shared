@@ -49,18 +49,10 @@ Use each export by extending or referencing it from the matching consumer file:
 
 ## Claude Code config
 
-Symlink the shared `.claude/settings.json` so it stays current after every `npm install`:
-
-```bash
-# one-time setup — or add as postinstall in package.json
-ln -sf ../node_modules/ha-card-shared/.claude/settings.json .claude/settings.json
-```
-
-Add to consumer `package.json` scripts so the symlink is created automatically:
-
-```json
-"postinstall": "ln -sf ../node_modules/ha-card-shared/.claude/settings.json .claude/settings.json"
-```
+`scripts/setup-claude.js` runs automatically as a `postinstall` hook when consumers install
+ha-card-shared. It merges the required SessionStart hook into the consumer's
+`.claude/settings.json`, creating the file if it doesn't exist. No manual setup needed — running
+`npm install` keeps it current.
 
 ## Git hooks
 

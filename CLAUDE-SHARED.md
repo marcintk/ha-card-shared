@@ -33,7 +33,7 @@ Every project must have:
 
 - **`README.md`** — card purpose, configuration, usage.
 - **`test/snapshot.test.ts`** — all `toMatchSnapshot()` calls live here and nowhere else. Use `snapHtml` from `ha-card-shared/test-utils` to normalize Lit marker IDs before snapshotting HTML.
-- **`.claude/settings.json`** — symlink to `../node_modules/ha-card-shared/.claude/settings.json`; set up via `"postinstall"` in `package.json` (see `README.md` — "Claude Code config").
+- **`.claude/settings.json`** — managed by ha-card-shared's `postinstall` (`scripts/setup-claude.js`); merges the required SessionStart hook automatically on every `npm install`.
 - **`CLAUDE.md`** — `@node_modules/ha-card-shared/CLAUDE-SHARED.md` on line 1, then `## Design Invariants` and `## Architecture Notes` sections with card-specific content.
 
 ## Workflow

@@ -27,7 +27,7 @@ git log main...HEAD --oneline
 
 Write a JSON spec to `/tmp/explain-spec.json`:
 
-```json
+````json
 {
   "title": "...",
   "subtitle": "Prepared YYYY-MM-DD · PR #NNN",
@@ -56,15 +56,16 @@ Write a JSON spec to `/tmp/explain-spec.json`:
     {
       "question": "...",
       "options": [
-        {"text": "...", "correct": false},
-        {"text": "...", "correct": true}
+        { "text": "...", "correct": false },
+        { "text": "...", "correct": true }
       ]
     }
   ]
 }
-```
+````
 
 Rules for the spec:
+
 - Every section needs both `html` (rich, may use diagram classes) and `md` (markdown only, no raw HTML tags — GitHub strips them in comments).
 - Quiz: exactly 4 options per question, exactly 1 correct.
 - Write with the clarity and flow of Martin Kleppmann — engaging, classic prose with smooth transitions.
@@ -98,5 +99,6 @@ gh pr comment <number> --body-file /tmp/YYYY-MM-DD-explanation-<slug>.md
 ### 6. Report to user
 
 Tell the user:
+
 - HTML as a clickable `file://` URL (e.g. `file:///tmp/2026-07-26-explanation-slug.html`) — most terminals and IDEs render these as links that open in the browser
 - PR URL with the comment now attached

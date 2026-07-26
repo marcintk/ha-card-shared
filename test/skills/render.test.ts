@@ -1,8 +1,16 @@
 import { execSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
+type Spec = {
+  title: string;
+  slug: string;
+  subtitle?: string;
+  sections: { id: string; heading: string; html: string; md?: string }[];
+  quiz: { question: string; options: { text: string; correct: boolean }[] }[];
+};
 
 const script = resolve(process.cwd(), "skills/explain-diff-gfm/scripts/render.py");
 
@@ -31,7 +39,7 @@ afterEach(() => {
   rmSync(tmp, { recursive: true });
 });
 
-function specFile(spec = MINIMAL_SPEC): string {
+function specFile(spec: Spec = MINIMAL_SPEC): string {
   const path = join(tmp, "spec.json");
   writeFileSync(path, JSON.stringify(spec));
   return path;
@@ -76,7 +84,9 @@ describe("render_html", () => {
   });
 
   it("escapes HTML in title", () => {
-    const output = render(`${specFile({ ...MINIMAL_SPEC, title: "<script>xss</script>" })} --format html`);
+    const output = render(
+      `${specFile({ ...MINIMAL_SPEC, title: "<script>xss</script>" })} --format html`
+    );
     expect(output).not.toContain("<script>xss</script>");
     expect(output).toContain("&lt;script&gt;");
   });
@@ -194,12 +204,9 @@ describe("output path", () => {
 
   it("writes to default /tmp path when -o omitted", () => {
     const today = new Date().toISOString().slice(0, 10);
-    const stdout = execSync(
-      `python3 ${script} ${specFile()} --format gfm`,
-      { encoding: "utf8" },
-    ).trim();
-    expect(stdout).toMatch(
-      new RegExp(`^/tmp/${today}-explanation-test-change\\.md$`),
-    );
+    const stdout = execSync(`python3 ${script} ${specFile()} --format gfm`, {
+      encoding: "utf8",
+    }).trim();
+    expect(stdout).toMatch(new RegExp(`^/tmp/${today}-explanation-test-change\\.md$`));
   });
 });

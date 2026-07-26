@@ -41,6 +41,7 @@ Every project must have:
 ## Workflow
 
 **Each phase is a checklist.** Work its boxes top to bottom, one at a time:
+
 1. Print the box as `- [ ] …` before starting it.
 2. Execute the step.
 3. Print the box as `- [x] …` once done.

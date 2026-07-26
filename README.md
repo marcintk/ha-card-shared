@@ -51,8 +51,8 @@ Use each export by extending or referencing it from the matching consumer file:
 
 `scripts/setup-claude.js` runs automatically as a `postinstall` hook when consumers install
 ha-card-shared. It merges the required SessionStart hook into the consumer's
-`.claude/settings.json`, creating the file if it doesn't exist. No manual setup needed — running
-`npm install` keeps it current.
+`.claude/settings.json` and symlinks the bundled skills (e.g. `explain-diff-gfm`) into
+`.claude/skills/`. No manual setup needed — running `npm install` keeps everything current.
 
 ## Git hooks
 
@@ -120,10 +120,8 @@ tag is a valid semver strictly greater than the previous release and publishes a
 (pre-release tags like `vX.Y.Z-beta.1` publish as GitHub pre-releases).
 
 ```bash
-npm version patch --no-git-tag-version   # patch | minor | major — see table below
-VER=$(node -p "require('./package.json').version")
-git commit -am "chore: bump version to ${VER}"
-git tag "v${VER}" && git push origin main "v${VER}"
+npm version patch|minor|major   # commits package.json + creates local tag
+git push --follow-tags
 ```
 
 | Change                                           | Bump    |

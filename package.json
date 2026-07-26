@@ -15,6 +15,7 @@
     "README.md",
     "recipes/",
     "scripts/",
+    "skills/",
     ".githooks/"
   ],
   "exports": {

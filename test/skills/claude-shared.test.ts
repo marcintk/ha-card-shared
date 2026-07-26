@@ -10,18 +10,14 @@ const pkg = JSON.parse(readFileSync(`${root}/package.json`, "utf8")) as {
 
 describe("CLAUDE-SHARED.md", () => {
   it("has all 5 phases in order", () => {
-    const phases = [...doc.matchAll(/^### Phase (\d+)/gm)].map((m) =>
-      Number(m[1]),
-    );
+    const phases = [...doc.matchAll(/^### Phase (\d+)/gm)].map((m) => Number(m[1]));
     expect(phases).toEqual([1, 2, 3, 4, 5]);
   });
 
   it("all npm run commands exist in package.json", () => {
     const commands = [...doc.matchAll(/`npm run ([\w:]+)`/g)].map((m) => m[1]);
     for (const cmd of new Set(commands)) {
-      expect(pkg.scripts, `npm run ${cmd} not in package.json`).toHaveProperty(
-        cmd,
-      );
+      expect(pkg.scripts, `npm run ${cmd} not in package.json`).toHaveProperty(cmd);
     }
   });
 
@@ -39,10 +35,7 @@ describe("CLAUDE-SHARED.md", () => {
   });
 
   it("explain-diff-gfm skill file exists in skills/", () => {
-    const skill = readFileSync(
-      `${root}/skills/explain-diff-gfm/SKILL.md`,
-      "utf8",
-    );
+    const skill = readFileSync(`${root}/skills/explain-diff-gfm/SKILL.md`, "utf8");
     expect(skill).toContain("explain-diff-gfm");
   });
 });

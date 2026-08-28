@@ -18,7 +18,7 @@ npm run format:md      # prettier for markdown files
 npm run check:ci       # CI gate: typecheck + biome check + prettier check
 ```
 
-> To change this workflow: edit `CLAUDE-SHARED.md` and/or `skills/fix-it`, `skills/feature-it`, `skills/ship-it`, `skills/explain-it` in `ha-card-shared`, iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.
+> To change this workflow: edit `CLAUDE-SHARED.md` and/or the pipeline files in `ha-card-shared` — `skills/{fix-it,feature-it,ship-it,improve-it,explain-it,pr-it,commit-it,brainstorm-it}`, `agents/`, `hooks/skill-guard.*` — iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.
 
 ## Making a change
 
@@ -27,8 +27,9 @@ Every change starts from a GH issue and runs through one of two skills — no th
 - **`/fix-it <issue#>`** — a bug fix. Reproduce, red test, minimal fix, one PR.
 - **`/feature-it <issue#>`** — everything else. Design + grill, red-green per slice, one PR or a small queue. Trivial changes still go through it — the steps just move fast.
 
-No issue number yet → file the issue first, then run the skill. The skill files own the full
-procedure; nothing here duplicates it.
+No issue number yet → file the issue first, then run the skill. If the idea is still fuzzy,
+run `brainstorm-it` on it first — it interviews you to a spec and drafts the issue. The skill
+files own the full procedure; nothing here duplicates it.
 
 Both pipelines maintain `SOLUTIONS.md` at the repo root — one greppable entry per shipped
 change that taught something reusable: symptom, root cause, the guardrail now preventing

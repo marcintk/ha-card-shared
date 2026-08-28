@@ -16,6 +16,8 @@
     "recipes/",
     "scripts/",
     "skills/",
+    "agents/",
+    "hooks/",
     ".githooks/"
   ],
   "exports": {

@@ -4,7 +4,7 @@ One HTML note per issue, owned by the `explain-it` skill (which `/fix-it` and `/
 call) and committed in that issue's PR. Two files per issue once it ships:
 
 - `issue-<n>-<slug>.html` — the design note (status `in progress` → `approved`)
-- `issue-<n>-explain-diff.html` — the `explain-diff-gfm` render, archived from the PR
+- `issue-<n>-explain-diff.html` — the explain-diff render (`explain-it finalize`), archived from the PR
 
 Both open automatically when the skill produces them. The table links point at **GitHub Pages**
 (`marcintk.github.io/ha-card-shared/…`), which serves the committed `.html` rendered — GitHub

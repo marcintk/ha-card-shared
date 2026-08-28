@@ -1,15 +1,17 @@
 ---
 name: explain-it
-description: Owns the design-note lifecycle under design-notes/ plus the SOLUTIONS.md log for the fix-it and feature-it pipelines — create the note, update it per slice, finalize it with the explain-diff-gfm render and the README row, compound the transferable learning into SOLUTIONS.md. Those skills call it; run it directly as `explain-it <phase> <n> <slug>` to redo a phase.
+description: Owns the design-note lifecycle under design-notes/ plus the SOLUTIONS.md log for the fix-it and feature-it pipelines — create the note, update it per slice, compound the transferable learning, finalize it with the explain-diff render and the README row. Those skills call it; run it directly as `explain-it <phase> <n> <slug>` to redo a phase.
 ---
 
 # Explain-It
+
+**Invocation:** AI (a sub-skill).
 
 Single owner of `design-notes/` and `SOLUTIONS.md`. `/fix-it` and `/feature-it` call this at four
 points instead of carrying the capture logic themselves. One design note per issue, committed in
 that issue's PR.
 
-Phases: `start`, `slice`, `finalize`, `compound`. Args: `<n>` issue number, `<slug>` kebab issue
+Phases: `start`, `slice`, `compound`, `finalize`. Args: `<n>` issue number, `<slug>` kebab issue
 slug.
 
 ## start `<n> <slug>`
@@ -52,8 +54,11 @@ greppable "if you see X, the cause was Y, and Z now guards it" line for the next
    <!-- ponytail: single file; split by area if it outgrows one screen-scroll -->
    ```
 
-3. **Prepend** one entry directly under the header, synthesised from the design note and the
-   accepted diff:
+3. **Dedupe first:** grep `SOLUTIONS.md` for an existing entry on this problem class. Found →
+   update that entry in place (sharpen the root cause, add the new guardrail, refresh the
+   `Ref`). Do not append a twin.
+4. Otherwise **prepend** one entry directly under the header, synthesised from the design note
+   and the accepted diff:
 
    ```markdown
    ## <symptom / problem class — what someone would grep for>
@@ -68,9 +73,28 @@ greppable "if you see X, the cause was Y, and Z now guards it" line for the next
 ## finalize `<n> <slug>`
 
 1. Status badge → `approved` (edit the file). `xdg-open` it again (guarded).
-2. Run `explain-diff-gfm`. Render the HTML to `design-notes/issue-<n>-explain-diff.html`
-   (`render.py -o …`) so it ships in the PR diff. `xdg-open` it (guarded).
+2. Render the explain-diff (both formats) with the bundled renderer:
+   1. Gather the diff — `git diff main...HEAD`, `git log main...HEAD --oneline`.
+   2. Write a JSON content spec to `/tmp/explain-spec.json`:
+      - `title`, `subtitle` (`Prepared YYYY-MM-DD · PR #NNN`), `slug` (kebab).
+      - `sections[]` — **background** (deep context for beginners + narrow context for this
+        change), **intuition** (the essence, concrete toy-data examples, figures),
+        **code** (high-level tour, grouped sensibly). Each section has both `html` (rich, may
+        use `.diagram`/`.flow`/`.box`/`.callout` classes — no ASCII diagrams) and `md`
+        (markdown only, no raw HTML — GitHub strips it; fenced code + tables OK).
+      - `quiz[]` — five medium-difficulty questions, exactly 4 options each, exactly 1
+        `correct`. Not gotchas — checks real understanding.
+      - Prose in the clear, flowing style of Martin Kleppmann.
+   3. Render:
+      ```bash
+      python skills/explain-it/scripts/render.py /tmp/explain-spec.json \
+        -o design-notes/issue-<n>-explain-diff.html
+      python skills/explain-it/scripts/render.py /tmp/explain-spec.json --format gfm \
+        -o /tmp/issue-<n>-explain-diff.md
+      ```
+      The HTML ships in the PR diff; the `.md` is the GFM string returned below. `xdg-open` the
+      HTML (guarded).
 3. Update the `design-notes/README.md` row: fill the **Explain-diff** link (same
    `marcintk.github.io/ha-card-shared/design-notes/` path for `issue-<n>-explain-diff.html`), set
    status `approved`, add the PR link.
-4. Return the GFM output to the caller for `gh pr comment`.
+4. Return the GFM output (`/tmp/issue-<n>-explain-diff.md`) to the caller for `gh pr comment`.

@@ -12,7 +12,7 @@ type Spec = {
   quiz: { question: string; options: { text: string; correct: boolean }[] }[];
 };
 
-const script = resolve(process.cwd(), "skills/explain-diff-gfm/scripts/render.py");
+const script = resolve(process.cwd(), "skills/explain-it/scripts/render.py");
 
 const MINIMAL_SPEC = {
   title: "Test Change",

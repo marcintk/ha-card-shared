@@ -2,7 +2,7 @@
 """
 render.py — render a structured explain-diff spec into HTML or GitHub Flavored Markdown.
 
-Used by the `explain-diff-gfm` skill. Separates boilerplate (CSS, JS, page scaffolding)
+Used by the explain-it skill (finalize phase). Separates boilerplate (CSS, JS, page scaffolding)
 from content so Claude only writes the small JSON spec.
 
 Usage:

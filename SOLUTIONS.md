@@ -17,8 +17,20 @@ the by-symptom index.
 ## Workflow relied on checklist discipline, not enforcement
 
 - **Root cause:** the procedure lived in `CLAUDE-SHARED.md` as prose — nothing stopped a direct
-  commit to `main`, a non-draft release, or a run without tdd-guard.
+  commit to `main`, a non-draft release, or a run that skipped a step.
 - **Guardrail:** `pre-commit` blocks commits to `main`; release workflows always create the
-  GitHub Release as a draft; `setup-claude.js` warns on missing tdd-guard and symlinks every
-  bundled skill; the pipelines moved into `disable-model-invocation` skill files.
+  GitHub Release as a draft; the pipelines moved into `disable-model-invocation` skill files;
+  the `skill-guard` hook (`hooks/skill-guard.*`) blocks operations outside the active skill's
+  or subagent role's remit (see below).
+- **Ref:** [#25](https://github.com/marcintk/ha-card-shared/issues/25) · 2026-08-28
+
+## Pipeline depended on third-party plugins a fresh consumer never had
+
+- **Root cause:** `/fix-it` etc. referenced `ponytail`, `caveman`, `tdd-guard` (marketplace
+  plugins) and `grilling`, `improve-codebase-architecture` (user-global skills) — none shipped
+  in the package, so a bare `npm install` gave a pipeline full of dangling commands.
+- **Guardrail:** every dependency vendored into `skills/` / `agents/` / `hooks/` or folded
+  into a built-in (`/code-review`, `/simplify`). `package.json` `files` ships `agents/` +
+  `hooks/`; `setup-claude.js` symlinks them and merges the `skill-guard` hooks. No marketplace
+  install step remains.
 - **Ref:** [#25](https://github.com/marcintk/ha-card-shared/issues/25) · 2026-08-28

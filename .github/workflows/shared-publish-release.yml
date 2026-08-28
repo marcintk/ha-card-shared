@@ -41,4 +41,5 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: dist/card.js
           generate_release_notes: true
+          draft: true # always a draft — a human publishes from the Releases UI after review
           prerelease: ${{ steps.tag.outputs.is_prerelease }}

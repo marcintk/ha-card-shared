@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -6,36 +6,102 @@ const root = resolve(process.cwd());
 const doc = readFileSync(`${root}/CLAUDE-SHARED.md`, "utf8");
 const pkg = JSON.parse(readFileSync(`${root}/package.json`, "utf8")) as {
   scripts: Record<string, string>;
+  files: string[];
 };
 
 describe("CLAUDE-SHARED.md", () => {
-  it("has all 5 phases in order", () => {
-    const phases = [...doc.matchAll(/^### Phase (\d+)/gm)].map((m) => Number(m[1]));
-    expect(phases).toEqual([1, 2, 3, 4, 5]);
-  });
-
-  it("all npm run commands exist in package.json", () => {
+  it("all npm run commands it names exist in package.json", () => {
     const commands = [...doc.matchAll(/`npm run ([\w:]+)`/g)].map((m) => m[1]);
     for (const cmd of new Set(commands)) {
       expect(pkg.scripts, `npm run ${cmd} not in package.json`).toHaveProperty(cmd);
     }
   });
 
-  it('phase 1 requires explicit "go ahead" before coding', () => {
-    expect(doc).toContain('"go ahead"');
+  it("routes every change through /fix-it or /feature-it, with no third path", () => {
+    expect(doc).toContain("/fix-it");
+    expect(doc).toContain("/feature-it");
+    expect(doc).toMatch(/no third path/i);
   });
 
-  it('phase 5 requires explicit "ship" or "release it" trigger', () => {
-    expect(doc).toContain('"ship"');
-    expect(doc).toContain('"release it"');
+  it("points at brainstorm-it for a fuzzy idea before the issue is filed", () => {
+    expect(doc).toContain("brainstorm-it");
   });
 
-  it("phase 5 pushes commit and tag together via --follow-tags", () => {
-    expect(doc).toContain("git push --follow-tags");
+  it("makes the pipelines maintain SOLUTIONS.md", () => {
+    expect(doc).toContain("SOLUTIONS.md");
   });
 
-  it("explain-diff-gfm skill file exists in skills/", () => {
-    const skill = readFileSync(`${root}/skills/explain-diff-gfm/SKILL.md`, "utf8");
-    expect(skill).toContain("explain-diff-gfm");
+  it("names the pipeline files under skills/, agents/, hooks/ as the change surface", () => {
+    expect(doc).toContain("skills/");
+    expect(doc).toContain("agents/");
+    expect(doc).toContain("hooks/skill-guard");
+  });
+});
+
+describe("skill set", () => {
+  const skills = [
+    "fix-it",
+    "feature-it",
+    "ship-it",
+    "improve-it",
+    "explain-it",
+    "pr-it",
+    "commit-it",
+    "brainstorm-it",
+  ];
+
+  it.each(skills)("skills/%s/SKILL.md exists", (name) => {
+    expect(existsSync(`${root}/skills/${name}/SKILL.md`)).toBe(true);
+  });
+
+  it("the retired explain-diff-gfm skill is gone", () => {
+    expect(existsSync(`${root}/skills/explain-diff-gfm`)).toBe(false);
+  });
+
+  it("the explain-diff renderer moved under explain-it", () => {
+    expect(existsSync(`${root}/skills/explain-it/scripts/render.py`)).toBe(true);
+  });
+
+  it("human-triggered pipelines are disable-model-invocation, sub-skills are not", () => {
+    const human = ["fix-it", "feature-it", "ship-it", "improve-it"];
+    const ai = ["explain-it", "pr-it", "commit-it", "brainstorm-it"];
+    for (const n of human) {
+      expect(readFileSync(`${root}/skills/${n}/SKILL.md`, "utf8")).toContain(
+        "disable-model-invocation: true"
+      );
+    }
+    for (const n of ai) {
+      expect(readFileSync(`${root}/skills/${n}/SKILL.md`, "utf8")).not.toContain(
+        "disable-model-invocation"
+      );
+    }
+  });
+});
+
+describe("skill-guard", () => {
+  const agents = [
+    "pipeline-coder",
+    "pipeline-test-writer",
+    "pipeline-reviewer",
+    "pipeline-explore",
+  ];
+
+  it.each(agents)("agents/%s.md exists", (name) => {
+    expect(existsSync(`${root}/agents/${name}.md`)).toBe(true);
+  });
+
+  it("ships hooks/ and agents/ in the npm package", () => {
+    expect(pkg.files).toContain("hooks/");
+    expect(pkg.files).toContain("agents/");
+  });
+
+  it("the policy names every guarded skill and role", () => {
+    const policy = JSON.parse(readFileSync(`${root}/hooks/skill-guard.json`, "utf8")) as {
+      skills: Record<string, unknown>;
+      roles: Record<string, unknown>;
+    };
+    expect(Object.keys(policy.roles).sort()).toEqual(agents.slice().sort());
+    expect(policy.skills).toHaveProperty("brainstorm-it");
+    expect(policy.skills).toHaveProperty("pr-it");
   });
 });

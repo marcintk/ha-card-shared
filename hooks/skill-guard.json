@@ -1,0 +1,45 @@
+{
+  "settings": { "stale_seconds": 1800 },
+  "skills": {
+    "brainstorm-it": {
+      "deny_bash": ["^\\s*git\\s+(commit|push)\\b", "^\\s*gh\\s+pr\\s+(create|merge)\\b"],
+      "reason": "brainstorm-it plans and drafts issues; it never commits or ships."
+    },
+    "explain-it": {
+      "deny_write": ["^src/", "^test/"],
+      "reason": "explain-it owns design-notes/ and SOLUTIONS.md, not source or tests."
+    },
+    "improve-it": {
+      "deny_write": ["^src/", "^test/"],
+      "reason": "improve-it produces a markdown report, not code."
+    },
+    "pr-it": {
+      "deny_write": ["^src/", "^test/"],
+      "reason": "pr-it ships what is already committed; it does not edit source or tests."
+    }
+  },
+  "roles": {
+    "pipeline-explore": {
+      "deny_write": ["."],
+      "deny_bash": [
+        "^\\s*git\\s+(commit|push|checkout|switch|merge|rebase|reset)\\b",
+        "^\\s*gh\\s+pr\\s+(create|merge|close)\\b"
+      ],
+      "reason": "reproduce / prior-art scan is read-only."
+    },
+    "pipeline-test-writer": {
+      "deny_write": ["^src/"],
+      "reason": "the failing-test step writes tests, never implementation."
+    },
+    "pipeline-coder": {
+      "deny_write": ["^test/", "\\.test\\.ts$"],
+      "tdd": true,
+      "reason": "coder changes implementation; the slice's tests are frozen, and no src/ write until a test is red."
+    },
+    "pipeline-reviewer": {
+      "deny_write": ["."],
+      "deny_bash": ["^\\s*git\\s", "^\\s*gh\\s"],
+      "reason": "review is read-only."
+    }
+  }
+}

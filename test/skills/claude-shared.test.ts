@@ -27,8 +27,8 @@ describe("CLAUDE-SHARED.md", () => {
     expect(doc).toContain("brainstorm-it");
   });
 
-  it("makes the pipelines maintain SOLUTIONS.md", () => {
-    expect(doc).toContain("SOLUTIONS.md");
+  it("makes the pipelines maintain LESSONS.md", () => {
+    expect(doc).toContain("LESSONS.md");
   });
 
   it("names the pipeline files under skills/, agents/, hooks/ as the change surface", () => {

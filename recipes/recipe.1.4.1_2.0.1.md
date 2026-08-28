@@ -1,4 +1,4 @@
-# Migrate ha-card-shared 1.4.1 → 2.0.0
+# Migrate ha-card-shared 1.4.1 → 2.0.1
 
 **What changed:** the Claude Code skill harness is now fully self-contained. Marketplace
 plugins (`ponytail`, `caveman`, `tdd-guard`) and user-global skills (`grilling`,
@@ -12,11 +12,11 @@ steps below. If you never open Claude Code in this repo, only step 1 matters.
 
 ## 1. Bump the pins
 
-Bump both the npm dep and the workflow refs to `v2.0.0`, same as any release:
+Bump both the npm dep and the workflow refs to `v2.0.1`, same as any release:
 
 ```bash
-# package.json:  "ha-card-shared": "github:marcintk/ha-card-shared#v2.0.0"
-# .github/workflows/*.yml:  uses: marcintk/ha-card-shared/.github/workflows/*.yml@v2.0.0
+# package.json:  "ha-card-shared": "github:marcintk/ha-card-shared#v2.0.1"
+# .github/workflows/*.yml:  uses: marcintk/ha-card-shared/.github/workflows/*.yml@v2.0.1
 npm install
 ```
 
@@ -92,7 +92,7 @@ echo '{}' | node node_modules/ha-card-shared/hooks/skill-guard.mjs check ; echo 
   `commit-it`; the commit→push→PR→merge tail runs through `pr-it`.
 - **`/ship-it`** — step 2 is `/code-review` repo-wide (was `/ponytail-audit`); step 4 runs
   `/improve-it` (was `/improve-codebase-architecture`).
-- **`SOLUTIONS.md`** at the repo root — the pipelines create and maintain it (a committed
+- **`LESSONS.md`** at the repo root — the pipelines create and maintain it (a committed
   by-symptom log of root cause + guardrail). Consulted before new work.
 - **`brainstorm-it`** replaces `grilling`, and also drafts an issue from a raw idea.
 - **Escape hatch:** `SKILL_GUARD_OFF=1` in the environment disables the guard entirely if it

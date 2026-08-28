@@ -26,7 +26,7 @@ idea). Don't create it for them.
 
 1. **[HUMAN input]** Read the issue: `gh issue view <n> --json title,body,comments`. This is the
    input.
-2. **[SUBAGENT: `pipeline-explore`]** 1–3 in parallel if scope is uncertain — grep `SOLUTIONS.md`
+2. **[SUBAGENT: `pipeline-explore`]** 1–3 in parallel if scope is uncertain — grep `LESSONS.md`
    for the problem class, plus prior art and reusable patterns already in this repo. Skip
    outright for a genuinely trivial change (a typo, a version bump) — nothing to research.
 3. **[HUMAN]** Design + grill (`brainstorm-it` skill) — approach, files touched, trade-offs,
@@ -48,7 +48,7 @@ idea). Don't create it for them.
    stop, `/rewind` to step 3, re-open the design instead of a fourth patch.
 10. On accept: **[SKILL: explain-it]** run `explain-it compound <n> <slug>` per PR — append the
     transferable learning (the problem class, what the approach turned on, the guardrail now in
-    place) to `SOLUTIONS.md`, or tell it there's nothing to compound. Ships in that PR's diff.
+    place) to `LESSONS.md`, or tell it there's nothing to compound. Ships in that PR's diff.
 11. **[SKILL: explain-it]** run `explain-it finalize <n> <slug>` per PR — it sets the note to
     `approved`, renders `design-notes/issue-<n>-explain-diff.html`, updates the README row, and
     returns the GFM output. Then **[SKILL: pr-it]** run `pr-it open <n> <slug>` with that GFM —

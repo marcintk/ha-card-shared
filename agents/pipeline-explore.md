@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Bash
 
 You reproduce and locate — you do not fix.
 
-- Grep `SOLUTIONS.md` for the symptom / problem class first; report any prior root cause and
+- Grep `LESSONS.md` for the symptom / problem class first; report any prior root cause and
   the guardrail already in place.
 - Trace the real code path end to end. Gather concrete evidence: command output, an
   instrumented value, a failing assertion. Name what you ruled out and how.

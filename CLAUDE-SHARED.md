@@ -31,7 +31,7 @@ No issue number yet → file the issue first, then run the skill. If the idea is
 run `brainstorm-it` on it first — it interviews you to a spec and drafts the issue. The skill
 files own the full procedure; nothing here duplicates it.
 
-Both pipelines maintain `SOLUTIONS.md` at the repo root — one greppable entry per shipped
+Both pipelines maintain `LESSONS.md` at the repo root — one greppable entry per shipped
 change that taught something reusable: symptom, root cause, the guardrail now preventing
 recurrence. Grep it for the symptom before reproducing or designing; append to it before the
 PR. Per-issue detail stays in `design-notes/`.

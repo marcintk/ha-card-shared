@@ -1,4 +1,4 @@
-# Solutions log
+# Lessons log
 
 Root cause + guardrail per shipped change, newest first. Consulted before new work —
 grep the symptom before reproducing. Per-issue detail lives in `design-notes/`; this is

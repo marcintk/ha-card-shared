@@ -24,7 +24,7 @@ changed, why it matters, the risk if wrong — before asking, not a status recap
 2. Run `/code-review` over the repo (or `/simplify` on `main`) for a repo-wide correctness +
    over-engineering pass. Any finding → fix through `/fix-it` or `/feature-it`, merge, then
    re-run. Only continue once it comes back clean.
-3. Skim `SOLUTIONS.md`: drop any entry whose named guardrail no longer exists, merge any
+3. Skim `LESSONS.md`: drop any entry whose named guardrail no longer exists, merge any
    duplicates that slipped past `explain-it compound`'s dedupe. ~2 minutes, human eyes.
 4. **[HUMAN]** Run `/improve-it` (it is `disable-model-invocation: true` — the human runs it).
    Any deepening opportunity you accept → its own `/feature-it` run, merge, then re-run from

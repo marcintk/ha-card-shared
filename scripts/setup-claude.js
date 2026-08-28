@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync, symlinkSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, symlinkSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -6,7 +6,7 @@ const MARKER = 'ha-card-shared: checking required plugins';
 const MATCHER = 'startup|resume|clear|compact';
 const HOOK = {
   type: 'command',
-  command: 'missing=""; [ -f ~/.claude/.ponytail-active ] || missing="ponytail "; grep -q caveman ~/.claude/settings.json 2>/dev/null || missing="${missing}caveman "; [ -n "$missing" ] && echo "⚠️  Missing required plugins: ${missing}— install per ha-card-shared README" || true',
+  command: 'missing=""; [ -f ~/.claude/.ponytail-active ] || missing="ponytail "; grep -q caveman ~/.claude/settings.json 2>/dev/null || missing="${missing}caveman "; grep -q tdd-guard ~/.claude/settings.json 2>/dev/null || missing="${missing}tdd-guard "; [ -n "$missing" ] && echo "⚠️  Missing required plugins: ${missing}— install per ha-card-shared README" || true',
   timeout: 5,
   statusMessage: MARKER,
 };
@@ -41,10 +41,14 @@ function mergeSessionStartHook() {
 function symlinkSkills() {
   const skillsDir = join(claudeDir, 'skills');
   mkdirSync(skillsDir, { recursive: true });
-  try {
-    symlinkSync(join(sharedRoot, 'skills', 'explain-diff-gfm'), join(skillsDir, 'explain-diff-gfm'));
-  } catch (e) {
-    if (e.code !== 'EEXIST') throw e;
+  const sourceSkillsDir = join(sharedRoot, 'skills');
+  for (const name of readdirSync(sourceSkillsDir, { withFileTypes: true })) {
+    if (!name.isDirectory()) continue;
+    try {
+      symlinkSync(join(sourceSkillsDir, name.name), join(skillsDir, name.name));
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+    }
   }
 }
 

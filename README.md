@@ -18,13 +18,18 @@ The exported configs expect these tools installed in the consumer (declared as p
 
 ### Claude Code plugins
 
-Required by the shared workflow (see `CLAUDE-SHARED.md`). A SessionStart hook warns when either is
-missing.
+Required by the `/fix-it`, `/feature-it`, and `/ship-it` skills. A SessionStart hook warns when
+any is missing.
 
 ```bash
 claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail
 claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman
+claude plugin marketplace add nizos/tdd-guard && claude plugin install tdd-guard@tdd-guard
 ```
+
+Then run `/tdd-guard:setup` once inside Claude Code (test runner: Vitest) — it blocks
+implementation edits before a failing test exists, the mechanical layer the `/fix-it` and
+`/feature-it` skills rely on instead of checklist discipline.
 
 Recommended: **Serena** (MCP symbol search + diagnostics), **RTK** (token proxy via hooks).
 
@@ -53,6 +58,15 @@ Use each export by extending or referencing it from the matching consumer file:
 ha-card-shared. It merges the required SessionStart hook into the consumer's
 `.claude/settings.json` and symlinks the bundled skills (e.g. `explain-diff-gfm`) into
 `.claude/skills/`. No manual setup needed — running `npm install` keeps everything current.
+
+## Required files
+
+Every consumer project must have:
+
+- **`README.md`** — card purpose, configuration, usage.
+- **`test/snapshot.test.ts`** — all `toMatchSnapshot()` calls live here and nowhere else. Use `snapHtml` from `ha-card-shared/test-utils` to normalize Lit marker IDs before snapshotting HTML.
+- **`.claude/settings.json`** — managed by ha-card-shared's `postinstall` above; no manual setup needed.
+- **`CLAUDE.md`** — `@node_modules/ha-card-shared/CLAUDE-SHARED.md` on line 1, then `## Design Invariants` and `## Architecture Notes` sections with card-specific content.
 
 ## Git hooks
 

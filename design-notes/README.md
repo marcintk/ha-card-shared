@@ -6,10 +6,11 @@ call) and committed in that issue's PR. Two files per issue once it ships:
 - `issue-<n>-<slug>.html` — the design note (status `in progress` → `approved`)
 - `issue-<n>-explain-diff.html` — the `explain-diff-gfm` render, archived from the PR
 
-Both open automatically when the skill produces them. The links in the table go through
-`raw.githack.com`, which serves the committed HTML **rendered** — GitHub itself shows a linked
-`.html` file as source, not a page.
+Both open automatically when the skill produces them. The table links point at **GitHub Pages**
+(`marcintk.github.io/ha-card-shared/…`), which serves the committed `.html` rendered — GitHub
+itself shows a linked `.html` file as source, not a page. Pages is set to deploy from `main` at
+the repo root; `.nojekyll` makes it serve the files as-is.
 
-| Issue                                                       | Note                                                                                                                          | Explain-diff | Status      | PR  |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------- | --- |
-| [#25](https://github.com/marcintk/ha-card-shared/issues/25) | [workflow-enforcement-gaps](https://raw.githack.com/marcintk/ha-card-shared/main/design-notes/issue-25-workflow-enforcement-gaps.html) | —            | in progress | —   |
+| Issue                                                       | Note                                                                                                            | Explain-diff | Status      | PR  |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------ | ----------- | --- |
+| [#25](https://github.com/marcintk/ha-card-shared/issues/25) | [workflow-enforcement-gaps](https://marcintk.github.io/ha-card-shared/design-notes/issue-25-workflow-enforcement-gaps.html) | —            | in progress | —   |

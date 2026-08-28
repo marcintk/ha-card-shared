@@ -19,9 +19,9 @@ Phases: `start`, `slice`, `finalize`. Args: `<n>` issue number, `<slug>` kebab i
      feature/chore/docs change, the approach from the grill.
    - Status badge: `in progress`.
 3. Add a row to `design-notes/README.md`: issue link; a **Note** link to
-   `https://raw.githack.com/marcintk/ha-card-shared/main/design-notes/issue-<n>-<slug>.html`
-   (renders in the browser — a plain repo link shows `.html` as source); **Explain-diff** `—`;
-   status `in progress`; PR `—`.
+   `https://marcintk.github.io/ha-card-shared/design-notes/issue-<n>-<slug>.html` (GitHub Pages —
+   renders in the browser; a plain repo link shows `.html` as source); **Explain-diff** `—`;
+   status `in progress`; PR `—`. The Pages link is live only after the PR merges to `main`.
 4. `xdg-open design-notes/issue-<n>-<slug>.html 2>/dev/null || true` — always open on first draft.
 
 ## slice `<n> <slug>`
@@ -35,6 +35,6 @@ slice; `/fix-it` has a single fix and skips it.
 2. Run `explain-diff-gfm`. Render the HTML to `design-notes/issue-<n>-explain-diff.html`
    (`render.py -o …`) so it ships in the PR diff. `xdg-open` it (guarded).
 3. Update the `design-notes/README.md` row: fill the **Explain-diff** link (same
-   `raw.githack.com/.../main/design-notes/` path for `issue-<n>-explain-diff.html`), set status
-   `approved`, add the PR link.
+   `marcintk.github.io/ha-card-shared/design-notes/` path for `issue-<n>-explain-diff.html`), set
+   status `approved`, add the PR link.
 4. Return the GFM output to the caller for `gh pr comment`.

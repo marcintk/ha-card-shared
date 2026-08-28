@@ -1,14 +1,16 @@
 ---
 name: explain-it
-description: Owns the design-note lifecycle under design-notes/ for the fix-it and feature-it pipelines — create the note, update it per slice, finalize it with the explain-diff-gfm render and the README row. Those skills call it; run it directly as `explain-it <phase> <n> <slug>` to redo a phase.
+description: Owns the design-note lifecycle under design-notes/ plus the SOLUTIONS.md log for the fix-it and feature-it pipelines — create the note, update it per slice, finalize it with the explain-diff-gfm render and the README row, compound the transferable learning into SOLUTIONS.md. Those skills call it; run it directly as `explain-it <phase> <n> <slug>` to redo a phase.
 ---
 
 # Explain-It
 
-Single owner of `design-notes/`. `/fix-it` and `/feature-it` call this at three points instead of
-carrying the note logic themselves. One design note per issue, committed in that issue's PR.
+Single owner of `design-notes/` and `SOLUTIONS.md`. `/fix-it` and `/feature-it` call this at four
+points instead of carrying the capture logic themselves. One design note per issue, committed in
+that issue's PR.
 
-Phases: `start`, `slice`, `finalize`. Args: `<n>` issue number, `<slug>` kebab issue slug.
+Phases: `start`, `slice`, `finalize`, `compound`. Args: `<n>` issue number, `<slug>` kebab issue
+slug.
 
 ## start `<n> <slug>`
 
@@ -28,6 +30,40 @@ Phases: `start`, `slice`, `finalize`. Args: `<n>` issue number, `<slug>` kebab i
 
 Edit the note with what the last vertical slice changed. `/feature-it` calls this after each
 slice; `/fix-it` has a single fix and skips it.
+
+## compound `<n> <slug>`
+
+Runs after the fix/feature is accepted, before `finalize` — so the entry ships in the same PR.
+Append the transferable learning to `SOLUTIONS.md` (repo root), the by-symptom log consulted
+before new work. Distinct from the design note: the note is per-issue detail, this is one
+greppable "if you see X, the cause was Y, and Z now guards it" line for the next run.
+
+1. If the caller says there is nothing to compound — a typo, a version bump, anything that
+   taught nothing reusable — no-op and return. Not every run earns an entry.
+2. If `SOLUTIONS.md` is absent, create it with this header:
+
+   ```markdown
+   # Solutions log
+
+   Root cause + guardrail per shipped change, newest first. Consulted before new work —
+   grep the symptom before reproducing. Per-issue detail lives in `design-notes/`; this is
+   the by-symptom index.
+
+   <!-- ponytail: single file; split by area if it outgrows one screen-scroll -->
+   ```
+
+3. **Prepend** one entry directly under the header, synthesised from the design note and the
+   accepted diff:
+
+   ```markdown
+   ## <symptom / problem class — what someone would grep for>
+
+   - **Root cause:** one line
+   - **Guardrail:** the test / rule / hook / doc that now prevents recurrence
+   - **Ref:** [#<n>](<issue url from `gh issue view <n> --json url -q .url`>) · <YYYY-MM-DD>
+   ```
+
+   Issue link only — the PR does not exist yet at this phase and is reachable from the issue.
 
 ## finalize `<n> <slug>`
 

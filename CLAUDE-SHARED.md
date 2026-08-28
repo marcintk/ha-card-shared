@@ -29,3 +29,8 @@ Every change starts from a GH issue and runs through one of two skills — no th
 
 No issue number yet → file the issue first, then run the skill. The skill files own the full
 procedure; nothing here duplicates it.
+
+Both pipelines maintain `SOLUTIONS.md` at the repo root — one greppable entry per shipped
+change that taught something reusable: symptom, root cause, the guardrail now preventing
+recurrence. Grep it for the symptom before reproducing or designing; append to it before the
+PR. Per-issue detail stays in `design-notes/`.

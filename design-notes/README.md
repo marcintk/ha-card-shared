@@ -11,6 +11,6 @@ Both open automatically when the skill produces them. The table links point at *
 itself shows a linked `.html` file as source, not a page. Pages is set to deploy from `main` at
 the repo root; `.nojekyll` makes it serve the files as-is.
 
-| Issue                                                       | Note                                                                                                            | Explain-diff | Status      | PR  |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------ | ----------- | --- |
+| Issue                                                       | Note                                                                                                                        | Explain-diff | Status      | PR  |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------- | --- |
 | [#25](https://github.com/marcintk/ha-card-shared/issues/25) | [workflow-enforcement-gaps](https://marcintk.github.io/ha-card-shared/design-notes/issue-25-workflow-enforcement-gaps.html) | —            | in progress | —   |

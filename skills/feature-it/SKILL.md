@@ -23,9 +23,9 @@ filed yet → stop, tell the user to file the issue first. Don't create it for t
 
 1. **[HUMAN input]** Read the issue: `gh issue view <n> --json title,body,comments`. This is the
    input.
-2. **[SUBAGENT: Explore]** 1–3 in parallel if scope is uncertain — prior art and reusable patterns
-   already in this repo. Skip outright for a genuinely trivial change (a typo, a version bump) —
-   nothing to research.
+2. **[SUBAGENT: Explore]** 1–3 in parallel if scope is uncertain — grep `SOLUTIONS.md` for the
+   problem class, plus prior art and reusable patterns already in this repo. Skip outright for a
+   genuinely trivial change (a typo, a version bump) — nothing to research.
 3. **[HUMAN]** Design + grill (`grilling` skill) — approach, files touched, trade-offs, every open
    question closed. One concern per PR — extras become a separate GH issue. For a trivial change
    this is one or two lines, not a proposal; it still happens, just short.
@@ -41,13 +41,16 @@ filed yet → stop, tell the user to file the issue first. Don't create it for t
 8. **[SUBAGENT: reviewer]** `/ponytail-review` + `/code-review`.
 9. **[HUMAN]** Accept, or grill and loop back to step 6, same slice. Third loop on one slice →
    stop, `/rewind` to step 3, re-open the design instead of a fourth patch.
-10. On accept: **[SKILL: explain-it]** run `explain-it finalize <n> <slug>` per PR — it sets the
+10. On accept: **[SKILL: explain-it]** run `explain-it compound <n> <slug>` per PR — append the
+    transferable learning (the problem class, what the approach turned on, the guardrail now in
+    place) to `SOLUTIONS.md`, or tell it there's nothing to compound. Ships in that PR's diff.
+11. **[SKILL: explain-it]** run `explain-it finalize <n> <slug>` per PR — it sets the
     note to `approved`, renders `design-notes/issue-<n>-explain-diff.html`, updates the README row,
     and returns the GFM output. Then commit (`/caveman-commit`, loop until pre-commit passes),
     push, `gh pr create` — one per independently-mergeable piece if step 3's design forked,
     entering a **PR queue** rather than a single branch. `gh pr comment` with the returned GFM per
     PR. Issue body overwritten with the final snapshot.
-11. **[HUMAN]** Wait for "merge it" per PR in the queue. Confirm the explain-diff HTML was
+12. **[HUMAN]** Wait for "merge it" per PR in the queue. Confirm the explain-diff HTML was
     reviewed, then `gh run watch` → `gh pr merge --squash --delete-branch` →
     `git checkout main && git pull`.
 

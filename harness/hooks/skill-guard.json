@@ -4,20 +4,24 @@
     "design": {
       "deny_write": ["^src/", "^test/"],
       "deny_bash": [
-        "git\\s+commit\\b",
-        "git\\s+push\\b",
-        "gh\\s+pr\\s+(create|merge)\\b",
-        "npm\\s+version\\b"
+        "git\\s+commit(?:\\s|$)",
+        "git\\s+push(?:\\s|$)",
+        "gh\\s+pr\\s+(?:create|merge)(?:\\s|$)",
+        "npm\\s+version(?:\\s|$)"
       ],
       "reason": "design produces the note and the plan; no code, no commit, before the go-ahead gate."
     },
     "code": {
-      "deny_bash": ["git\\s+push\\b", "gh\\s+pr\\s+(create|merge)\\b", "npm\\s+version\\b"],
+      "deny_bash": [
+        "git\\s+push(?:\\s|$)",
+        "gh\\s+pr\\s+(?:create|merge)(?:\\s|$)",
+        "npm\\s+version(?:\\s|$)"
+      ],
       "reason": "code implements and commits slices locally; shipping is a separate phase."
     },
     "ship": {
       "deny_write": ["^src/", "^test/"],
-      "deny_bash": ["npm\\s+version\\b"],
+      "deny_bash": ["npm\\s+version(?:\\s|$)"],
       "reason": "ship commits, pushes and opens the PR; it doesn't edit source or tests."
     },
     "release": {
@@ -29,8 +33,8 @@
     "explorer": {
       "deny_write": ["."],
       "deny_bash": [
-        "git\\s+(commit|push|checkout|switch|merge|rebase|reset)\\b",
-        "gh\\s+pr\\s+(create|merge|close)\\b"
+        "git\\s+(?:commit|push|checkout|switch|merge|rebase|reset)(?:\\s|$)",
+        "gh\\s+pr\\s+(?:create|merge|close)(?:\\s|$)"
       ],
       "reason": "reproduce / prior-art scan is read-only."
     },

@@ -17,18 +17,18 @@ what changed, why it matters, the risk if wrong — before asking, not a status 
 
 ## Steps
 
-1. `node harness/hooks/skill-guard.mjs phase code`.
+1. `node .claude/hooks/skill-guard.mjs phase code`.
 2. Read the note's declared slices and re-grep `LESSONS.md` for the problem class — a fresh
    context (a resumed session) gets the same guardrail check `/design-it` already did once.
 3. Branch, if not already on one: `git checkout -b <type>/<slug>`.
 4. Per slice, in order:
    1. **[SUBAGENT: `test-writer`]** Given only the seam and expected behavior from the
       note — not the design reasoning — writes one test. Confirm it fails for the right reason.
-   2. `node harness/hooks/skill-guard.mjs red <test-file>`.
+   2. `node .claude/hooks/skill-guard.mjs red <test-file>`.
    3. **[SUBAGENT: `code-writer`]** Implements the minimal fix. The guard blocks any `src/`
       write until step 2's marker is set, and blocks edits to the test itself.
    4. Run the suite. Confirm the target test is green and nothing else broke.
-   5. `node harness/hooks/skill-guard.mjs green`.
+   5. `node .claude/hooks/skill-guard.mjs green`.
    6. **[SUBAGENT: `reviewer`]** `/code-review` (correctness + an over-engineering
       pass) + `/simplify` (apply the reuse / altitude cleanups).
    7. **[HUMAN]** Accept, or grill and loop back to 4.1 for this slice. Third loop on the same
@@ -37,5 +37,8 @@ what changed, why it matters, the risk if wrong — before asking, not a status 
 <slug>` — append the transferable learning to `LESSONS.md`, or tell it there's nothing to
       compound. Not every slice earns an entry.
 5. Once every slice is accepted: `npm run test:coverage` — must hold 100%.
+6. `node .claude/hooks/skill-guard.mjs phase clear` — `/ship-it` sets its own phase; don't
+   leave `code` armed between phases. (Mid-run, between slices, the phase stays — it expires on
+   its own after `phase_stale_seconds` if the run is abandoned.)
 
 Output: **a branch, every slice reviewed and accepted, coverage green** — ready for `/ship-it`.

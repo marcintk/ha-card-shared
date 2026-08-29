@@ -20,7 +20,7 @@ changed, why it matters, the risk if wrong — before asking, not a status recap
 
 ## Steps
 
-1. `node harness/hooks/skill-guard.mjs phase release`.
+1. `node .claude/hooks/skill-guard.mjs phase release`.
 2. Verify all recent CI runs on `main` show ✓: `gh run list --branch main --limit 5`.
 3. Run `/code-review` over the repo (or `/simplify` on `main`) for a repo-wide correctness +
    over-engineering pass. Any finding → fix through `/design-it` + `/code-it` + `/ship-it`,
@@ -66,4 +66,4 @@ changed, why it matters, the risk if wrong — before asking, not a status recap
      (`<prev-tag>` = the previous release tag, `git describe --tags --abbrev=0 HEAD^`).
 10. **[HUMAN]** Publish the draft from the GitHub Releases UI once the notes and the
     `dist/<project>.js` asset check out.
-11. `node harness/hooks/skill-guard.mjs phase clear`.
+11. `node .claude/hooks/skill-guard.mjs phase clear`.

@@ -17,7 +17,7 @@ lines — what changed, why it matters, the risk if wrong — before asking, not
 
 ## Steps
 
-1. `node harness/hooks/skill-guard.mjs phase ship`.
+1. `node .claude/hooks/skill-guard.mjs phase ship`.
 2. `explain-it finalize <n> <slug>` — renders the explain-diff (HTML ships in the PR diff; GFM
    returned for the PR comment) and fills the README row's Explain-diff link. Status is already
    `approved` from `/design-it`; this step doesn't touch it.
@@ -32,6 +32,6 @@ lines — what changed, why it matters, the risk if wrong — before asking, not
 10. `gh run watch` — wait for CI green.
 11. `gh pr merge --squash --delete-branch`.
 12. `git checkout main && git pull`.
-13. `node harness/hooks/skill-guard.mjs phase clear`.
+13. `node .claude/hooks/skill-guard.mjs phase clear`.
 
 Output: **one merged PR**, `main` up to date.

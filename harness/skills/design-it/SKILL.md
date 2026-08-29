@@ -30,7 +30,7 @@ create` with a title + body from the pick and continue at Step 2 with that `<n>`
 
 ## Steps
 
-1. `node harness/hooks/skill-guard.mjs phase design`.
+1. `node .claude/hooks/skill-guard.mjs phase design`.
 2. **[HUMAN input]** Read the issue: `gh issue view <n> --json title,body,comments`. This is the
    input — nothing else assumed.
 3. Grep `LESSONS.md` for the problem class _before_ thinking about approach. Report any prior
@@ -53,5 +53,7 @@ create` with a title + body from the pick and continue at Step 2 with that `<n>`
    trivial change) directly in the note.
 9. Loop 5–8 until the human approves.
 10. On approval: `explain-it approve <n> <slug>` — status → `approved`.
+11. `node .claude/hooks/skill-guard.mjs phase clear` — the note is the state now; don't leave
+    the `design` phase armed to block unrelated work if `/code-it` doesn't follow immediately.
 
 Output: **one approved design note**, ready for `/code-it`.

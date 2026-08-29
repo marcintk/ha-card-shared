@@ -485,7 +485,7 @@
         <div class="marker">step<b>[ ]</b>1</div>
         <div class="step-body">
           <div class="step-head"><h3>Arm the guardrail</h3><span class="role">skill</span></div>
-          <p><code class="mono">node harness/hooks/skill-guard.mjs phase design</code> &mdash; sets the active phase. From now on the hook denies writes to <code class="mono">src/</code> and <code class="mono">test/</code> and denies <code class="mono">git commit</code> / <code class="mono">push</code> / <code class="mono">gh pr</code> / <code class="mono">npm version</code>. Survives Stop; expires after 8&nbsp;h.</p>
+          <p><code class="mono">node .claude/hooks/skill-guard.mjs phase design</code> &mdash; sets the active phase. From now on the hook denies writes to <code class="mono">src/</code> and <code class="mono">test/</code> and denies <code class="mono">git commit</code> / <code class="mono">push</code> / <code class="mono">gh pr</code> / <code class="mono">npm version</code>. Survives Stop; step 11 clears it (else it expires after 8&nbsp;h).</p>
           <div class="calls"><span class="k">runs</span><span class="chip">harness/hooks/skill-guard.mjs</span></div>
         </div>
       </li>

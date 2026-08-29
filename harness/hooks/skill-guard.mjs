@@ -61,10 +61,16 @@ if (process.env.SKILL_GUARD_OFF) ok();
 
 /** @type {HookPayload} */
 let payload = {};
-try {
-  payload = JSON.parse(readFileSync(0, "utf8") || "{}");
-} catch {
-  ok(); // unreadable payload — fail open
+if (sub === "check") {
+  // Only the PreToolUse check consumes a stdin payload. The phase/red/green/status
+  // sub-commands must not touch stdin: a JSON.parse throw on inherited pipe data would hit the
+  // catch below and exit 0 before the dispatch further down — the marker silently never written,
+  // the guardrail inert for the rest of the run.
+  try {
+    payload = JSON.parse(readFileSync(0, "utf8") || "{}");
+  } catch {
+    ok(); // unreadable payload — fail open
+  }
 }
 
 /** @type {Policy} */
@@ -115,10 +121,27 @@ function isRed() {
   return !!state && Date.now() - Number(state[1]) < redStaleMs;
 }
 
-/** Drop git's -C <dir> / -c key=val global flags so "git -C . commit" reads as "git commit". */
+/** Strip git's global options — anything valid between `git` and the subcommand — so
+ * `git -C /x --no-pager commit` reads as `git commit` for subcommand matching. Covers the
+ * value-taking flags (quoted or bare) and the standalone toggles; an unrecognised global flag
+ * still shifts the subcommand and is caught by the `stripQuotedSpans`-then-boundary matching. */
 /** @param {string} cmd */
 function stripGitGlobalFlags(cmd) {
-  return cmd.replace(/\bgit(?:\s+-C\s+\S+|\s+-c\s+\S+=\S+)+/g, "git");
+  const value = `(?:"[^"]*"|'[^']*'|\\S+)`;
+  const opt =
+    `(?:\\s+-C\\s+${value}` +
+    `|\\s+-c\\s+\\S+=\\S+` +
+    `|\\s+(?:--git-dir|--work-tree|--namespace|--exec-path|--super-prefix)(?:=\\S+|\\s+${value})` +
+    `|\\s+(?:--no-pager|--paginate|-P|--bare|--no-replace-objects|--literal-pathspecs|--glob-pathspecs|--noglob-pathspecs|--icase-pathspecs))+`;
+  return cmd.replace(new RegExp(`\\bgit${opt}`, "g"), "git");
+}
+
+/** Blank quoted spans so a deny pattern can't match text inside an argument — e.g. the
+ * literal "git push" in `git commit -m "todo: git push later"`. Runs after
+ * stripGitGlobalFlags, which needs the quotes intact to consume `-C "a b"`. */
+/** @param {string} cmd */
+function stripQuotedSpans(cmd) {
+  return cmd.replace(/"[^"]*"|'[^']*'/g, " ");
 }
 
 /**
@@ -246,7 +269,7 @@ if (sub === "check") {
     const why = `${label}: ${rules.reason}`;
 
     if (tool === "Bash" && rules.deny_bash) {
-      const cmd = stripGitGlobalFlags(String(input.command || ""));
+      const cmd = stripQuotedSpans(stripGitGlobalFlags(String(input.command || "")));
       for (const re of rules.deny_bash) {
         if (new RegExp(re).test(cmd)) {
           logDecision(phaseName, agentType, tool, "deny", why);
@@ -258,12 +281,16 @@ if (sub === "check") {
     if (["Edit", "Write", "MultiEdit", "NotebookEdit"].includes(tool)) {
       const raw = input.file_path || input.notebook_path || "";
       const path = toProjectRelativePath(raw, cwd);
-      if (raw && path === null) {
-        const outsideMsg = `${label}: target resolves outside the project root`;
-        logDecision(phaseName, agentType, tool, "deny", outsideMsg);
-        deny(outsideMsg);
-      }
       if (rules.deny_write) {
+        // An out-of-root target can't be checked against a repo-relative deny_write pattern, so
+        // treat it as denied — but only under a rule set that actually restricts writes. A phase
+        // like `code` carries no deny_write and is meant to allow writes anywhere (/tmp handoffs,
+        // ~/.claude), so it must not trip this.
+        if (raw && path === null) {
+          const outsideMsg = `${label}: target resolves outside the project root`;
+          logDecision(phaseName, agentType, tool, "deny", outsideMsg);
+          deny(outsideMsg);
+        }
         for (const re of rules.deny_write) {
           if (path && new RegExp(re).test(path)) {
             logDecision(phaseName, agentType, tool, "deny", why);

@@ -474,7 +474,7 @@
         <div class="marker">step<b>[ ]</b>1</div>
         <div class="step-body">
           <div class="step-head"><h3>Arm the guardrail</h3><span class="role">skill</span></div>
-          <p><code class="mono">node harness/hooks/skill-guard.mjs phase code</code>. This phase <em>allows</em> local commits &mdash; that's its job &mdash; but the hook still denies <code class="mono">git push</code> / <code class="mono">gh pr create|merge</code> / <code class="mono">npm version</code>. Shipping is a separate phase.</p>
+          <p><code class="mono">node .claude/hooks/skill-guard.mjs phase code</code>. This phase <em>allows</em> local commits &mdash; that's its job &mdash; but the hook still denies <code class="mono">git push</code> / <code class="mono">gh pr create|merge</code> / <code class="mono">npm version</code>. Shipping is a separate phase.</p>
           <div class="calls"><span class="k">runs</span><span class="chip">harness/hooks/skill-guard.mjs</span></div>
         </div>
       </li>

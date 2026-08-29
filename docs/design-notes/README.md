@@ -8,9 +8,9 @@ call) and committed in that issue's PR. Two files per issue once it ships:
 
 Both open automatically when the skill produces them. The table links point at **GitHub Pages**
 (`marcintk.github.io/ha-card-shared/design-notes/…`), which serves the committed `.html`
-rendered — GitHub itself shows a linked `.html` file as source, not a page. `deploy-design-notes.yml`
-publishes only this folder (staged under `/design-notes/`) on every push to `main` that touches
-it; a `.nojekyll` marker keeps Pages from reprocessing the files.
+rendered — GitHub itself shows a linked `.html` file as source, not a page. Pages deploys from
+`main` `/docs`, so this folder (`docs/design-notes/`) is served under `/design-notes/`;
+`docs/.nojekyll` stops Jekyll from reprocessing the files.
 
 | Issue                                                       | Note                                                                                                                        | Explain-diff | Status      | PR  |
 | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------- | --- |

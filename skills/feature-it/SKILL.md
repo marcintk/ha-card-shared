@@ -33,7 +33,7 @@ idea). Don't create it for them.
    every open question closed. One concern per PR — extras become a separate GH issue. For a
    trivial change this is one or two lines, not a proposal; it still happens, just short.
 4. **[SKILL: explain-it]** Run `explain-it start <n> <slug>` — it creates the design note from
-   step 3's approach, sets status `in progress`, adds the `design-notes/README.md` row, and opens
+   step 3's approach, sets status `in progress`, adds the `docs/design-notes/README.md` row, and opens
    the note in the browser.
 5. **[HUMAN]** Go-ahead gate. No code before this.
 6. **[SUBAGENT: `pipeline-test-writer`] → [SUBAGENT: `pipeline-coder`]**, per vertical slice — one seam,
@@ -50,7 +50,7 @@ idea). Don't create it for them.
     transferable learning (the problem class, what the approach turned on, the guardrail now in
     place) to `LESSONS.md`, or tell it there's nothing to compound. Ships in that PR's diff.
 11. **[SKILL: explain-it]** run `explain-it finalize <n> <slug>` per PR — it sets the note to
-    `approved`, renders `design-notes/issue-<n>-explain-diff.html`, updates the README row, and
+    `approved`, renders `docs/design-notes/issue-<n>-explain-diff.html`, updates the README row, and
     returns the GFM output. Then **[SKILL: pr-it]** run `pr-it open <n> <slug>` with that GFM —
     one call per independently-mergeable piece if step 3's design forked, entering a **PR queue**
     rather than a single branch. Issue body overwritten with the final snapshot.

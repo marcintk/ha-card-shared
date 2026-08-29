@@ -203,7 +203,10 @@ describe("output path", () => {
   });
 
   it("writes to default /tmp path when -o omitted", () => {
-    const today = new Date().toISOString().slice(0, 10);
+    // render.py uses datetime.date.today() (local time); match that, not UTC, so the test
+    // doesn't flake between UTC midnight and local midnight.
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     const stdout = execSync(`python3 ${script} ${specFile()} --format gfm`, {
       encoding: "utf8",
     }).trim();

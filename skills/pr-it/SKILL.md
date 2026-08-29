@@ -29,7 +29,7 @@ Args: `<n>` issue number, `<slug>` kebab issue slug. Callers pass the GFM string
 
 Runs after the parent's `[HUMAN] "merge it"`.
 
-1. Confirm the explain-diff HTML (`design-notes/issue-<n>-explain-diff.html`) was reviewed.
+1. Confirm the explain-diff HTML (`docs/design-notes/issue-<n>-explain-diff.html`) was reviewed.
 2. `gh run watch` — wait for CI green.
 3. `gh pr merge --squash --delete-branch`.
 4. `git checkout main && git pull`.

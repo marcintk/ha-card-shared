@@ -20,7 +20,7 @@ jobs:
         uses: raven-actions/actionlint@v2
 
       - name: shellcheck git hooks
-        run: shellcheck .githooks/pre-commit .githooks/pre-push
+        run: shellcheck harness/.githooks/pre-commit harness/.githooks/pre-push
 
   runtime:
     runs-on: ubuntu-latest

@@ -14,19 +14,10 @@ applies nothing.
 
 ## Vocabulary
 
-Use these words exactly — not "component", "service", "API", "boundary".
-
-- **Module** — anything with an interface and an implementation: a function, class, package, or
-  tier-spanning slice.
-- **Interface** — everything a caller must know to use it right: signature, invariants,
-  ordering, error modes, config, performance.
-- **Implementation** — what's inside.
-- **Depth** — behaviour per unit of interface. **Deep** = a lot of behaviour behind a small
-  interface. **Shallow** = interface nearly as complex as the implementation.
-- **Seam** — a place you can change behaviour without editing there; where the interface lives.
-  Where to put it is a separate decision from what goes behind it.
-- **Adapter** — a concrete thing satisfying an interface at a seam (a real impl, or an
-  in-memory fake).
+Run the `codebase-design` skill first — it owns the exact terms (**module**, **interface**,
+**implementation**, **depth**, **seam**, **adapter**), the **deletion test**, and the
+design-it-twice pattern. Use those words exactly here — not "component", "service", "API",
+"boundary".
 
 ## 1. Scope before you scan (YAGNI)
 
@@ -66,4 +57,5 @@ End with a **Tackle first** pick and why. Do not design interfaces yet.
 
 Once the human picks a candidate, run `brainstorm-it` on it — constraints, dependencies, the
 shape of the deepened module, what sits behind the seam, which tests survive. Decisions are the
-human's; look up facts yourself.
+human's; look up facts yourself. To weigh several interface shapes for the deepened module, use
+the design-it-twice pattern from `codebase-design`.

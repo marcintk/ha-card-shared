@@ -31,10 +31,10 @@ describe("CLAUDE-SHARED.md", () => {
     expect(doc).toContain("LESSONS.md");
   });
 
-  it("names the pipeline files under skills/, agents/, hooks/ as the change surface", () => {
-    expect(doc).toContain("skills/");
-    expect(doc).toContain("agents/");
-    expect(doc).toContain("hooks/skill-guard");
+  it("names the pipeline files under harness/ as the change surface", () => {
+    expect(doc).toContain("harness/skills/");
+    expect(doc).toContain("harness/agents/");
+    expect(doc).toContain("harness/hooks/skill-guard");
   });
 });
 
@@ -50,28 +50,49 @@ describe("skill set", () => {
     "brainstorm-it",
   ];
 
-  it.each(skills)("skills/%s/SKILL.md exists", (name) => {
-    expect(existsSync(`${root}/skills/${name}/SKILL.md`)).toBe(true);
+  it.each(skills)("harness/skills/%s/SKILL.md exists", (name) => {
+    expect(existsSync(`${root}/harness/skills/${name}/SKILL.md`)).toBe(true);
   });
 
   it("the retired explain-diff-gfm skill is gone", () => {
-    expect(existsSync(`${root}/skills/explain-diff-gfm`)).toBe(false);
+    expect(existsSync(`${root}/harness/skills/explain-diff-gfm`)).toBe(false);
   });
 
   it("the explain-diff renderer moved under explain-it", () => {
-    expect(existsSync(`${root}/skills/explain-it/scripts/render.py`)).toBe(true);
+    expect(existsSync(`${root}/harness/skills/explain-it/scripts/render.py`)).toBe(true);
+  });
+
+  it.each(["codebase-design", "handoff"])(
+    "vendored reference skill harness/skills/%s/SKILL.md exists",
+    (name) => {
+      expect(existsSync(`${root}/harness/skills/${name}/SKILL.md`)).toBe(true);
+    }
+  );
+
+  it("codebase-design ships its companion notes", () => {
+    const dir = `${root}/harness/skills/codebase-design`;
+    expect(existsSync(`${dir}/DEEPENING.md`)).toBe(true);
+    expect(existsSync(`${dir}/DESIGN-IT-TWICE.md`)).toBe(true);
+  });
+
+  it("improve-it and feature-it defer the deep-module vocabulary to codebase-design", () => {
+    for (const n of ["improve-it", "feature-it"]) {
+      expect(readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8")).toContain(
+        "codebase-design"
+      );
+    }
   });
 
   it("human-triggered pipelines are disable-model-invocation, sub-skills are not", () => {
     const human = ["fix-it", "feature-it", "ship-it", "improve-it"];
     const ai = ["explain-it", "pr-it", "commit-it", "brainstorm-it"];
     for (const n of human) {
-      expect(readFileSync(`${root}/skills/${n}/SKILL.md`, "utf8")).toContain(
+      expect(readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8")).toContain(
         "disable-model-invocation: true"
       );
     }
     for (const n of ai) {
-      expect(readFileSync(`${root}/skills/${n}/SKILL.md`, "utf8")).not.toContain(
+      expect(readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8")).not.toContain(
         "disable-model-invocation"
       );
     }
@@ -86,17 +107,16 @@ describe("skill-guard", () => {
     "pipeline-explore",
   ];
 
-  it.each(agents)("agents/%s.md exists", (name) => {
-    expect(existsSync(`${root}/agents/${name}.md`)).toBe(true);
+  it.each(agents)("harness/agents/%s.md exists", (name) => {
+    expect(existsSync(`${root}/harness/agents/${name}.md`)).toBe(true);
   });
 
-  it("ships hooks/ and agents/ in the npm package", () => {
-    expect(pkg.files).toContain("hooks/");
-    expect(pkg.files).toContain("agents/");
+  it("ships the harness/ tree in the npm package", () => {
+    expect(pkg.files).toContain("harness/");
   });
 
   it("the policy names every guarded skill and role", () => {
-    const policy = JSON.parse(readFileSync(`${root}/hooks/skill-guard.json`, "utf8")) as {
+    const policy = JSON.parse(readFileSync(`${root}/harness/hooks/skill-guard.json`, "utf8")) as {
       skills: Record<string, unknown>;
       roles: Record<string, unknown>;
     };

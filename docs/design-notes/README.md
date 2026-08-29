@@ -12,6 +12,5 @@ rendered — GitHub itself shows a linked `.html` file as source, not a page. Pa
 `main` `/docs`, so this folder (`docs/design-notes/`) is served under `/design-notes/`;
 `docs/.nojekyll` stops Jekyll from reprocessing the files.
 
-| Issue                                                       | Note                                                                                                                        | Explain-diff | Status      | PR  |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------- | --- |
-| [#25](https://github.com/marcintk/ha-card-shared/issues/25) | [workflow-enforcement-gaps](https://marcintk.github.io/ha-card-shared/design-notes/issue-25-workflow-enforcement-gaps.html) | —            | in progress | —   |
+| Issue | Note | Explain-diff | Status | PR  |
+| ----- | ---- | ------------ | ------ | --- |

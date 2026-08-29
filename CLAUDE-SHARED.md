@@ -18,7 +18,7 @@ npm run format:md      # prettier for markdown files
 npm run check:ci       # CI gate: typecheck + biome check + prettier check
 ```
 
-> To change this workflow: edit `CLAUDE-SHARED.md` and/or the pipeline files in `ha-card-shared` — `skills/{fix-it,feature-it,ship-it,improve-it,explain-it,pr-it,commit-it,brainstorm-it}`, `agents/`, `hooks/skill-guard.*` — iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.
+> To change this workflow: edit `CLAUDE-SHARED.md` and/or the pipeline files in `ha-card-shared` — `harness/skills/{fix-it,feature-it,ship-it,improve-it,explain-it,pr-it,commit-it,brainstorm-it}`, `harness/agents/`, `harness/hooks/skill-guard.*` — iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.
 
 ## Making a change
 

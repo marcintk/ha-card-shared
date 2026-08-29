@@ -1,3 +1,4 @@
+import { execSync } from 'child_process';
 import {
   readFileSync,
   writeFileSync,
@@ -23,7 +24,7 @@ const guardBase =
   relToShared && !relToShared.startsWith('..' + sep) && relToShared !== '..'
     ? relToShared.split(sep).join('/')
     : sharedRoot;
-const guard = `${guardBase}/hooks/skill-guard.mjs`;
+const guard = `${guardBase}/harness/hooks/skill-guard.mjs`;
 
 // Merge the skill-guard PreToolUse / Stop hooks into the consumer's .claude/settings.json.
 // Idempotent: any hook entry whose command mentions skill-guard.mjs is replaced. Also drops
@@ -61,11 +62,11 @@ function mergeHooks() {
   writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
 }
 
-// Symlink every entry of <sharedRoot>/<name> into <claudeDir>/<name>, and prune any of our own
-// symlinks there that no longer resolve (e.g. a skill removed in a newer ha-card-shared).
-function linkInto(name) {
-  const src = join(sharedRoot, name);
-  const dest = join(claudeDir, name);
+// Symlink every entry of <sharedRoot>/<srcRel> into <claudeDir>/<destName>, and prune any of our
+// own symlinks there that no longer resolve (e.g. a skill removed in a newer ha-card-shared).
+function linkInto(srcRel, destName = srcRel) {
+  const src = join(sharedRoot, srcRel);
+  const dest = join(claudeDir, destName);
   let entries;
   try {
     entries = readdirSync(src, { withFileTypes: true });
@@ -100,6 +101,30 @@ function linkInto(name) {
   }
 }
 
+// Point git at the bundled pre-commit / pre-push hooks. Skipped if the consumer isn't a git
+// repo, or has already set core.hooksPath to something of their own (don't clobber that).
+function wireGitHooks() {
+  const desired = `${guardBase}/harness/.githooks`;
+  const git = (args, capture) =>
+    execSync(`git ${args}`, {
+      cwd: root,
+      stdio: capture ? ['ignore', 'pipe', 'ignore'] : 'ignore',
+    });
+  try {
+    const current = git('config --local --get core.hooksPath', true).toString().trim();
+    if (current === desired) return; // already ours
+    if (current && !current.includes('ha-card-shared')) return; // consumer's own — leave it
+  } catch {
+    // unset, or not a git repo — the set below decides which
+  }
+  try {
+    git(`config --local core.hooksPath "${desired}"`);
+  } catch {
+    // not a git repo — nothing to wire
+  }
+}
+
 mergeHooks();
-linkInto('skills');
-linkInto('agents');
+wireGitHooks();
+linkInto('harness/skills', 'skills');
+linkInto('harness/agents', 'agents');

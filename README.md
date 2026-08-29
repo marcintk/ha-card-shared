@@ -47,7 +47,11 @@ Use each export by extending or referencing it from the matching consumer file:
 
 ## Claude Code config
 
-`scripts/setup-claude.js` runs automatically as a `postinstall` hook when consumers install
+The Claude workflow toolchain lives entirely under `harness/` — skills, pipeline subagents,
+the `skill-guard` hook, the git hooks, and the setup script — grouped there so it can move to
+its own repo later without disturbing the build configs.
+
+`harness/setup-claude.js` runs automatically as a `postinstall` hook when consumers install
 ha-card-shared. It:
 
 - symlinks the bundled skills into `.claude/skills/` and the pipeline subagents into
@@ -56,9 +60,10 @@ ha-card-shared. It:
   reads which pipeline skill or subagent role is active and blocks operations outside its
   remit (`brainstorm-it` can't commit, the `tdd-coder` subagent can't touch tests or write
   `src/` before a test is red, and so on). Runtime state lives in `.claude/skill-guard/`
-  (self-ignored); set `SKILL_GUARD_OFF=1` to disable.
+  (self-ignored); set `SKILL_GUARD_OFF=1` to disable;
+- points git's `core.hooksPath` at `harness/.githooks` (see [Git hooks](#git-hooks)).
 
-No manual setup needed — running `npm install` keeps everything current.
+No manual setup needed — running `npm install` wires everything.
 
 ## Required files
 
@@ -71,12 +76,14 @@ Every consumer project must have:
 
 ## Git hooks
 
-```bash
-git config core.hooksPath node_modules/ha-card-shared/.githooks
-```
+`postinstall` points `core.hooksPath` at `node_modules/ha-card-shared/harness/.githooks` (local
+config only; skipped if you're not in a git repo or have already set your own `core.hooksPath`).
 
 - `pre-commit` — biome check + prettier (markdown) + typecheck
 - `pre-push` — tests at 100% coverage
+
+Opt out with `git config --unset core.hooksPath` (or point it elsewhere — `postinstall` won't
+override a non-ha-card value).
 
 ## Shared workflows
 

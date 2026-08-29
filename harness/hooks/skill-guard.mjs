@@ -130,7 +130,7 @@ function stripGitGlobalFlags(cmd) {
   const value = `(?:"[^"]*"|'[^']*'|\\S+)`;
   const opt =
     `(?:\\s+-C\\s+${value}` +
-    `|\\s+-c\\s+\\S+=\\S+` +
+    `|\\s+-c\\s+\\S+?=${value}` +
     `|\\s+(?:--git-dir|--work-tree|--namespace|--exec-path|--super-prefix)(?:=\\S+|\\s+${value})` +
     `|\\s+(?:--no-pager|--paginate|-P|--bare|--no-replace-objects|--literal-pathspecs|--glob-pathspecs|--noglob-pathspecs|--icase-pathspecs))+`;
   return cmd.replace(new RegExp(`\\bgit${opt}`, "g"), "git");
@@ -271,7 +271,9 @@ if (sub === "check") {
     if (tool === "Bash" && rules.deny_bash) {
       const cmd = stripQuotedSpans(stripGitGlobalFlags(String(input.command || "")));
       for (const re of rules.deny_bash) {
-        if (new RegExp(re).test(cmd)) {
+        // Anchor to a command position — start of string or just after a shell separator — so
+        // `legit push` / `mygit commit` don't match a bare `git …` pattern mid-token.
+        if (new RegExp(`(?:^|[\\s;&|(])(?:${re})`).test(cmd)) {
           logDecision(phaseName, agentType, tool, "deny", why);
           deny(why);
         }

@@ -120,6 +120,41 @@ describe("reviewer", () => {
     });
     expect(res.status).toBe(2);
   });
+
+  it("may run read-only git (it has to read the diff it reviews)", () => {
+    for (const command of [
+      "git diff main...HEAD",
+      "git log --oneline",
+      "git show HEAD",
+      "git status",
+    ]) {
+      const res = check({
+        cwd: tmp,
+        agent_type: "reviewer",
+        tool_name: "Bash",
+        tool_input: { command },
+      });
+      expect(res.status, command).toBe(0);
+    }
+  });
+
+  it("may not run mutating git or open/merge a PR", () => {
+    for (const command of [
+      "git commit -m x",
+      "git push",
+      "git checkout main",
+      "gh pr create",
+      "gh pr merge 1",
+    ]) {
+      const res = check({
+        cwd: tmp,
+        agent_type: "reviewer",
+        tool_name: "Bash",
+        tool_input: { command },
+      });
+      expect(res.status, command).toBe(2);
+    }
+  });
 });
 
 describe("code-writer red/green marker", () => {
@@ -243,6 +278,15 @@ describe("deny_bash bypass patterns", () => {
 
   it("denies git with a --no-pager global flag before the subcommand", () => {
     expect(denied("git --no-pager push")).toBe(2);
+  });
+
+  it("denies git -c with a quoted value that contains spaces", () => {
+    expect(denied(`git -c user.name="A B" commit -m x`)).toBe(2);
+  });
+
+  it("does not match a bare git pattern inside a longer token", () => {
+    expect(denied("legit push")).toBe(0);
+    expect(denied("mygit commit -m x")).toBe(0);
   });
 
   it("denies an env-prefixed command", () => {

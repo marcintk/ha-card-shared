@@ -6,6 +6,44 @@ the by-symptom index.
 
 <!-- ponytail: single file; split by area if it outgrows one screen-scroll -->
 
+## A `Stop`-cleared hook state never survives past the first human gate
+
+- **Root cause:** `skill-guard`'s skill-layer state lived in one slot written by a
+  `PreToolUse × Skill` hook and deleted by a `Stop` hook. `Stop` fires at every turn boundary —
+  the end of a response — not at the end of a pipeline, so the recorded skill was gone by the
+  first `[HUMAN]` gate in any multi-turn flow. It was providing essentially zero protection since
+  it was written.
+- **Guardrail:** replaced with an explicit **phase** the entry-point skill sets itself
+  (`skill-guard.mjs phase design|code|ship|release`), stored with its own long expiry
+  (8h) instead of tied to a hook that fires every turn. Generally: state meant to outlive a
+  conversation must not be cleared by anything that fires on every turn of that conversation.
+- **Ref:** [#36](https://github.com/marcintk/ha-card-shared/issues/36) · 2026-08-29
+
+## A path-prefix check fails selectively, and invisibly, under a non-canonical cwd
+
+- **Root cause:** `skill-guard`'s TDD gate stripped a guarded path down to project-relative via
+  `raw.startsWith(cwd)`. Any mismatch between the literal `cwd` string and the tool's absolute
+  path — a symlinked checkout, a double-slash working directory — left the path unstripped, so
+  `^src/`-style patterns silently stopped matching while a blanket `["."]` rule kept working. The
+  guard could go dark with no error and no visible symptom.
+- **Guardrail:** `realpathSync` both sides (tolerant of a target that doesn't exist yet — walk up
+  to the nearest real ancestor) before `path.relative`; a target resolving outside the project
+  root is denied unconditionally under any guarded context. A literal string-prefix check on a
+  filesystem path is close to always wrong; canonicalize first.
+- **Ref:** [#36](https://github.com/marcintk/ha-card-shared/issues/36) · 2026-08-29
+
+## `^\s*` anchoring a `deny_bash` pattern is defeated by `cd x &&`, `env`, or `bash -c`
+
+- **Root cause:** every `deny_bash` regex was anchored to the start of the command string
+  (`^\s*git\s+…`), so it only ever matched a bare invocation — `cd /tmp && git push`,
+  `env FOO=bar git push`, and a command wrapped in `bash -c '...'` all put the denied command
+  somewhere other than position zero and sailed through untested.
+- **Guardrail:** dropped the anchor — an unanchored pattern matches the denied command anywhere in
+  the string, which by itself covers all three bypasses. `git -C <dir>` / `git -c k=v` still
+  needed one added normalization step (strip those global flags before matching), since they sit
+  between `git` and the subcommand rather than around the whole command.
+- **Ref:** [#36](https://github.com/marcintk/ha-card-shared/issues/36) · 2026-08-29
+
 ## Widening vitest `coverage.include` to a subprocess-tested file tanks the threshold
 
 - **Root cause:** vitest's v8 coverage provider instruments only the vitest worker process; a

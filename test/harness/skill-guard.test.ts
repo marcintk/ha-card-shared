@@ -405,6 +405,24 @@ describe("release phase npm version", () => {
   });
 });
 
+describe("policy file", () => {
+  it("every deny_bash / deny_write pattern is a valid regex", () => {
+    const policy = JSON.parse(
+      readFileSync(resolve(process.cwd(), "harness/hooks/skill-guard.json"), "utf8")
+    ) as { phases: Record<string, unknown>; roles: Record<string, unknown> };
+    const groups = [...Object.values(policy.phases), ...Object.values(policy.roles)] as {
+      deny_bash?: string[];
+      deny_write?: string[];
+    }[];
+    for (const g of groups) {
+      for (const re of [...(g.deny_bash ?? []), ...(g.deny_write ?? [])]) {
+        // a bad pattern would be caught at runtime but leave that one rule silently inert
+        expect(() => new RegExp(re), re).not.toThrow();
+      }
+    }
+  });
+});
+
 describe("fail-open", () => {
   it("allows the call when the payload isn't valid JSON", () => {
     const res = spawnSync("node", [script, "check"], { input: "not json", encoding: "utf8" });

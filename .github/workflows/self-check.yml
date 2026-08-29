@@ -22,6 +22,12 @@ jobs:
       - name: shellcheck git hooks
         run: shellcheck harness/.githooks/pre-commit harness/.githooks/pre-push
 
+      - name: py_compile the explain-diff renderer
+        # explain-it finalize shells out to this script — an undeclared python3 dependency, so at
+        # least confirm it's syntactically valid on every PR. test/skills/render.test.ts covers
+        # actual output; this only catches "doesn't parse".
+        run: python3 -m py_compile harness/skills/explain-it/scripts/render.py
+
   runtime:
     runs-on: ubuntu-latest
     steps:

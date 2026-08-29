@@ -8,7 +8,8 @@ if [ "$branch" = "main" ]; then
   exit 1
 fi
 
-npm run check                    # biome: lint + auto-fix formatting in src/ and test/
+npm run check                    # biome: lint + auto-fix formatting in src/, test/, harness/
 npm run --if-present format:md   # prettier: auto-fix markdown (skipped if script absent)
 git add -u                       # re-stage files changed by the auto-fixers above
 npm run typecheck                # tsc --noEmit: fail if types don't compile
+npm run --if-present typecheck:harness   # checkJs pass over harness/ (skipped if script absent)

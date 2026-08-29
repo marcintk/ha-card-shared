@@ -6,6 +6,30 @@ the by-symptom index.
 
 <!-- ponytail: single file; split by area if it outgrows one screen-scroll -->
 
+## Widening vitest `coverage.include` to a subprocess-tested file tanks the threshold
+
+- **Root cause:** vitest's v8 coverage provider instruments only the vitest worker process; a
+  script tested by spawning it (`execSync('node script.js')`) — the correct way to test a CLI
+  script — is invisible to it, so adding it to `coverage.include` reports 0% regardless of how
+  thoroughly it's actually tested.
+- **Guardrail:** `harness/`'s two CLI scripts stay out of `vitest.config.mjs`'s
+  `coverage.include`; they're gated instead by `tsc -p tsconfig.harness.json` (checkJs) and Biome,
+  both wired into `check:ci` and `pre-commit`. Before widening `coverage.include` to any file,
+  check whether it's exercised via subprocess rather than `import` — the number will lie about it.
+- **Ref:** [#35](https://github.com/marcintk/ha-card-shared/issues/35) · 2026-08-29
+
+## `git checkout -- <file>` on an uncommitted branch discards session work, not just the last edit
+
+- **Root cause:** reverting an experimental edit with `git checkout -- <path>` resets to `HEAD`,
+  not to "before this edit" — on a branch where nothing has been committed yet, `HEAD` is still
+  `main`, so it silently discarded every uncommitted change to that file made earlier in the same
+  session, not just the one being undone.
+- **Guardrail:** revert an experimental change with a targeted `Edit` (or `git diff` + manual
+  reapply), never `git checkout --`, until at least one commit exists on the branch. `git add -A`
+  right after finishing a chunk of uncommitted work removes the trap for the _next_ revert, though
+  it doesn't undo one already taken.
+- **Ref:** [#35](https://github.com/marcintk/ha-card-shared/issues/35) · 2026-08-29
+
 ## `/ship-it` cannot commit — `npm version` blocked by the main-branch guard
 
 - **Root cause:** `harness/.githooks/pre-commit` blocks every commit on `main`, and the release

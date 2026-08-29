@@ -165,13 +165,14 @@ function stripGitGlobalFlags(cmd) {
 
 /** Blank only the value of a message-carrying flag, so a deny word inside a commit message
  * (`git commit -m "todo: git push later"`) isn't matched — while a mutating command handed to
- * a wrapper (`bash -c 'git push'`, `` `git push` ``) stays visible. Runs after
- * stripGitGlobalFlags, which needs quotes intact to consume `-C "a b"`. */
+ * a wrapper (`bash -c 'git push'`) stays visible. A value that itself contains a command or
+ * process substitution (`$(…)`, `` `…` ``, `<(…)`) is left intact — the shell runs it, so the
+ * guard must see it. Runs after stripGitGlobalFlags, which needs quotes intact for `-C "a b"`. */
 /** @param {string} cmd */
 function stripMessageArgs(cmd) {
   return cmd.replace(
-    /(?:^|\s)(?:-m|-F|-t|--message|--file|--template)(?:=|\s+)(?:"[^"]*"|'[^']*'|\S+)/g,
-    " "
+    /(?:^|\s)(?:-m|-F|-t|--message|--file|--template)(?:=|\s+)("[^"]*"|'[^']*'|\S+)/g,
+    (whole, value) => (/\$\(|`|<\(/.test(value) ? whole : " ")
   );
 }
 
@@ -302,12 +303,12 @@ if (sub === "check") {
     if (tool === "Bash" && rules.deny_bash) {
       const cmd = stripMessageArgs(stripGitGlobalFlags(String(input.command || "")));
       for (const re of rules.deny_bash) {
-        // Anchor to a command position — start of string, or just after a shell separator /
-        // wrapper boundary (`;` `&&` `|` `(` backtick quote) — so `legit push` / `mygit commit`
-        // don't match a bare `git …` pattern mid-token, while `bash -c 'git push'` still does.
+        // A denied binary counts only in command position: start of string, or right after a
+        // shell separator / wrapper / path boundary (`;` `&&` `|` `(` backtick quote `/` `\`).
+        // Keeps `legit push` out; catches `bash -c 'git push'` and `/usr/bin/git push`.
         let hit = false;
         try {
-          hit = new RegExp("(?:^|[\\s;&|(`'\"])(?:" + re + ")").test(cmd);
+          hit = new RegExp(`(?:^|[\\s;&|(\`'"/\\\\])(?:${re})`).test(cmd);
         } catch (e) {
           process.stderr.write(`skill-guard: bad deny_bash pattern ${JSON.stringify(re)} — ${e}\n`);
         }

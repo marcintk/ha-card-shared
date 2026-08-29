@@ -326,6 +326,28 @@ describe("deny_bash bypass patterns", () => {
     expect(denied("x=`git push`")).toBe(2);
   });
 
+  it("sees a denied binary invoked by an absolute or escaped path", () => {
+    expect(denied("/usr/bin/git push")).toBe(2);
+    expect(denied("$HOME/bin/git push")).toBe(2);
+    expect(denied("\\git push")).toBe(2);
+  });
+
+  it("does not let a substitution hide inside a commit-message flag value", () => {
+    cli("phase", "code"); // denies `git push`, allows `git commit`
+    const sub = check({
+      cwd: tmp,
+      tool_name: "Bash",
+      tool_input: { command: 'git commit -m "wip $(git push --tags)"' },
+    });
+    expect(sub.status).toBe(2);
+    const plain = check({
+      cwd: tmp,
+      tool_name: "Bash",
+      tool_input: { command: 'git commit -m "todo: git push later"' },
+    });
+    expect(plain.status).toBe(0);
+  });
+
   it("still ignores a trigger word inside a commit-message flag value", () => {
     cli("phase", "code"); // `code` denies `git push` but must allow a commit that mentions it
     const res = check({

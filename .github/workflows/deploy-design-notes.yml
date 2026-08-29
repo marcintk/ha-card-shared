@@ -1,0 +1,45 @@
+name: Deploy Design Notes
+
+# GitHub renders a linked .html file as source, not a page. This publishes design-notes/
+# to Pages so the notes render in a browser. Scoped: only design-notes/ is uploaded, served
+# under /design-notes/ so the links in design-notes/README.md and the explain-it skill
+# resolve unchanged. See LESSONS.md ("Design-note links show .html as source").
+
+on:
+  push:
+    branches: [main]
+    paths: ["design-notes/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Stage design-notes under /design-notes
+        run: |
+          mkdir -p _site/design-notes
+          cp -R design-notes/. _site/design-notes/
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v5

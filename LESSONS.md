@@ -10,8 +10,9 @@ the by-symptom index.
 
 - **Root cause:** GitHub renders a linked `.html` file as source, not a page; `raw.githack.com`
   works but is third-party and shows an interstitial.
-- **Guardrail:** GitHub Pages deploys from `main` at repo root with `.nojekyll`; the
-  `explain-it` skill and `design-notes/README.md` point links at `marcintk.github.io/ha-card-shared/`.
+- **Guardrail:** `deploy-design-notes.yml` publishes `design-notes/` to GitHub Pages
+  (staged under `/design-notes/`, `.nojekyll`); the `explain-it` skill and
+  `design-notes/README.md` point links at `marcintk.github.io/ha-card-shared/design-notes/`.
 - **Ref:** [#25](https://github.com/marcintk/ha-card-shared/issues/25) · 2026-08-28
 
 ## Workflow relied on checklist discipline, not enforcement

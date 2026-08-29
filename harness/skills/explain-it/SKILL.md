@@ -97,10 +97,10 @@ is one.
       - Prose in the clear, flowing style of Martin Kleppmann.
    4. Render:
       ```bash
-      python harness/skills/explain-it/scripts/render.py \
+      python3 harness/skills/explain-it/scripts/render.py \
         docs/design-notes/.work/issue-<n>-explain-spec.json \
         -o docs/design-notes/issue-<n>-explain-diff.html
-      python harness/skills/explain-it/scripts/render.py \
+      python3 harness/skills/explain-it/scripts/render.py \
         docs/design-notes/.work/issue-<n>-explain-spec.json --format gfm \
         -o docs/design-notes/.work/issue-<n>-explain-diff.md
       ```

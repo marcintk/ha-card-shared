@@ -11,7 +11,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
@@ -28,15 +28,12 @@ const root = process.env.INIT_CWD ?? process.cwd();
 const claudeDir = join(root, ".claude");
 const sharedRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
-// Path to the hook, relative to the consumer root and slash-normalised, so a consumer that
-// chooses to commit .claude/settings.json gets no per-machine churn. Falls back to absolute
-// only if the package sits outside the tree (unusual: npm link, odd hoisting).
-const relToShared = relative(root, sharedRoot);
-const guardBase =
-  relToShared && !relToShared.startsWith(`..${sep}`) && relToShared !== ".."
-    ? relToShared.split(sep).join("/")
-    : sharedRoot;
-const guard = `${guardBase}/harness/hooks/skill-guard.mjs`;
+// Both the check hook and the skill CLI steps invoke the guard through a stable
+// `.claude/hooks/` symlink (created by linkInto below). A bare `harness/hooks/skill-guard.mjs`
+// only resolves when cwd is this repo; under a consumer card the file lives in
+// node_modules/ha-card-shared/. The .claude/-relative path is the same in both, and commits
+// with no per-machine churn if the consumer checks in .claude/settings.json.
+const guard = ".claude/hooks/skill-guard.mjs";
 
 // Merge the skill-guard PreToolUse hook into the consumer's .claude/settings.json. Idempotent:
 // any hook entry whose command mentions skill-guard.mjs is replaced. Also drops the pre-1.5
@@ -154,7 +151,10 @@ function linkInto(srcRel, destName = srcRel) {
 // Point git at the bundled pre-commit / pre-push hooks. Skipped if the consumer isn't a git
 // repo, or has already set core.hooksPath to something of their own (don't clobber that).
 function wireGitHooks() {
-  const desired = `${guardBase}/harness/.githooks`;
+  // Absolute: git resolves a relative core.hooksPath from the worktree root, which isn't
+  // necessarily INIT_CWD (install from a subdirectory, a nested workspace package). A relative
+  // value would then point nowhere and git would silently run no hooks.
+  const desired = join(sharedRoot, "harness", ".githooks");
   /** @param {string} args @param {boolean} [capture] */
   const git = (args, capture) =>
     execSync(`git ${args}`, {
@@ -188,5 +188,6 @@ function wireGitHooks() {
 
 mergeHooks();
 wireGitHooks();
+linkInto("harness/hooks", "hooks");
 linkInto("harness/skills", "skills");
 linkInto("harness/agents", "agents");

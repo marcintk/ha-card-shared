@@ -40,6 +40,18 @@ describe("phase subcommand", () => {
   it("phase clear removes the marker with no error, even if none was set", () => {
     expect(cli("phase", "clear").status).toBe(0);
   });
+
+  it("sets the marker even when stdin carries junk (only `check` reads a payload)", () => {
+    const res = spawnSync("node", [script, "phase", "design"], {
+      cwd: tmp,
+      input: "this is not json",
+      encoding: "utf8",
+    });
+    expect(res.status).toBe(0);
+    // and it took effect — a design-phase deny now fires
+    const after = check({ cwd: tmp, tool_name: "Bash", tool_input: { command: "git push" } });
+    expect(after.status).toBe(2);
+  });
 });
 
 describe("phase × role union", () => {
@@ -169,6 +181,16 @@ describe("path normalization", () => {
     expect(res.stderr).toContain("outside the project root");
   });
 
+  it("a phase with no deny_write allows an out-of-root target (e.g. a /tmp handoff)", () => {
+    cli("phase", "code"); // `code` restricts bash but imposes no deny_write
+    const res = check({
+      cwd: tmp,
+      tool_name: "Write",
+      tool_input: { file_path: `${tmp}/../../../tmp/handoff.txt` },
+    });
+    expect(res.status).toBe(0);
+  });
+
   it("resolves a symlinked cwd without a false-positive escape", () => {
     mkdirSync(join(tmp, "real", "src"), { recursive: true });
     symlinkSync(join(tmp, "real"), join(tmp, "alt"));
@@ -215,12 +237,34 @@ describe("deny_bash bypass patterns", () => {
     expect(denied(`git -C ${tmp} commit -m x`)).toBe(2);
   });
 
+  it("denies git -C with a quoted directory that contains spaces", () => {
+    expect(denied(`git -C "${tmp}/a b" commit -m x`)).toBe(2);
+  });
+
+  it("denies git with a --no-pager global flag before the subcommand", () => {
+    expect(denied("git --no-pager push")).toBe(2);
+  });
+
   it("denies an env-prefixed command", () => {
     expect(denied("env FOO=bar git push")).toBe(2);
   });
 
   it("still allows an unrelated git command", () => {
     expect(denied("git status")).toBe(0);
+  });
+
+  it("does not match a subcommand that only starts with a trigger word", () => {
+    expect(denied("git commit-tree -m x")).toBe(0);
+  });
+
+  it("does not match a trigger word that only appears inside a quoted argument", () => {
+    cli("phase", "code"); // `code` denies `git push` but must allow a commit that mentions it
+    const res = check({
+      cwd: tmp,
+      tool_name: "Bash",
+      tool_input: { command: `git commit -m "todo: git push later"` },
+    });
+    expect(res.status).toBe(0);
   });
 });
 

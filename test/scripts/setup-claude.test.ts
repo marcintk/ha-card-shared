@@ -121,6 +121,16 @@ describe("setup-claude.js", () => {
     expect(link).toBe(join(sharedRoot, "harness", "agents", "code-writer.md"));
   });
 
+  it("symlinks the guard hook into .claude/hooks/ and wires the check hook through it", () => {
+    run();
+    const link = readlinkSync(join(tmp, ".claude", "hooks", "skill-guard.mjs"));
+    expect(link).toBe(join(sharedRoot, "harness", "hooks", "skill-guard.mjs"));
+    const cmd = settings()
+      .hooks.PreToolUse.flatMap((e) => e.hooks)
+      .find((h) => h.command.includes("skill-guard.mjs"))?.command;
+    expect(cmd).toContain(".claude/hooks/skill-guard.mjs");
+  });
+
   it("running twice does not throw on existing symlinks", () => {
     run();
     expect(run).not.toThrow();

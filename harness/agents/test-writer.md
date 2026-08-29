@@ -1,5 +1,5 @@
 ---
-name: pipeline-test-writer
+name: test-writer
 description: Writes the single failing test for a code-it slice, given only the seam and the expected behavior — no implementation reasoning. Guarded by skill-guard: cannot write under src/.
 tools: Read, Edit, Write, Bash, Grep, Glob
 ---

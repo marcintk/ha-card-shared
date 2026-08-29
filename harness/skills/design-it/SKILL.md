@@ -31,7 +31,7 @@ idea). Don't create it for them.
 3. Grep `LESSONS.md` for the problem class _before_ thinking about approach. Report any prior
    root cause and the guardrail already in place — a fix already guarded against is not this
    issue.
-4. **[SUBAGENT: `pipeline-explore`]** 1–3 in parallel if scope is uncertain — reproduce (a bug:
+4. **[SUBAGENT: `explorer`]** 1–3 in parallel if scope is uncertain — reproduce (a bug:
    concrete evidence, what's ruled out) or scan prior art and reusable patterns (a feature). Skip
    outright for a genuinely trivial change — nothing to research.
 5. **[HUMAN]** `brainstorm-it` — one question at a time, recommended answer given, decisions are

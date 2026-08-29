@@ -54,19 +54,19 @@ describe("phase × role union", () => {
     cli("phase", "code"); // code phase allows commit
     const res = check({
       cwd: tmp,
-      agent_type: "pipeline-explore", // role denies commit unconditionally
+      agent_type: "explorer", // role denies commit unconditionally
       tool_name: "Bash",
       tool_input: { command: "git commit -m x" },
     });
     expect(res.status).toBe(2);
-    expect(res.stderr).toContain("role pipeline-explore");
+    expect(res.stderr).toContain("role explorer");
   });
 
   it("allows when both the phase and the role allow it", () => {
     cli("phase", "code");
     const res = check({
       cwd: tmp,
-      agent_type: "pipeline-coder",
+      agent_type: "code-writer",
       tool_name: "Bash",
       tool_input: { command: "git status" },
     });
@@ -88,11 +88,11 @@ describe("phase × role union", () => {
   });
 });
 
-describe("pipeline-reviewer", () => {
+describe("reviewer", () => {
   it("may edit src/", () => {
     const res = check({
       cwd: tmp,
-      agent_type: "pipeline-reviewer",
+      agent_type: "reviewer",
       tool_name: "Edit",
       tool_input: { file_path: `${tmp}/src/foo.ts` },
     });
@@ -102,7 +102,7 @@ describe("pipeline-reviewer", () => {
   it("may not edit test/", () => {
     const res = check({
       cwd: tmp,
-      agent_type: "pipeline-reviewer",
+      agent_type: "reviewer",
       tool_name: "Edit",
       tool_input: { file_path: `${tmp}/test/foo.test.ts` },
     });
@@ -110,11 +110,11 @@ describe("pipeline-reviewer", () => {
   });
 });
 
-describe("pipeline-coder red/green marker", () => {
+describe("code-writer red/green marker", () => {
   it("denies a src/ write with no red marker", () => {
     const res = check({
       cwd: tmp,
-      agent_type: "pipeline-coder",
+      agent_type: "code-writer",
       tool_name: "Edit",
       tool_input: { file_path: `${tmp}/src/foo.ts` },
     });
@@ -126,7 +126,7 @@ describe("pipeline-coder red/green marker", () => {
     cli("red", "test/foo.test.ts");
     const res = check({
       cwd: tmp,
-      agent_type: "pipeline-coder",
+      agent_type: "code-writer",
       tool_name: "Edit",
       tool_input: { file_path: `${tmp}/src/foo.ts` },
     });
@@ -138,7 +138,7 @@ describe("pipeline-coder red/green marker", () => {
     cli("green");
     const res = check({
       cwd: tmp,
-      agent_type: "pipeline-coder",
+      agent_type: "code-writer",
       tool_name: "Edit",
       tool_input: { file_path: `${tmp}/src/foo.ts` },
     });
@@ -149,7 +149,7 @@ describe("pipeline-coder red/green marker", () => {
     cli("red", "test/foo.test.ts");
     const res = check({
       cwd: tmp,
-      agent_type: "pipeline-coder",
+      agent_type: "code-writer",
       tool_name: "Edit",
       tool_input: { file_path: `${tmp}/test/foo.test.ts` },
     });
@@ -161,7 +161,7 @@ describe("path normalization", () => {
   it("denies a target that resolves outside the project root, under any guarded role", () => {
     const res = check({
       cwd: tmp,
-      agent_type: "pipeline-coder", // no deny_write pattern would otherwise match this path
+      agent_type: "code-writer", // no deny_write pattern would otherwise match this path
       tool_name: "Edit",
       tool_input: { file_path: `${tmp}/../../../etc/passwd` },
     });
@@ -174,7 +174,7 @@ describe("path normalization", () => {
     symlinkSync(join(tmp, "real"), join(tmp, "alt"));
     const res = check({
       cwd: join(tmp, "alt"),
-      agent_type: "pipeline-test-writer",
+      agent_type: "test-writer",
       tool_name: "Edit",
       tool_input: { file_path: join(tmp, "alt", "src", "foo.ts") },
     });
@@ -189,7 +189,7 @@ describe("path normalization", () => {
     const dbl = `${tmp}//dbl`;
     const res = check({
       cwd: dbl,
-      agent_type: "pipeline-test-writer",
+      agent_type: "test-writer",
       tool_name: "Edit",
       tool_input: { file_path: `${dbl}/src/foo.ts` },
     });
@@ -202,7 +202,7 @@ describe("deny_bash bypass patterns", () => {
   const denied = (cmd: string) =>
     check({
       cwd: tmp,
-      agent_type: "pipeline-explore",
+      agent_type: "explorer",
       tool_name: "Bash",
       tool_input: { command: cmd },
     }).status;

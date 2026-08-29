@@ -119,12 +119,7 @@ describe("skill set", () => {
 });
 
 describe("skill-guard", () => {
-  const agents = [
-    "pipeline-coder",
-    "pipeline-test-writer",
-    "pipeline-reviewer",
-    "pipeline-explore",
-  ];
+  const agents = ["code-writer", "test-writer", "reviewer", "explorer"];
 
   it.each(agents)("harness/agents/%s.md exists", (name) => {
     expect(existsSync(`${root}/harness/agents/${name}.md`)).toBe(true);

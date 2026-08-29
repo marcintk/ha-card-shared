@@ -117,8 +117,8 @@ describe("setup-claude.js", () => {
 
   it("symlinks a pipeline subagent into .claude/agents/", () => {
     run();
-    const link = readlinkSync(join(tmp, ".claude", "agents", "pipeline-coder.md"));
-    expect(link).toBe(join(sharedRoot, "harness", "agents", "pipeline-coder.md"));
+    const link = readlinkSync(join(tmp, ".claude", "agents", "code-writer.md"));
+    expect(link).toBe(join(sharedRoot, "harness", "agents", "code-writer.md"));
   });
 
   it("running twice does not throw on existing symlinks", () => {

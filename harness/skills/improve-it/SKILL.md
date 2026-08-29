@@ -29,7 +29,7 @@ Deepening pays off where change is frequent. Decide _where_ to look first:
 
 ## 2. Find the shallow modules
 
-Explore organically (a `pipeline-explore` subagent is fine). Note where you feel friction:
+Explore organically (an `explorer` subagent is fine). Note where you feel friction:
 
 - Understanding one concept means bouncing between many small modules.
 - Interface ≈ implementation in complexity.

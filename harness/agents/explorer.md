@@ -1,5 +1,5 @@
 ---
-name: pipeline-explore
+name: explorer
 description: Read-only reconnaissance for the design-it pipeline — reproduce a bug, or scan prior art and reusable patterns before a change. Returns evidence and file:line pointers, never a fix. Guarded by skill-guard: cannot write files, cannot run mutating git/gh.
 tools: Read, Grep, Glob, Bash
 ---

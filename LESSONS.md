@@ -1,7 +1,7 @@
 # Lessons log
 
 Root cause + guardrail per shipped change, newest first. Consulted before new work —
-grep the symptom before reproducing. Per-issue detail lives in `design-notes/`; this is
+grep the symptom before reproducing. Per-issue detail lives in `docs/design-notes/`; this is
 the by-symptom index.
 
 <!-- ponytail: single file; split by area if it outgrows one screen-scroll -->
@@ -10,9 +10,11 @@ the by-symptom index.
 
 - **Root cause:** GitHub renders a linked `.html` file as source, not a page; `raw.githack.com`
   works but is third-party and shows an interstitial.
-- **Guardrail:** `deploy-design-notes.yml` publishes `design-notes/` to GitHub Pages
-  (staged under `/design-notes/`, `.nojekyll`); the `explain-it` skill and
-  `design-notes/README.md` point links at `marcintk.github.io/ha-card-shared/design-notes/`.
+- **Guardrail:** the notes live in `docs/design-notes/` and GitHub Pages is set to deploy
+  from `main` `/docs` (`docs/.nojekyll` disables Jekyll), so
+  `docs/design-notes/<file>.html` serves at
+  `marcintk.github.io/ha-card-shared/design-notes/<file>.html` — the URL the `explain-it`
+  skill and `docs/design-notes/README.md` link to.
 - **Ref:** [#25](https://github.com/marcintk/ha-card-shared/issues/25) · 2026-08-28
 
 ## Workflow relied on checklist discipline, not enforcement

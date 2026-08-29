@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import {
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -119,6 +120,50 @@ describe("setup-claude.js", () => {
   });
 });
 
+// Pre-2.0 consumers symlinked .claude/settings.json into node_modules. Writing through that link
+// either throws (v2 stopped shipping .claude/) or lands in the package copy, which the next
+// install discards.
+describe("setup-claude.js settings.json symlinked into node_modules", () => {
+  const linkSettings = () => {
+    mkdirSync(join(tmp, ".claude"), { recursive: true });
+    symlinkSync(
+      join("..", "node_modules", "ha-card-shared", ".claude", "settings.json"),
+      join(tmp, ".claude", "settings.json")
+    );
+  };
+  const guardHooks = () =>
+    Object.values(settings().hooks)
+      .flat()
+      .flatMap((e) => e.hooks)
+      .filter((h) => h.command.includes("skill-guard.mjs"));
+
+  it("installs when the link dangles", () => {
+    linkSettings();
+    expect(run).not.toThrow();
+    expect(guardHooks().length).toBeGreaterThan(0);
+    expect(lstatSync(join(tmp, ".claude", "settings.json")).isSymbolicLink()).toBe(false);
+  });
+
+  it("never writes through the link into node_modules", () => {
+    const pkgClaude = join(tmp, "node_modules", "ha-card-shared", ".claude");
+    mkdirSync(pkgClaude, { recursive: true });
+    writeFileSync(join(pkgClaude, "settings.json"), '{"hooks":{}}\n');
+    linkSettings();
+    run();
+    expect(readFileSync(join(pkgClaude, "settings.json"), "utf8")).toBe('{"hooks":{}}\n');
+    expect(guardHooks().length).toBeGreaterThan(0);
+  });
+
+  it("leaves a symlink pointing outside node_modules alone", () => {
+    const own = join(tmp, "my-settings.json");
+    writeFileSync(own, JSON.stringify({ hooks: {} }));
+    mkdirSync(join(tmp, ".claude"), { recursive: true });
+    symlinkSync(own, join(tmp, ".claude", "settings.json"));
+    run();
+    expect(lstatSync(join(tmp, ".claude", "settings.json")).isSymbolicLink()).toBe(true);
+  });
+});
+
 describe("setup-claude.js git hooks", () => {
   const gitInit = () => {
     execSync("git init -q", { cwd: tmp });
@@ -141,9 +186,28 @@ describe("setup-claude.js git hooks", () => {
 
   it("does not clobber a consumer's own core.hooksPath", () => {
     gitInit();
+    mkdirSync(join(tmp, ".my-hooks"), { recursive: true });
+    writeFileSync(join(tmp, ".my-hooks", "pre-commit"), "#!/bin/sh\n");
     execSync("git config --local core.hooksPath .my-hooks", { cwd: tmp });
     run();
     expect(hooksPath()).toBe(".my-hooks");
+  });
+
+  // A value naming a missing or empty directory hooks nothing — git runs no hook and says
+  // nothing. Left alone it strands the consumer forever, since the value isn't ours to match on.
+  it("takes over a value naming a directory that does not exist", () => {
+    gitInit();
+    execSync("git config --local core.hooksPath .githooks", { cwd: tmp });
+    run();
+    expect(hooksPath()).toContain("harness/.githooks");
+  });
+
+  it("takes over a value naming an empty directory", () => {
+    gitInit();
+    mkdirSync(join(tmp, ".githooks"), { recursive: true });
+    execSync("git config --local core.hooksPath .githooks", { cwd: tmp });
+    run();
+    expect(hooksPath()).toContain("harness/.githooks");
   });
 
   it("re-points its own stale value and is idempotent", () => {

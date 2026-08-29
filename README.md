@@ -79,13 +79,16 @@ Every consumer project must have:
 ## Git hooks
 
 `postinstall` points `core.hooksPath` at `node_modules/ha-card-shared/harness/.githooks` (local
-config only; skipped if you're not in a git repo or have already set your own `core.hooksPath`).
+config only; skipped if you're not in a git repo, or if `core.hooksPath` already names a directory
+of your own that actually contains hooks).
 
 - `pre-commit` — biome check + prettier (markdown) + typecheck
 - `pre-push` — tests at 100% coverage
 
 Opt out with `git config --unset core.hooksPath` (or point it elsewhere — `postinstall` won't
-override a non-ha-card value).
+override a non-ha-card value). One exception: a value naming a **missing or empty** directory hooks
+nothing and git says nothing about it, so `postinstall` treats that as a leftover and takes it over
+rather than leaving you with silently dead hooks.
 
 ## Shared workflows
 

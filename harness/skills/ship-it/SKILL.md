@@ -34,10 +34,25 @@ changed, why it matters, the risk if wrong — before asking, not a status recap
    - **minor** — new export or toolchain feature, backward-compatible. Ship after 2–3 PRs.
    - **major** — any breaking change (removed/renamed export, changed signature, consumers must
      update). Ship immediately after merge.
-6. Bump version: `npm version patch|minor|major` (updates `package.json`, commits, creates the
-   local tag).
-7. Push: `git push --follow-tags`. CI creates the GitHub Release as a **draft** — every release,
-   always.
+6. Bump version on a release branch, then land it through a normal PR — `pre-commit` blocks every
+   commit on `main`, and a bare `npm version` shells out to a plain `git commit`, so it must not
+   run there:
+   ```bash
+   git checkout -b release/vX.Y.Z
+   npm version patch|minor|major --no-git-tag-version   # edits package.json only; no commit, no tag
+   git commit -am "chore: bump version to X.Y.Z"
+   git push -u origin HEAD
+   gh pr create --title "chore: bump version to X.Y.Z" --body "Release prep for vX.Y.Z."
+   ```
+   Wait for CI, then `gh pr merge --squash --delete-branch` — same as any `/fix-it`/`/feature-it`
+   PR.
+7. Tag the merged commit on `main` — a tag is not a commit, so the `main` guard never fires:
+   ```bash
+   git checkout main && git pull
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+   CI creates the GitHub Release as a **draft** — every release, always.
 8. Write the customer-facing release notes into the draft: `gh release edit <tag> --notes-file -`
    (or `--notes`). Not a commit dump — read `git log <prev-tag>..<tag>` and the merged PRs, then
    translate into what a consumer actually sees. Two sections, then one link line:

@@ -146,9 +146,18 @@ shellcheck, the smoke build, and verifies committed `dist/` matches a fresh buil
 tag is a valid semver strictly greater than the previous release and publishes a GitHub Release
 (pre-release tags like `vX.Y.Z-beta.1` publish as GitHub pre-releases).
 
+The version bump is a PR like any other — `pre-commit` blocks direct commits to `main`, and
+`npm version`'s own commit is no exception — then the tag goes on `main` after merge, since a tag
+is not a commit and never trips that guard:
+
 ```bash
-npm version patch|minor|major   # commits package.json + creates local tag
-git push --follow-tags
+git checkout -b release/vX.Y.Z
+npm version patch|minor|major --no-git-tag-version   # edits package.json only
+git commit -am "chore: bump version to X.Y.Z" && git push -u origin HEAD
+gh pr create --title "chore: bump version to X.Y.Z" --fill   # then merge once CI is green
+
+git checkout main && git pull
+git tag vX.Y.Z && git push origin vX.Y.Z
 ```
 
 | Change                                           | Bump    |

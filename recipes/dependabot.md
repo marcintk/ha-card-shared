@@ -1,15 +1,19 @@
 # Keeping ha-card-shared current with Dependabot
 
-## Upgrading (one command)
+## Upgrading
 
-Run this once per consumer repo to bump to a new version and wire Dependabot for all future releases:
+Bump both refs together — the npm dep and the workflow `uses:` pins — on a branch, then PR:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/marcintk/ha-card-shared/main/scripts/upgrade.sh) vX.Y.Z
+git checkout -b chore/bump-ha-card-shared-vX.Y.Z
+npm install ha-card-shared@github:marcintk/ha-card-shared#vX.Y.Z   # package.json + lockfile
+grep -rl 'marcintk/ha-card-shared/.github/workflows/.*@v' .github/workflows/ \
+  | xargs sed -i 's#@v[0-9.]\+#@vX.Y.Z#g'                          # workflow refs
+git commit -am "chore: bump ha-card-shared to vX.Y.Z" && gh pr create --fill
 ```
 
-The script: branches → bumps → runs checks → commits → sets up Dependabot → opens a PR. After the
-PR is merged, all future releases arrive automatically as Dependabot PRs — no manual steps needed.
+Wire the `dependabot.yml` below once, and every later release arrives as a Dependabot PR — no
+manual bump needed.
 
 ## How Dependabot works here
 

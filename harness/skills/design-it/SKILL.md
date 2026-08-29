@@ -21,7 +21,7 @@ what changed, why it matters, the risk if wrong — before asking, not a status 
 
 - **`/design-it <n>`** — an issue is filed. Go straight to Steps.
 - **`/design-it`** (no number) — discovery. Run **Scanning for candidates** in
-  `harness/design-methods/processes.md`: scope (a named area, else `git log` hot spots), an
+  `.claude/design-methods/processes.md`: scope (a named area, else `git log` hot spots), an
   `explorer` pass for shallow modules, a ranked report. **[HUMAN]** picks one; then `gh issue
 create` with a title + body from the pick and continue at Step 2 with that `<n>`. Run from
   `/release-it` for the repo-wide pass, or directly.
@@ -41,7 +41,7 @@ create` with a title + body from the pick and continue at Step 2 with that `<n>`
    outright for a genuinely trivial change — nothing to research.
 5. **[HUMAN]** `brainstorm-it` — one question at a time, recommended answer given, decisions are
    the human's. One concern per issue; extras become a separate GH issue, not scope creep.
-6. **Design it twice**, for anything non-trivial: work from `harness/design-methods/`
+6. **Design it twice**, for anything non-trivial: work from `.claude/design-methods/`
    (`glossary.md`, `design.md`, `discipline.md`) and run the **Design it twice** playbook in
    `processes.md` — at least two materially different approaches written out and compared before
    either is judged. A single-approach note is not finishable.

@@ -67,9 +67,25 @@ function mergeHooks() {
   dropPackageSymlink(settingsPath);
   /** @type {ClaudeSettings} */
   let settings = {};
+  let existing = "";
   try {
-    settings = JSON.parse(readFileSync(settingsPath, "utf8"));
+    existing = readFileSync(settingsPath, "utf8");
   } catch {}
+  if (existing.trim()) {
+    try {
+      settings = JSON.parse(existing);
+    } catch {
+      // Don't silently overwrite a settings file we can't parse (a hand-edit typo, a merge
+      // conflict) — that would wipe the consumer's permissions/env/hooks. Preserve it and skip.
+      const backup = `${settingsPath}.corrupt-${Date.now()}.bak`;
+      writeFileSync(backup, existing);
+      process.stderr.write(
+        `ha-card-shared: .claude/settings.json is not valid JSON — left it untouched, ` +
+          `copied to ${backup}. Fix it and re-run \`npm install\` to wire the guard hook.\n`
+      );
+      return;
+    }
+  }
   settings.hooks ??= {};
 
   /** @param {GuardHookEntry} e */
@@ -106,6 +122,18 @@ function mergeHooks() {
 
   mkdirSync(claudeDir, { recursive: true });
   writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
+}
+
+// The symlinked directories point into this machine's node_modules — committing them (a
+// teammate's checkout would get dangling links) is never right. Keep settings.json committable
+// but self-ignore the generated link dirs, so it doesn't depend on the consumer's root
+// .gitignore listing each one.
+function writeClaudeGitignore() {
+  mkdirSync(claudeDir, { recursive: true });
+  writeFileSync(
+    join(claudeDir, ".gitignore"),
+    "/skills/\n/agents/\n/hooks/\n/design-methods/\n/skill-guard/\n"
+  );
 }
 
 // Symlink every entry of <sharedRoot>/<srcRel> into <claudeDir>/<destName>, and prune any of our
@@ -188,6 +216,8 @@ function wireGitHooks() {
 
 mergeHooks();
 wireGitHooks();
+writeClaudeGitignore();
 linkInto("harness/hooks", "hooks");
 linkInto("harness/skills", "skills");
 linkInto("harness/agents", "agents");
+linkInto("harness/design-methods", "design-methods");

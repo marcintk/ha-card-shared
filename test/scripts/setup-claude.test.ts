@@ -131,6 +131,29 @@ describe("setup-claude.js", () => {
     expect(cmd).toContain(".claude/hooks/skill-guard.mjs");
   });
 
+  it("symlinks the design-methods reference into .claude/design-methods/", () => {
+    run();
+    const link = readlinkSync(join(tmp, ".claude", "design-methods", "glossary.md"));
+    expect(link).toBe(join(sharedRoot, "harness", "design-methods", "glossary.md"));
+  });
+
+  it("writes .claude/.gitignore so the generated link dirs are never committed", () => {
+    run();
+    const ignore = readFileSync(join(tmp, ".claude", ".gitignore"), "utf8");
+    for (const dir of ["skills", "agents", "hooks", "design-methods"]) {
+      expect(ignore).toContain(`/${dir}/`);
+    }
+  });
+
+  it("preserves an unparseable settings.json instead of overwriting it", () => {
+    mkdirSync(join(tmp, ".claude"), { recursive: true });
+    const settingsPath = join(tmp, ".claude", "settings.json");
+    writeFileSync(settingsPath, '{ "permissions": { "allow": ["Bash"] },, }'); // trailing-comma typo
+    run();
+    expect(readFileSync(settingsPath, "utf8")).toBe('{ "permissions": { "allow": ["Bash"] },, }');
+    expect(readdirSync(join(tmp, ".claude")).some((f) => f.includes("corrupt"))).toBe(true);
+  });
+
   it("running twice does not throw on existing symlinks", () => {
     run();
     expect(run).not.toThrow();

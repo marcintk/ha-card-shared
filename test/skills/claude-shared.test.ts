@@ -92,9 +92,11 @@ describe("skill set", () => {
     expect(readFileSync(`${dir}/design.md`, "utf8")).toMatch(/pull complexity downward/i);
   });
 
-  it("design-it points at harness/design-methods/ and drives the no-arg scan", () => {
+  it("design-it points at the design-methods reference and drives the no-arg scan", () => {
     const src = readFileSync(`${root}/harness/skills/design-it/SKILL.md`, "utf8");
-    expect(src).toContain("harness/design-methods/");
+    // `.claude/`-relative so it resolves in a consumer card too, not just this repo
+    expect(src).toContain(".claude/design-methods/");
+    expect(src).not.toContain("harness/design-methods/");
     expect(src).not.toContain("codebase-design");
     expect(src).not.toContain("deep-modules.md");
     // bare `/design-it` is a documented mode, not an error

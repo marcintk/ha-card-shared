@@ -38,33 +38,59 @@ function settings() {
 }
 
 describe("setup-claude.js", () => {
-  it("wires the skill-guard PreToolUse and Stop hooks", () => {
+  it("wires a single skill-guard PreToolUse check hook, and no Stop hook", () => {
     run();
     const { hooks } = settings();
     const pre = hooks.PreToolUse.filter((e) =>
       e.hooks.some((h) => h.command.includes("skill-guard.mjs"))
     );
     const args = pre.map((e) => e.hooks[0].command.match(/skill-guard\.mjs" (\w+)/)?.[1]);
-    expect(args).toEqual(["enter", "check"]);
-    expect(pre.find((e) => e.hooks[0].command.endsWith("enter"))?.matcher).toBe("Skill");
-    expect(
-      hooks.Stop.some(
-        (e) =>
-          e.hooks[0].command.includes("skill-guard.mjs") &&
-          e.hooks[0].command.trimEnd().endsWith("clear")
-      )
-    ).toBe(true);
+    expect(args).toEqual(["check"]);
+    expect(pre[0].matcher).toBe("Bash|Edit|Write|MultiEdit|NotebookEdit");
+    expect(hooks.Stop).toBeUndefined();
   });
 
-  it("running twice keeps exactly one set of guard hooks", () => {
+  it("running twice keeps exactly one guard hook", () => {
     run();
     run();
     const { hooks } = settings();
     const guardPre = hooks.PreToolUse.filter((e) =>
       e.hooks.some((h) => h.command.includes("skill-guard.mjs"))
     );
-    expect(guardPre).toHaveLength(2);
-    expect(hooks.Stop).toHaveLength(1);
+    expect(guardPre).toHaveLength(1);
+  });
+
+  // v2 wired a PreToolUse × Skill "enter" hook and a Stop "clear" hook for the skill-state layer,
+  // which v3 replaces with an explicit phase (see harness/hooks/skill-guard.mjs). An upgrading
+  // consumer still has both from their last install; confirm they're stripped, not left dangling.
+  it("strips a pre-3.0 Skill-matcher enter hook and Stop clear hook on upgrade", () => {
+    mkdirSync(join(tmp, ".claude"), { recursive: true });
+    writeFileSync(
+      join(tmp, ".claude", "settings.json"),
+      JSON.stringify({
+        hooks: {
+          PreToolUse: [
+            {
+              matcher: "Skill",
+              hooks: [
+                { type: "command", command: `node "${scriptPath}/../hooks/skill-guard.mjs" enter` },
+              ],
+            },
+          ],
+          Stop: [
+            {
+              hooks: [
+                { type: "command", command: `node "${scriptPath}/../hooks/skill-guard.mjs" clear` },
+              ],
+            },
+          ],
+        },
+      })
+    );
+    run();
+    const { hooks } = settings();
+    expect(hooks.PreToolUse.some((e) => e.matcher === "Skill")).toBe(false);
+    expect(hooks.Stop).toBeUndefined();
   });
 
   it("drops the legacy plugin-check SessionStart hook", () => {

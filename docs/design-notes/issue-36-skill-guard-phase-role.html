@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Union, Not Override</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root {
+    --ground: #f6f7fa;
+    --surface: #ffffff;
+    --ink: #1b1e26;
+    --muted: #5a6070;
+    --rule: #dde0ea;
+    --accent: #4257b2;
+    --accent-ink: #2f3f88;
+    --accent-soft: #e9ecf9;
+    --amber: #9a6a15;
+    --amber-soft: #f6ecd8;
+    --shadow: 0 1px 2px rgba(20, 24, 40, .04), 0 8px 24px rgba(20, 24, 40, .05);
+  }
+  :root:not([data-theme="light"]) {
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1116;
+      --surface: #171a21;
+      --ink: #e3e5ec;
+      --muted: #959bad;
+      --rule: #292d38;
+      --accent: #8fa2f0;
+      --accent-ink: #b3c0f7;
+      --accent-soft: #1f2540;
+      --amber: #d7ab63;
+      --amber-soft: #2e2717;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0f1116;
+    --surface: #171a21;
+    --ink: #e3e5ec;
+    --muted: #959bad;
+    --rule: #292d38;
+    --accent: #8fa2f0;
+    --accent-ink: #b3c0f7;
+    --accent-soft: #1f2540;
+    --amber: #d7ab63;
+    --amber-soft: #2e2717;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 43rem;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 5vw, 2.5rem) 6rem;
+  }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .72rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  header { display: grid; gap: 1.5rem; }
+  h1 {
+    font-family: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    line-height: 1.15;
+    text-wrap: balance;
+    margin: .4rem 0 0;
+    letter-spacing: -.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.5rem;
+    padding: 1rem 0 1.25rem;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+  .meta b { color: var(--ink); font-weight: 500; }
+  .meta a { color: var(--accent-ink); text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .12rem .6rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 500;
+    background: var(--amber-soft);
+    color: var(--amber);
+  }
+  .pill::before {
+    content: "";
+    width: .5rem; height: .5rem;
+    border-radius: 999px;
+    background: currentColor;
+  }
+  .pill.approved { background: var(--accent-soft); color: var(--accent-ink); }
+
+  main { display: grid; gap: 3rem; margin-top: 3rem; }
+  section { display: grid; gap: 1rem; }
+  h2 {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin: 0;
+    letter-spacing: -.005em;
+  }
+  h2 .eyebrow { display: block; margin-bottom: .35rem; }
+  p { margin: 0; max-width: 40rem; }
+  a { color: var(--accent-ink); }
+  code {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .86em;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: .08em .35em;
+  }
+
+  ul.plain { margin: 0; padding: 0; list-style: none; display: grid; gap: .75rem; }
+  ul.plain li { padding-left: 1.35rem; position: relative; max-width: 40rem; }
+  ul.plain li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: .68em;
+    width: .45rem; height: .45rem;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+
+  ol.edits { margin: 0; padding: 0; list-style: none; display: grid; gap: .9rem; counter-reset: e; }
+  ol.edits li {
+    counter-increment: e;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1rem 1.1rem 1rem 3rem;
+    position: relative;
+    box-shadow: var(--shadow);
+  }
+  ol.edits li::before {
+    content: counter(e);
+    position: absolute;
+    left: 1.1rem; top: 1rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    width: 1.4rem; height: 1.4rem;
+    display: grid; place-items: center;
+    border-radius: 6px;
+  }
+  ol.edits b { font-weight: 600; }
+
+  .files {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: .88rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .7rem .9rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { background: var(--ground); }
+  td.path { white-space: nowrap; font-family: "IBM Plex Mono", monospace; font-size: .82rem; }
+
+  .swap {
+    display: grid;
+    gap: .5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .84rem;
+    box-shadow: var(--shadow);
+    max-width: 40rem;
+  }
+  .swap .row { display: flex; gap: .8rem; align-items: baseline; flex-wrap: wrap; }
+  .swap .tag {
+    color: var(--muted);
+    font-size: .68rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    min-width: 4.5rem;
+  }
+  .swap .was { color: var(--muted); text-decoration: line-through; }
+  .swap .now { color: var(--accent-ink); font-weight: 600; }
+
+  .callout {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: .9rem 1.1rem;
+    max-width: 40rem;
+  }
+  .callout.amber { background: var(--amber-soft); border-left-color: var(--amber); }
+  .callout p + p { margin-top: .5rem; }
+
+  ol.steps { margin: 0; padding-left: 1.3rem; display: grid; gap: .55rem; max-width: 40rem; }
+  ol.steps li { padding-left: .2rem; }
+  ol.steps li::marker { color: var(--accent); font-family: "IBM Plex Mono", monospace; font-size: .85rem; }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .76rem;
+    color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    a { transition: color .15s ease; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <span class="eyebrow">Design note &middot; ha-card-shared</span>
+      <h1>Union, not override: rewriting skill-guard as phase &times; role</h1>
+    </div>
+    <div class="meta">
+      <span>issue <b><a href="https://github.com/marcintk/ha-card-shared/issues/36">#36</a></b></span>
+      <span>branch <b>refactor/skill-guard-phase-role</b></span>
+      <span>drafted <b>2026-08-29</b></span>
+      <span class="pill approved">approved</span>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2><span class="eyebrow">01</span>Problem</h2>
+      <p>Two audits back (the harness rebuild plan), skill-guard turned out to be two guards
+      stapled together, and only one of them ever worked.</p>
+      <p><b>The skill layer was dead on arrival.</b> A <code>PreToolUse &times; Skill</code> hook
+      recorded the active skill into one slot; a <code>Stop</code> hook deleted it. <code>Stop</code>
+      fires when Claude finishes responding &mdash; every turn boundary &mdash; so the recorded
+      skill was gone by the first <code>[HUMAN]</code> gate in any multi-turn pipeline. It was
+      never providing the protection its own policy file claimed.</p>
+      <p><b>The role layer worked, and had four real bugs.</b> <code>pipeline-reviewer</code>'s
+      <code>deny_write: ["."]</code> matched every path, so <code>/simplify</code> could apply
+      nothing &mdash; contradicting the role's own job. <code>pipeline-coder</code> deadlocked
+      mid-slice: the moment its first edit turned the target test green, every further
+      <code>src/</code> write in that same slice was refused. The probe behind that
+      (<code>suiteGreen()</code>) ran the whole test suite inside a 30s <code>PreToolUse</code>
+      hook on every write &mdash; several full runs per slice, silently switched off past the
+      timeout, any unrelated non-zero exit misread as &ldquo;red&rdquo;. And path matching
+      (<code>raw.startsWith(cwd)</code>) failed <i>selectively</i>: a symlinked checkout or a
+      double-slash working directory left the absolute path unstripped, so <code>^src/</code>
+      silently stopped matching while a blanket <code>["."]</code> rule kept working &mdash; the
+      TDD guard could go dark without anything looking wrong.</p>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">02</span>The shape: union, not override</h2>
+      <p>The old design treated skill and role as alternatives &mdash; <code>agent_type</code>
+      beats the recorded skill; whichever resolves, its rules apply alone. The new design
+      replaces the dead skill layer with an explicit <b>phase</b> the entry-point skill sets
+      itself (<code>skill-guard.mjs phase design|code|ship|release</code>, written to
+      <code>.claude/skill-guard/phase</code>, expiring after 8h rather than 30 minutes &mdash;
+      long enough to survive a real multi-turn design session), and resolves phase and role
+      together: <b>a call is denied if either denies it.</b></p>
+      <div class="diagram"><p>deny(call) = phase.denies(call) &or; role.denies(call)</p></div>
+      <p>Concretely: phase <code>code</code> allows a commit, but if the active subagent is
+      <code>pipeline-explore</code> (whose role always forbids commits), the call is still denied
+      &mdash; the union means neither side can be a loophole for the other.</p>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">03</span>The four fixes</h2>
+      <p><b>Reviewer.</b> <code>deny_write</code> becomes <code>["^test/", "\.test\.ts$"]</code>
+      &mdash; matches the role's own description (&ldquo;read-only except for what
+      <code>/simplify</code> applies&rdquo;) instead of contradicting it.</p>
+      <p><b>Coder: a marker, not a probe.</b> <code>suiteGreen()</code> is gone entirely.
+      <code>skill-guard.mjs red &lt;test-file&gt;</code> writes a marker (also expiring, 30
+      minutes, so a forgotten marker can't leave the TDD gate open forever);
+      <code>pipeline-coder</code> may write <code>src/</code> only while it's present;
+      <code>skill-guard.mjs green</code> clears it once the slice is accepted. Mechanical, and off
+      the hook's latency path &mdash; no more subprocess test run inside a 30s
+      <code>PreToolUse</code> budget.</p>
+      <p><b>Path normalization, done properly.</b>
+      <code>realpathSync</code> on both the guarded root and the target (tolerant of a target that
+      doesn't exist yet &mdash; walks up to the nearest real ancestor, reattaches the rest), then
+      <code>path.relative</code>. A target that resolves outside the project root is denied
+      <i>unconditionally</i> under any guarded context, independent of whether any specific
+      <code>deny_write</code> pattern happens to match &mdash; closing exactly the class of escape
+      a pattern-only check would miss. Verified against this exact session's own working directory
+      quirk: launched with an &ldquo;Additional working directory&rdquo; of
+      <code>/home/marcintk/Development/ha//ha-card-shared</code> (double slash) alongside the
+      primary path &mdash; both now resolve to the identical canonical root.</p>
+      <p><b><code>deny_bash</code>, unanchored.</b> Every pattern lost its <code>^\s*</code>
+      anchor, which by itself defeats <code>cd x &amp;&amp; git push</code>,
+      <code>env FOO=bar git push</code>, and a command wrapped in <code>bash -c '...'</code> or
+      split across lines &mdash; an anchored pattern only ever looked at the very start of the
+      string. One added normalization step strips git's <code>-C &lt;dir&gt;</code> /
+      <code>-c key=val</code> global flags before matching, so <code>git -C . commit</code> reads
+      as <code>git commit</code>. This is a guardrail, not a sandbox &mdash; the docs say so.</p>
+      <div class="callout"><p><b>Visibility.</b> Every <code>check</code> decision &mdash; allow
+      or deny, phase, role, tool, reason &mdash; is appended to
+      <code>.claude/skill-guard/log</code>. Fail-open stays the default on any read error, but for
+      the first time there's a durable trail of what the guard actually did, not just what it was
+      supposed to do.</p></div>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">04</span>Guardrail</h2>
+      <p><code>test/harness/skill-guard.test.ts</code> &mdash; 23 new cases spawning the hook as a
+      real subprocess with crafted payloads, matching every item the issue's acceptance criteria
+      named: the union (phase-only deny, role-only deny, both-allow, a stale phase treated as
+      none), reviewer's src/test split, the coder marker's full red&rarr;write&rarr;green&rarr;deny
+      cycle, path escape under a role with no matching <code>deny_write</code> pattern, a
+      symlinked cwd, a double-slashed cwd, all three <code>deny_bash</code> bypass patterns plus
+      one confirming a legitimate command still passes, fail-open on invalid JSON and on
+      <code>SKILL_GUARD_OFF=1</code>, and the decision log recording both an allow and a deny.</p>
+      <p>Two existing test files needed updating to assert the new, intentional shape rather than
+      the old one: <code>test/scripts/setup-claude.test.ts</code> (the hook wiring is now a single
+      <code>check</code> entry, no <code>Skill</code> matcher, no <code>Stop</code> hook &mdash;
+      plus a new case proving an upgrading consumer's stale pre-3.0 hooks get stripped, not left
+      dangling) and <code>test/skills/claude-shared.test.ts</code> (the policy names phases now,
+      not skills).</p>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">05</span>A test-harness mistake, kept in the log</h2>
+      <p>Mid-verification, an initial smoke test called <code>skill-guard.mjs phase code</code>
+      without piping a <code>cwd</code>, from the actual repo checkout. That's not a bug in the
+      script &mdash; <code>phase</code>/<code>red</code>/<code>green</code> are meant to be run
+      directly by a skill's own Bash step (no hook payload involved), so defaulting to
+      <code>process.cwd()</code> is exactly correct &mdash; it just meant the test accidentally
+      wrote a stray phase file into this repo's own <code>.claude/skill-guard/</code> instead of
+      the intended scratch directory. Caught, confirmed harmless (a later <code>phase clear</code>
+      in the same broken test removed it), cleaned up, and the test redone by <code>cd</code>-ing
+      into the scratch dir for those calls &mdash; matching how a real skill invokes them.</p>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">06</span>Non-goals</h2>
+      <p>Wiring any real skill to call <code>skill-guard.mjs phase</code>. No entry-point skill
+      sets a phase yet &mdash; <code>/design-it</code>, <code>/code-it</code>, <code>/ship-it</code>,
+      <code>/release-it</code> don't exist until #37. Until then the phase mechanism exists and is
+      fully tested, but nothing in this repo actually invokes it; only the role layer
+      (<code>agent_type</code>, already wired to the pipeline subagents) is live today.</p>
+      <p>Updating the v1.4.1&rarr;2.0.0 migration recipe. This change needs zero consumer action
+      &mdash; <code>postinstall</code> migrates a stale hook automatically, proven by the new
+      &ldquo;strips a pre-3.0&hellip;&rdquo; test &mdash; so there's nothing to add to the recipe
+      yet. The recipe gets finalized once the full #33&ndash;#38 sequence is ready to ship as one
+      release.</p>
+    </section>
+  </main>
+</body>
+</html>

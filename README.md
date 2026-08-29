@@ -58,11 +58,13 @@ ha-card-shared. It:
 
 - symlinks the bundled skills into `.claude/skills/` and the pipeline subagents into
   `.claude/agents/`;
-- merges the `skill-guard` hooks into `.claude/settings.json` — a `PreToolUse` guard that
-  reads which pipeline skill or subagent role is active and blocks operations outside its
-  remit (`brainstorm-it` can't commit, the `tdd-coder` subagent can't touch tests or write
-  `src/` before a test is red, and so on). Runtime state lives in `.claude/skill-guard/`
-  (self-ignored); set `SKILL_GUARD_OFF=1` to disable;
+- merges the `skill-guard` hook into `.claude/settings.json` — a `PreToolUse` guard that denies
+  a call when either the active **phase** (`design`, `code`, `ship`, `release` — set by the
+  entry-point skill via `skill-guard.mjs phase …`, and surviving across turns) or the active
+  subagent **role** forbids it (the `pipeline-coder` subagent can't touch tests, and can't write
+  `src/` until the slice is marked red via `skill-guard.mjs red <test-file>`, and so on). Runtime
+  state lives in `.claude/skill-guard/` (self-ignored) — `phase`, `red`, and a `log` of every
+  decision; set `SKILL_GUARD_OFF=1` to disable;
 - points git's `core.hooksPath` at `harness/.githooks` (see [Git hooks](#git-hooks)).
 
 No manual setup needed — running `npm install` wires everything.

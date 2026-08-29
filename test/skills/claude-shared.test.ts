@@ -115,13 +115,12 @@ describe("skill-guard", () => {
     expect(pkg.files).toContain("harness/");
   });
 
-  it("the policy names every guarded skill and role", () => {
+  it("the policy names every guarded role and phase", () => {
     const policy = JSON.parse(readFileSync(`${root}/harness/hooks/skill-guard.json`, "utf8")) as {
-      skills: Record<string, unknown>;
+      phases: Record<string, unknown>;
       roles: Record<string, unknown>;
     };
     expect(Object.keys(policy.roles).sort()).toEqual(agents.slice().sort());
-    expect(policy.skills).toHaveProperty("brainstorm-it");
-    expect(policy.skills).toHaveProperty("pr-it");
+    expect(Object.keys(policy.phases).sort()).toEqual(["code", "design", "release", "ship"]);
   });
 });

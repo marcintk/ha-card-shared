@@ -38,9 +38,9 @@ const guardBase =
     : sharedRoot;
 const guard = `${guardBase}/harness/hooks/skill-guard.mjs`;
 
-// Merge the skill-guard PreToolUse / Stop hooks into the consumer's .claude/settings.json.
-// Idempotent: any hook entry whose command mentions skill-guard.mjs is replaced. Also drops
-// the pre-1.5 "missing required plugins" SessionStart hook if it's still there.
+// Merge the skill-guard PreToolUse hook into the consumer's .claude/settings.json. Idempotent:
+// any hook entry whose command mentions skill-guard.mjs is replaced. Also drops the pre-1.5
+// "missing required plugins" SessionStart hook, and a pre-3.0 Stop hook, if still there.
 // A pre-2.0 consumer has .claude/settings.json symlinked into node_modules. Writing through that
 // link either throws (v2 stopped shipping .claude/, so the target is gone) or silently lands in
 // the package copy, which the next install discards. Drop the link so a real file replaces it —
@@ -87,10 +87,18 @@ function mergeHooks() {
 
   settings.hooks.PreToolUse = [
     ...keep(settings.hooks.PreToolUse),
-    { matcher: "Skill", hooks: [cmd("enter")] },
     { matcher: "Bash|Edit|Write|MultiEdit|NotebookEdit", hooks: [cmd("check")] },
   ];
-  settings.hooks.Stop = [...keep(settings.hooks.Stop), { hooks: [cmd("clear")] }];
+
+  // v2's guard was skill-state-based: a `PreToolUse × Skill` hook plus a `Stop` hook that cleared
+  // it on every turn boundary — dead from day one, since it never survived past the first human
+  // gate. v3 replaces it with an explicit phase a skill sets itself (`skill-guard.mjs phase …`),
+  // so neither hook is wired going forward — but still strip a leftover guard entry from an
+  // earlier install so an upgrade doesn't leave a stale `enter`/`clear` invocation behind.
+  if (settings.hooks.Stop) {
+    settings.hooks.Stop = keep(settings.hooks.Stop);
+    if (settings.hooks.Stop.length === 0) delete settings.hooks.Stop;
+  }
 
   if (settings.hooks.SessionStart) {
     settings.hooks.SessionStart = settings.hooks.SessionStart.filter(

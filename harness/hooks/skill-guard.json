@@ -1,29 +1,36 @@
 {
-  "settings": { "stale_seconds": 1800 },
-  "skills": {
-    "brainstorm-it": {
-      "deny_bash": ["^\\s*git\\s+(commit|push)\\b", "^\\s*gh\\s+pr\\s+(create|merge)\\b"],
-      "reason": "brainstorm-it plans and drafts issues; it never commits or ships."
-    },
-    "explain-it": {
+  "settings": { "phase_stale_seconds": 28800, "red_stale_seconds": 1800 },
+  "phases": {
+    "design": {
       "deny_write": ["^src/", "^test/"],
-      "reason": "explain-it owns design-notes/ and SOLUTIONS.md, not source or tests."
+      "deny_bash": [
+        "git\\s+commit\\b",
+        "git\\s+push\\b",
+        "gh\\s+pr\\s+(create|merge)\\b",
+        "npm\\s+version\\b"
+      ],
+      "reason": "design produces the note and the plan; no code, no commit, before the go-ahead gate."
     },
-    "improve-it": {
-      "deny_write": ["^src/", "^test/"],
-      "reason": "improve-it produces a markdown report, not code."
+    "code": {
+      "deny_bash": ["git\\s+push\\b", "gh\\s+pr\\s+(create|merge)\\b", "npm\\s+version\\b"],
+      "reason": "code implements and commits slices locally; shipping is a separate phase."
     },
-    "pr-it": {
+    "ship": {
       "deny_write": ["^src/", "^test/"],
-      "reason": "pr-it ships what is already committed; it does not edit source or tests."
+      "deny_bash": ["npm\\s+version\\b"],
+      "reason": "ship commits, pushes and opens the PR; it doesn't edit source or tests."
+    },
+    "release": {
+      "deny_write": ["^src/", "^test/"],
+      "reason": "release bumps, tags and pushes; it doesn't edit source or tests."
     }
   },
   "roles": {
     "pipeline-explore": {
       "deny_write": ["."],
       "deny_bash": [
-        "^\\s*git\\s+(commit|push|checkout|switch|merge|rebase|reset)\\b",
-        "^\\s*gh\\s+pr\\s+(create|merge|close)\\b"
+        "git\\s+(commit|push|checkout|switch|merge|rebase|reset)\\b",
+        "gh\\s+pr\\s+(create|merge|close)\\b"
       ],
       "reason": "reproduce / prior-art scan is read-only."
     },
@@ -34,12 +41,12 @@
     "pipeline-coder": {
       "deny_write": ["^test/", "\\.test\\.ts$"],
       "tdd": true,
-      "reason": "coder changes implementation; the slice's tests are frozen, and no src/ write until a test is red."
+      "reason": "coder changes implementation; the slice's tests are frozen, and no src/ write until skill-guard.mjs red has marked a test failing."
     },
     "pipeline-reviewer": {
-      "deny_write": ["."],
-      "deny_bash": ["^\\s*git\\s", "^\\s*gh\\s"],
-      "reason": "review is read-only."
+      "deny_write": ["^test/", "\\.test\\.ts$"],
+      "deny_bash": ["git\\s", "gh\\s"],
+      "reason": "review applies /code-review + /simplify cleanups; it doesn't touch tests and doesn't ship."
     }
   }
 }

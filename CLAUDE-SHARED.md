@@ -4,6 +4,9 @@ TypeScript + Rollup → `dist/<project>.js` | Vitest | Biome + Prettier | HACS p
 
 ## Commands
 
+Every consumer card defines these (a shared convention, not exports of `ha-card-shared` itself —
+`ha-card-shared`'s own `package.json` is narrower, since it isn't a card being bundled or watched):
+
 ```bash
 npm install
 npm run build          # bundle src/ → dist/<project>.js (name from package.json)

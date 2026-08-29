@@ -6,6 +6,30 @@ the by-symptom index.
 
 <!-- ponytail: single file; split by area if it outgrows one screen-scroll -->
 
+## `git add -u` in a hook sweeps unrelated working-tree changes into the commit
+
+- **Root cause:** `pre-commit` re-staged with `git add -u` after auto-fixing, which restages
+  _every_ tracked modification in the repo, not just files already staged — a path-scoped or
+  staged-hunks commit silently absorbed whatever else happened to be dirty.
+- **Guardrail:** capture `git diff --cached --name-only` _before_ the auto-fixers run, and
+  restage only that list afterward via `git add --pathspec-from-file=-`. Verified with a live
+  rehearsal: a staged file and an unstaged file both get touched by a simulated auto-fixer;
+  only the staged one's index changes.
+- **Ref:** [#38](https://github.com/marcintk/ha-card-shared/issues/38) · 2026-08-29
+
+## A NUL-separated file list doesn't survive a POSIX shell variable
+
+- **Root cause:** `git diff --cached --name-only -z` (NUL-delimited, for filename safety) was
+  captured into a shell variable via `$(...)`, then piped to `xargs -0`. The rehearsal that was
+  supposed to prove this worked showed nothing got re-staged at all — POSIX shell variables are
+  NUL-terminated C strings; the value silently truncates or corrupts the moment an embedded NUL
+  byte crosses into one.
+- **Guardrail:** never round-trip NUL-delimited output through a shell variable. Use
+  `git add --pathspec-from-file=-`, which reads the newline-separated path list straight from a
+  pipe — no intermediate variable, no NUL to lose. Plain newline separation is fine here; this
+  repo doesn't need to defend against filenames containing embedded newlines.
+- **Ref:** [#38](https://github.com/marcintk/ha-card-shared/issues/38) · 2026-08-29
+
 ## A skill split on "bug vs. feature" makes the human classify before starting
 
 - **Root cause:** `fix-it` and `feature-it` duplicated nearly every step, differing mainly in

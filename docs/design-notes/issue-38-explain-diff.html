@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hygiene Batch</title>
+<style>
+  :root {
+    --bg: #fafaf8; --fg: #1a1a1a; --accent: #b5541f; --muted: #6b6b6b;
+    --code-bg: #282c34; --code-fg: #e6e6e6; --callout-bg: #fff4e8; --border: #e0ddd6;
+  }
+  body { font-family: Georgia, 'Times New Roman', serif; background: var(--bg); color: var(--fg);
+    max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem 6rem; line-height: 1.65; }
+  h1 { font-size: 1.9rem; border-bottom: 3px solid var(--accent); padding-bottom: .5rem; }
+  h2 { font-size: 1.4rem; margin-top: 3rem; color: var(--accent); }
+  h3 { font-size: 1.1rem; margin-top: 1.8rem; }
+  code { font-family: 'SF Mono', Consolas, monospace; background: #eee; padding: .1rem .3rem;
+    border-radius: 3px; font-size: .92em; }
+  pre { background: var(--code-bg); color: var(--code-fg); padding: 1rem 1.2rem; border-radius: 8px;
+    overflow-x: auto; white-space: pre-wrap; font-family: 'SF Mono', Consolas, monospace;
+    font-size: .88rem; line-height: 1.5; }
+  pre code { background: none; padding: 0; color: inherit; }
+  .callout { background: var(--callout-bg); border-left: 4px solid var(--accent); padding: .9rem 1.2rem;
+    border-radius: 0 6px 6px 0; margin: 1.2rem 0; }
+  .toc { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.5rem; margin: 1.5rem 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc ul { margin: .3rem 0; }
+  .diagram { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem;
+    margin: 1.2rem 0; font-family: 'SF Mono', Consolas, monospace; font-size: .85rem; }
+  .flow { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; justify-content: center; padding: .5rem 0; }
+  .box { border: 2px solid var(--accent); border-radius: 8px; padding: .6rem 1rem; background: #fdf6ee;
+    text-align: center; min-width: 120px; }
+  .box.fail { border-color: #b91c1c; background: #fef2f2; }
+  .arrow { font-size: 1.4rem; color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+  th, td { border: 1px solid var(--border); padding: .5rem .7rem; text-align: left; }
+  th { background: #f0ede6; }
+  .quiz-q { background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem 1.5rem; margin: 1.2rem 0; }
+  .quiz-opt { display: block; width: 100%; text-align: left; padding: .6rem 1rem; margin: .4rem 0;
+    border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer;
+    font-family: inherit; font-size: .95rem; }
+  .quiz-opt:hover { background: #f5f2ec; }
+  .quiz-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .feedback { display: none; margin-top: .6rem; padding: .6rem 1rem; border-radius: 6px; font-size: .9rem; }
+  .feedback.correct { background: #ecfdf3; color: #166534; border-left: 3px solid #16a34a; }
+  .feedback.incorrect { background: #fef2f2; color: #991b1b; border-left: 3px solid #dc2626; }
+  @media (max-width: 600px) { body { padding: 1rem; } .flow { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<h1>Hygiene Batch</h1>
+<p style="color:var(--muted); margin-top:-.5rem;">Prepared 2026-08-29 · PR #47 · issue #38</p>
+
+<div class="toc">
+<strong>Contents</strong>
+<ul>
+  <li><a href="#background">Background</a></li>
+  <li><a href="#intuition">The staging fix, and the bug hiding inside the first attempt at it</a></li>
+  <li><a href="#code">The other three items</a></li>
+  <li><a href="#quiz">Quiz</a></li>
+</ul>
+</div>
+
+<h2 id="background">Background</h2>
+<p>The last issue in this rebuild is a batch of small, unrelated defects the original audit found and deliberately didn't split into their own issues &mdash; each one real, but none big enough to earn a design note of its own. The pipeline's own acceptance bar for a batch like this is explicit: <i>each item fixed, or explicitly declined with a reason</i>. Declining is a legitimate outcome, not a shortcut, provided the reason is checked rather than assumed.</p>
+
+<h2 id="intuition">The staging fix, and the bug hiding inside the first attempt at it</h2>
+<p><code>git commit</code> only commits what's <i>staged</i> &mdash; the index, not the working tree. A hook that runs an auto-fixer (Biome, Prettier) after staging has a real problem: the fixer edits files on disk, but those edits aren't in the index yet, so the commit would ship the pre-fix version unless something re-stages them.</p>
+<p>The old fix was <code>git add -u</code> &mdash; "stage every modification to every tracked file." That solves the immediate problem and creates a worse one: if anything else in the working tree happened to be dirty &mdash; an experiment you hadn't finished, a file you were mid-edit on for something unrelated &mdash; it rides along into this commit too, silently.</p>
+<p>The fix sounds simple: remember what was staged <i>before</i> the fixer runs, then only re-stage that. The first way to write it wasn't simple enough:</p>
+<pre><code>staged=$(git diff --cached --name-only -z)   # NUL-separated, for filename safety
+# ...
+printf '%s' "$staged" | xargs -0 -r git add</code></pre>
+<p>This looks careful &mdash; NUL-separated output is the standard defense against filenames containing spaces or newlines. It also doesn't work, and the failure is silent. A POSIX shell variable is, under the hood, a NUL-terminated string; the moment `git diff -z`'s NUL byte lands inside one via <code>$(...)</code>, the value is corrupted &mdash; no error, no warning, just a variable that no longer contains what you think it does.</p>
+<div class="callout"><p><b>Caught by rehearsing, not by reasoning about it harder.</b> A quick manual test &mdash; stage one file, leave a second one modified-but-unstaged, run a fake auto-fixer that edits both, apply the fix, check what actually got staged &mdash; came back empty. Nothing was re-added. That's the entire value of testing a shell one-liner before trusting it: the bug was invisible from reading the code, and obvious the moment it ran against real files.</p></div>
+<p>The fix: skip the shell variable for the NUL-separated data entirely.</p>
+<pre><code>staged=$(git diff --cached --name-only)      # plain newlines — fine here
+# ...
+printf '%s\n' "$staged" | git add --pathspec-from-file=-</code></pre>
+<p><code>--pathspec-from-file=-</code> reads the path list straight off the pipe; nothing NUL-shaped ever has to survive a round trip through a shell string. Re-rehearsed, and this time the isolation held: the staged file's index picked up the fixer's change, the unstaged file's index stayed byte-identical to <code>HEAD</code>, even though the fixer had touched its working tree too.</p>
+
+<h2 id="code">The other three items</h2>
+<p><b>Handoff files, relocated.</b> <code>explain-it finalize</code> wrote to <code>/tmp/explain-spec.json</code> and <code>/tmp/issue-&lt;n&gt;-explain-diff.md</code> &mdash; a directory shared machine-wide across every sibling card repo this toolchain serves, gone the instant the session ends. Moved to <code>docs/design-notes/.work/</code>, gitignored, scoped to the one repo the handoff is actually happening in. Confirmed live: a file written there produces empty <code>git status --porcelain</code> output.</p>
+<p><b>Two doc-drift items needed no fix at all</b> &mdash; checked, not assumed. <code>skill-guard.json</code>'s stale &ldquo;SOLUTIONS.md&rdquo; reference and README's &ldquo;tdd-coder&rdquo; subagent name were both already corrected earlier in this same rebuild sequence (#36 and #37, respectively), before this issue ever got to them.</p>
+<p><b>One real fix, one real clarification.</b> <code>commit-it</code>'s mandated trailer hardcoded <code>Claude Sonnet 5</code> regardless of which model actually wrote the commit &mdash; changed to an instruction to substitute the model in use, never a fixed name. <code>CLAUDE-SHARED.md</code>'s command block lists <code>build:prod</code>, <code>dev</code>, <code>test:watch</code> &mdash; true that none of these exist in <code>ha-card-shared</code>'s own <code>package.json</code>, and not actually a bug: checked all four sibling card repos, and every one of them defines exactly these scripts. The block was describing a <i>card's</i> convention all along, correctly, just without saying so &mdash; one clarifying line fixes the ambiguity without touching the commands themselves.</p>
+<div class="callout"><p><b>Declined, with the claim verified first.</b> <code>setup-claude.js</code>'s <code>linkInto</code> swallows <code>EEXIST</code> silently, so an existing symlink is never re-pointed at a new target &mdash; the issue itself proposed declining this, calling it &ldquo;covered incidentally by the install fixture matrix.&rdquo; Checked rather than trusted: <code>test/scripts/setup-claude.test.ts</code>'s existing &ldquo;running twice does not throw on existing symlinks&rdquo; case does in fact exercise this exact path. The claim held, so the decline stands &mdash; harmless while every symlink target is a stable absolute path, a real trap only if the layout moves, which nothing in this rebuild does.</p></div>
+
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz-q">
+<p><strong>Why does `git add -u` in a pre-commit hook risk committing more than intended?</strong></p>
+<button class="quiz-opt" data-correct="false">It amends the previous commit instead of creating a new one.</button>
+<button class="quiz-opt" data-correct="false">It ignores files matched by .gitignore, so previously-ignored files get committed.</button>
+<button class="quiz-opt" data-correct="true">It stages every tracked modification in the whole repo, not just files already staged for this commit — unrelated dirty working-tree changes ride along silently.</button>
+<button class="quiz-opt" data-correct="false">It only stages files modified in the last hour, missing older edits.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>Why did capturing `git diff --cached --name-only -z` into a shell variable silently fail to work?</strong></p>
+<button class="quiz-opt" data-correct="true">A POSIX shell variable is a NUL-terminated string under the hood; the NUL byte from -z output corrupts the value the moment it&#x27;s captured via $(...), with no error.</button>
+<button class="quiz-opt" data-correct="false">The -z flag isn&#x27;t supported by git diff --cached.</button>
+<button class="quiz-opt" data-correct="false">Command substitution $(...) always strips the first line of its input.</button>
+<button class="quiz-opt" data-correct="false">xargs -0 requires root permissions to read NUL-delimited input.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>How was the shell-variable bug actually caught?</strong></p>
+<button class="quiz-opt" data-correct="false">By code review — a reviewer spotted the NUL-in-variable issue by reading the diff.</button>
+<button class="quiz-opt" data-correct="true">By a live rehearsal: staging one file, leaving another modified-but-unstaged, running a simulated auto-fixer on both, and checking what actually ended up staged — which came back empty.</button>
+<button class="quiz-opt" data-correct="false">The existing test suite failed when the hook ran in CI.</button>
+<button class="quiz-opt" data-correct="false">shellcheck flagged the -z flag as deprecated.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>Why were /tmp/explain-spec.json and /tmp/issue-&lt;n&gt;-explain-diff.md moved to docs/design-notes/.work/?</strong></p>
+<button class="quiz-opt" data-correct="false">GitHub Pages requires all referenced files to live under docs/.</button>
+<button class="quiz-opt" data-correct="true">/tmp is shared machine-wide across every sibling card repo this toolchain serves and doesn&#x27;t survive past the session, while docs/design-notes/.work/ is scoped to the one repo the handoff is actually happening in.</button>
+<button class="quiz-opt" data-correct="false">/tmp isn&#x27;t writable in the CI environment.</button>
+<button class="quiz-opt" data-correct="false">render.py cannot write to paths outside the git repository.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>Why was CLAUDE-SHARED.md&#x27;s mention of build:prod, dev, and test:watch resolved with a clarifying line rather than removing those commands?</strong></p>
+<button class="quiz-opt" data-correct="true">Checking all four sibling card repos confirmed every one already defines exactly these scripts as their own convention — the block was correctly describing a consumer card&#x27;s commands, not ha-card-shared&#x27;s own, and just needed to say so.</button>
+<button class="quiz-opt" data-correct="false">They&#x27;re planned additions to ha-card-shared&#x27;s own package.json in a future release.</button>
+<button class="quiz-opt" data-correct="false">Removing them would break the existing claude-shared.test.ts assertion.</button>
+<button class="quiz-opt" data-correct="false">They&#x27;re aliases automatically generated by the postinstall script for every consumer.</button>
+</div>
+
+<script>
+document.querySelectorAll('.quiz-q').forEach(q => {
+  q.querySelectorAll('.quiz-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (opt.disabled) return;
+      q.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = true; });
+      const correct = opt.dataset.correct === 'true';
+      const fb = document.createElement('div');
+      fb.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+      fb.textContent = correct
+        ? '✅ Correct.'
+        : '❌ Not quite — reread the section above.';
+      opt.insertAdjacentElement('afterend', fb);
+      fb.style.display = 'block';
+    });
+  });
+});
+</script>
+
+</body>
+</html>

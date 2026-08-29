@@ -7,9 +7,10 @@ call) and committed in that issue's PR. Two files per issue once it ships:
 - `issue-<n>-explain-diff.html` — the explain-diff render (`explain-it finalize`), archived from the PR
 
 Both open automatically when the skill produces them. The table links point at **GitHub Pages**
-(`marcintk.github.io/ha-card-shared/…`), which serves the committed `.html` rendered — GitHub
-itself shows a linked `.html` file as source, not a page. Pages is set to deploy from `main` at
-the repo root; `.nojekyll` makes it serve the files as-is.
+(`marcintk.github.io/ha-card-shared/design-notes/…`), which serves the committed `.html`
+rendered — GitHub itself shows a linked `.html` file as source, not a page. `deploy-design-notes.yml`
+publishes only this folder (staged under `/design-notes/`) on every push to `main` that touches
+it; a `.nojekyll` marker keeps Pages from reprocessing the files.
 
 | Issue                                                       | Note                                                                                                                        | Explain-diff | Status      | PR  |
 | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------- | --- |

@@ -87,9 +87,9 @@ greppable "if you see X, the cause was Y, and Z now guards it" line for the next
       - Prose in the clear, flowing style of Martin Kleppmann.
    3. Render:
       ```bash
-      python skills/explain-it/scripts/render.py /tmp/explain-spec.json \
+      python harness/skills/explain-it/scripts/render.py /tmp/explain-spec.json \
         -o docs/design-notes/issue-<n>-explain-diff.html
-      python skills/explain-it/scripts/render.py /tmp/explain-spec.json --format gfm \
+      python harness/skills/explain-it/scripts/render.py /tmp/explain-spec.json --format gfm \
         -o /tmp/issue-<n>-explain-diff.md
       ```
       The HTML ships in the PR diff; the `.md` is the GFM string returned below. `xdg-open` the

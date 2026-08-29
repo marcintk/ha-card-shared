@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-const scriptPath = resolve(process.cwd(), "scripts/setup-claude.js");
+const scriptPath = resolve(process.cwd(), "harness/setup-claude.js");
 const sharedRoot = resolve(process.cwd());
 
 let tmp: string;
@@ -85,13 +85,13 @@ describe("setup-claude.js", () => {
   it("symlinks a bundled skill into .claude/skills/", () => {
     run();
     const link = readlinkSync(join(tmp, ".claude", "skills", "fix-it"));
-    expect(link).toBe(join(sharedRoot, "skills", "fix-it"));
+    expect(link).toBe(join(sharedRoot, "harness", "skills", "fix-it"));
   });
 
   it("symlinks a pipeline subagent into .claude/agents/", () => {
     run();
     const link = readlinkSync(join(tmp, ".claude", "agents", "pipeline-coder.md"));
-    expect(link).toBe(join(sharedRoot, "agents", "pipeline-coder.md"));
+    expect(link).toBe(join(sharedRoot, "harness", "agents", "pipeline-coder.md"));
   });
 
   it("running twice does not throw on existing symlinks", () => {
@@ -103,7 +103,7 @@ describe("setup-claude.js", () => {
     run();
     const skillsDir = join(tmp, ".claude", "skills");
     symlinkSync(
-      join(sharedRoot, "skills", "explain-diff-gfm"),
+      join(sharedRoot, "harness", "skills", "explain-diff-gfm"),
       join(skillsDir, "explain-diff-gfm")
     );
     run();
@@ -116,5 +116,43 @@ describe("setup-claude.js", () => {
     symlinkSync(join(tmp, "nowhere"), join(skillsDir, "user-skill"));
     run();
     expect(readdirSync(skillsDir)).toContain("user-skill");
+  });
+});
+
+describe("setup-claude.js git hooks", () => {
+  const gitInit = () => {
+    execSync("git init -q", { cwd: tmp });
+    execSync("git config user.email t@t.t && git config user.name t", { cwd: tmp });
+  };
+  const hooksPath = () =>
+    execSync("git config --local --get core.hooksPath", { cwd: tmp }).toString().trim();
+
+  it("points core.hooksPath at the bundled harness/.githooks", () => {
+    gitInit();
+    run();
+    expect(hooksPath().replace(/\\/g, "/")).toBe(
+      `${sharedRoot.replace(/\\/g, "/")}/harness/.githooks`
+    );
+  });
+
+  it("is a no-op outside a git repo", () => {
+    expect(run).not.toThrow();
+  });
+
+  it("does not clobber a consumer's own core.hooksPath", () => {
+    gitInit();
+    execSync("git config --local core.hooksPath .my-hooks", { cwd: tmp });
+    run();
+    expect(hooksPath()).toBe(".my-hooks");
+  });
+
+  it("re-points its own stale value and is idempotent", () => {
+    gitInit();
+    execSync("git config --local core.hooksPath node_modules/ha-card-shared/.githooks", {
+      cwd: tmp,
+    });
+    run();
+    run();
+    expect(hooksPath()).toContain("harness/.githooks");
   });
 });

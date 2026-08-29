@@ -26,7 +26,7 @@
     },
     "release": {
       "deny_write": ["^src/", "^test/"],
-      "deny_bash": ["npm\\s+version(?![\\w-])(?!.*--no-git-tag-version)"],
+      "deny_bash": ["npm\\s+version(?![\\w-])(?![^&|;\\n]*--no-git-tag-version)"],
       "reason": "release bumps, tags and pushes; it doesn't edit source or tests, and `npm version` must carry --no-git-tag-version so it never makes its own commit or tag."
     }
   },

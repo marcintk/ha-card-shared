@@ -24,6 +24,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
+import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -75,19 +76,41 @@ if (sub === "check") {
 }
 
 /**
- * Walk up from `start` to the nearest directory holding a `.git` entry — the project root. The
- * session cwd can be a subdirectory; resolving the phase file and the `^src/` / `^test/` anchors
- * against a subdir would silently disarm the guard. Falls back to `start` if no `.git` is found.
+ * Walk up from `start` to the nearest directory holding a `.git` — the project root — so the
+ * phase file and the `^src/` / `^test/` anchors resolve correctly from a subdirectory session.
+ * The walk stops at the home directory: a not-yet-`git init`'d card under a dotfiles/monorepo
+ * repo must not resolve to that outer root (shared state, wrong anchors). Falls back to `start`.
  * @param {string} start
  */
 function findProjectRoot(start) {
+  const home = resolve(homedir());
   let dir = resolve(start);
-  for (;;) {
+  while (dir !== home) {
     if (existsSync(join(dir, ".git"))) return dir;
     const parent = dirname(dir);
-    if (parent === dir) return resolve(start);
+    if (parent === dir) break;
     dir = parent;
   }
+  return resolve(start);
+}
+
+/**
+ * A tab-separated `<value>\t<epoch-ms>` marker is "fresh" when the timestamp parses and is
+ * within `staleMs` of now. A malformed line (no tab, truncated write) parses to NaN — treated
+ * as not-fresh, but noisily, so a dropped guard isn't silent.
+ * @param {[string, string] | null} state
+ * @param {number} staleMs
+ */
+function markerFresh(state, staleMs) {
+  if (!state) return false;
+  const ts = Number(state[1]);
+  if (!Number.isFinite(ts)) {
+    process.stderr.write(
+      `skill-guard: malformed marker (${JSON.stringify(state[0])}) — ignoring\n`
+    );
+    return false;
+  }
+  return Date.now() - ts < staleMs;
 }
 
 /** @type {Policy} */
@@ -142,8 +165,7 @@ function readTabbed(file) {
 }
 
 function isRed() {
-  const state = readTabbed(redFile);
-  return !!state && Date.now() - Number(state[1]) < redStaleMs;
+  return markerFresh(readTabbed(redFile), redStaleMs);
 }
 
 /** Strip git's global options — anything valid between `git` and the subcommand — so
@@ -163,17 +185,13 @@ function stripGitGlobalFlags(cmd) {
   return cmd.replace(new RegExp(`\\bgit${opt}`, "g"), "git");
 }
 
-/** Blank only the value of a message-carrying flag, so a deny word inside a commit message
- * (`git commit -m "todo: git push later"`) isn't matched — while a mutating command handed to
- * a wrapper (`bash -c 'git push'`) stays visible. A value that itself contains a command or
- * process substitution (`$(…)`, `` `…` ``, `<(…)`) is left intact — the shell runs it, so the
- * guard must see it. Runs after stripGitGlobalFlags, which needs quotes intact for `-C "a b"`. */
+/** Blank quoted spans before subcommand matching. A deny word inside any quoted argument — a
+ * commit message, a `gh pr --body`, an `echo` string — is prose, not a command, and must not
+ * trip the guard. A `$(…)` the shell runs sits *outside* quotes and is still caught by the `(`
+ * command-position anchor. Runs after stripGitGlobalFlags, which needs quotes for `-C "a b"`. */
 /** @param {string} cmd */
-function stripMessageArgs(cmd) {
-  return cmd.replace(
-    /(?:^|\s)(?:-m|-F|-t|--message|--file|--template)(?:=|\s+)("[^"]*"|'[^']*'|\S+)/g,
-    (whole, value) => (/\$\(|`|<\(/.test(value) ? whole : " ")
-  );
+function stripQuotedSpans(cmd) {
+  return cmd.replace(/"[^"]*"|'[^']*'/g, " ");
 }
 
 /**
@@ -278,12 +296,9 @@ if (sub === "check") {
   let phaseRules = null;
   let phaseName = "-";
   const phaseState = readTabbed(phaseFile);
-  if (phaseState) {
-    const [name, ts] = phaseState;
-    if (Date.now() - Number(ts) < phaseStaleMs && policy.phases?.[name]) {
-      phaseRules = policy.phases[name];
-      phaseName = name;
-    }
+  if (phaseState && markerFresh(phaseState, phaseStaleMs) && policy.phases?.[phaseState[0]]) {
+    phaseRules = policy.phases[phaseState[0]];
+    phaseName = phaseState[0];
   }
 
   const agentType = payload.agent_type ?? "-";
@@ -301,14 +316,15 @@ if (sub === "check") {
     const why = `${label}: ${rules.reason}`;
 
     if (tool === "Bash" && rules.deny_bash) {
-      const cmd = stripMessageArgs(stripGitGlobalFlags(String(input.command || "")));
+      const cmd = stripQuotedSpans(stripGitGlobalFlags(String(input.command || "")));
       for (const re of rules.deny_bash) {
         // A denied binary counts only in command position: start of string, or right after a
-        // shell separator / wrapper / path boundary (`;` `&&` `|` `(` backtick quote `/` `\`).
-        // Keeps `legit push` out; catches `bash -c 'git push'` and `/usr/bin/git push`.
+        // real shell separator — whitespace, `;`, `&&`, `||`, `|`, or `(` (covers `$(…)` and a
+        // subshell). Not `/`, a quote, or a backtick: `legit push` and prose stay clear, and an
+        // AST-level bypass like `bash -c '…'` isn't the honest-mistake this guard is for.
         let hit = false;
         try {
-          hit = new RegExp(`(?:^|[\\s;&|(\`'"/\\\\])(?:${re})`).test(cmd);
+          hit = new RegExp(`(?:^|[\\s;&|(])(?:${re})`).test(cmd);
         } catch (e) {
           process.stderr.write(`skill-guard: bad deny_bash pattern ${JSON.stringify(re)} — ${e}\n`);
         }

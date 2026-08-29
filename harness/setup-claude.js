@@ -125,15 +125,21 @@ function mergeHooks() {
 }
 
 // The symlinked directories point into this machine's node_modules — committing them (a
-// teammate's checkout would get dangling links) is never right. Keep settings.json committable
-// but self-ignore the generated link dirs, so it doesn't depend on the consumer's root
-// .gitignore listing each one.
+// teammate's checkout would get dangling links) is never right. Ensure .claude/.gitignore
+// lists them, appending only the lines that are missing so a consumer's own entries survive.
 function writeClaudeGitignore() {
   mkdirSync(claudeDir, { recursive: true });
-  writeFileSync(
-    join(claudeDir, ".gitignore"),
-    "/skills/\n/agents/\n/hooks/\n/design-methods/\n/skill-guard/\n"
-  );
+  const path = join(claudeDir, ".gitignore");
+  const want = ["/skills/", "/agents/", "/hooks/", "/design-methods/", "/skill-guard/"];
+  let current = "";
+  try {
+    current = readFileSync(path, "utf8");
+  } catch {}
+  const have = new Set(current.split("\n").map((l) => l.trim()));
+  const add = want.filter((l) => !have.has(l));
+  if (add.length === 0) return;
+  const sep = current && !current.endsWith("\n") ? "\n" : "";
+  writeFileSync(path, `${current}${sep}${add.join("\n")}\n`);
 }
 
 // Symlink every entry of <sharedRoot>/<srcRel> into <claudeDir>/<destName>, and prune any of our

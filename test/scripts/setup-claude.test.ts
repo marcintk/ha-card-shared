@@ -145,6 +145,16 @@ describe("setup-claude.js", () => {
     }
   });
 
+  it("appends to .claude/.gitignore without dropping a consumer's own entries", () => {
+    mkdirSync(join(tmp, ".claude"), { recursive: true });
+    writeFileSync(join(tmp, ".claude", ".gitignore"), "/local-scratch/\nsettings.local.json\n");
+    run();
+    const ignore = readFileSync(join(tmp, ".claude", ".gitignore"), "utf8");
+    expect(ignore).toContain("/local-scratch/");
+    expect(ignore).toContain("settings.local.json");
+    expect(ignore).toContain("/skills/");
+  });
+
   it("preserves an unparseable settings.json instead of overwriting it", () => {
     mkdirSync(join(tmp, ".claude"), { recursive: true });
     const settingsPath = join(tmp, ".claude", "settings.json");

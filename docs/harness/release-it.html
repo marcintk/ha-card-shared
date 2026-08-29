@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside release-it</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+
+<style>
+  :root {
+    color-scheme: light dark;
+    --paper:      #F4F6F8;
+    --surface:    #FFFFFF;
+    --surface-2:  #EDF1F4;
+    --ink:        #17263F;
+    --ink-soft:   #4B5A73;
+    --line:       #D2D9E2;
+    --grid:       #17263F0A;
+
+    --accent:      #0E7C9B;
+    --accent-soft: #E0EEF2;
+    --human:       #A2661E;
+    --human-soft:  #F3E8D7;
+    --done:        #3B7A56;
+    --done-soft:   #E0EDE5;
+    --reject:      #B23B3B;
+    --reject-soft: #F3E0E0;
+
+    --shadow: 0 1px 2px #17263F14, 0 8px 24px #17263F0F;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0E1A2E;
+      --surface:    #16243D;
+      --surface-2:  #1C2C48;
+      --ink:        #DEE5EF;
+      --ink-soft:   #9AAAC0;
+      --line:       #2B3B57;
+      --grid:       #46B2D214;
+
+      --accent:      #4CB4D4;
+      --accent-soft: #12313C;
+      --human:       #DA9E5C;
+      --human-soft:  #322818;
+      --done:        #67A984;
+      --done-soft:   #183020;
+      --reject:      #E07A7A;
+      --reject-soft: #331E1E;
+
+      --shadow: 0 1px 2px #0006, 0 10px 30px #0007;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #0E1A2E;
+    --surface:    #16243D;
+    --surface-2:  #1C2C48;
+    --ink:        #DEE5EF;
+    --ink-soft:   #9AAAC0;
+    --line:       #2B3B57;
+    --grid:       #46B2D214;
+
+    --accent:      #4CB4D4;
+    --accent-soft: #12313C;
+    --human:       #DA9E5C;
+    --human-soft:  #322818;
+    --done:        #67A984;
+    --done-soft:   #183020;
+    --reject:      #E07A7A;
+    --reject-soft: #331E1E;
+
+    --shadow: 0 1px 2px #0006, 0 10px 30px #0007;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 34px 34px;
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 940px; margin: 0 auto; padding: 4.5rem 1.5rem 6rem; }
+
+  h1, h2, h3, .eyebrow, .pill, .chip, .k, .mono, .role, code {
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  }
+  .mono, code, .k, .marker, .cmd {
+    font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+
+  a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  .titleblock {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 2rem 2rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 6vw, 3rem);
+    line-height: 1.04;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.18rem;
+    color: var(--ink-soft);
+    margin: 0 0 1.5rem;
+    max-width: 60ch;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+    margin: 0;
+  }
+  .facts div { display: flex; flex-direction: column; gap: 2px; }
+  .facts dt {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .facts dd {
+    margin: 0;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  .pipeline { display: flex; align-items: stretch; gap: 0; margin: 1.75rem 0 0; flex-wrap: wrap; }
+  .pipeline .stage {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    padding: 0.5rem 0.85rem;
+    border: 1px dashed var(--line);
+    color: var(--ink-soft);
+    background: var(--surface);
+    position: relative;
+  }
+  .pipeline .stage:not(:last-child) { border-right: none; }
+  .pipeline .stage:first-child { border-radius: 8px 0 0 8px; }
+  .pipeline .stage:last-child { border-radius: 0 8px 8px 0; }
+  .pipeline .stage.on {
+    border-style: solid;
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 700;
+    z-index: 1;
+  }
+
+  section { margin-top: 3.75rem; }
+  h2 { font-size: 1.55rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 0.4rem; }
+  .lede { color: var(--ink-soft); margin: 0 0 1.75rem; max-width: 62ch; }
+  .section-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 2rem;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 0.5rem; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .dot.skill { background: var(--accent); }
+  .dot.human { background: var(--human); }
+  .dot.done  { background: var(--done); }
+
+  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+  .step {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: 0 1rem;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--role, var(--accent));
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .step.skill { --role: var(--accent); }
+  .step.human { --role: var(--human); }
+  .step.done  { --role: var(--done); }
+
+  .marker { font-size: 13px; color: var(--ink-soft); line-height: 1.4; }
+  .marker b { display: block; font-size: 20px; color: var(--role, var(--accent)); font-weight: 500; }
+  .step.done .marker b { color: var(--done); }
+
+  .step-body { min-width: 0; }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.7rem;
+    margin-bottom: 0.35rem;
+  }
+  .step-head h3 { font-size: 1.06rem; font-weight: 600; margin: 0; letter-spacing: -0.005em; }
+  .role {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: var(--role-soft, var(--accent-soft));
+    color: var(--role, var(--accent));
+    white-space: nowrap;
+  }
+  .step.skill .role { --role-soft: var(--accent-soft); }
+  .step.human .role { --role-soft: var(--human-soft); }
+  .step.done  .role { --role-soft: var(--done-soft); }
+
+  .step p { margin: 0.35rem 0 0; font-size: 1rem; }
+  .calls { margin-top: 0.7rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+  .calls .k {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .chip {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .loopbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.2rem 0 0.2rem 1rem;
+    padding: 0.6rem 1rem;
+    border: 1px dashed var(--human);
+    border-radius: 10px;
+    background: var(--human-soft);
+    font-size: 0.98rem;
+    color: var(--ink);
+  }
+  .loopbar .turn { font-size: 1.2rem; color: var(--human); line-height: 1; }
+  .loopbar.recurse { border-color: var(--reject); background: var(--reject-soft); }
+  .loopbar.recurse .turn { color: var(--reject); }
+
+  figure {
+    margin: 2rem 0 0;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.5rem 1.25rem 1rem;
+    box-shadow: var(--shadow);
+  }
+  .scroll { overflow-x: auto; }
+  figure svg { display: block; width: 100%; height: auto; min-width: 640px; color: var(--ink); }
+  figcaption { margin-top: 0.9rem; font-size: 0.92rem; color: var(--ink-soft); line-height: 1.5; }
+  .svg-box { fill: var(--surface); stroke: var(--line); }
+  .svg-label { fill: var(--ink); font-family: "JetBrains Mono", monospace; }
+  .svg-sub { fill: var(--ink-soft); font-family: "JetBrains Mono", monospace; }
+  .svg-edge { stroke: var(--ink-soft); fill: none; }
+  .svg-edge-label { fill: var(--ink-soft); font-family: "JetBrains Mono", monospace; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+  .card {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.25rem 1.35rem;
+    box-shadow: var(--shadow);
+  }
+  .card h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 0 0 0.4rem;
+    display: flex;
+    gap: 0.55rem;
+    align-items: baseline;
+  }
+  .card h3 .n { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--accent); flex: none; }
+  .card p { margin: 0; font-size: 0.98rem; color: var(--ink-soft); }
+  .card code {
+    font-size: 0.85em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+
+  .uses { display: flex; flex-direction: column; gap: 1.5rem; }
+  .use-group h3 {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.7rem;
+    font-weight: 700;
+  }
+  .use-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 260px) 1fr;
+    gap: 0.4rem 1.25rem;
+    padding: 0.7rem 0;
+    border-top: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .use-row:last-child { border-bottom: 1px solid var(--line); }
+  .use-row .path {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    word-break: break-word;
+  }
+  .use-row .what { font-size: 0.96rem; color: var(--ink-soft); }
+
+  footer {
+    margin-top: 4.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.8;
+  }
+  footer b { color: var(--ink); font-weight: 700; }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 560px) {
+    body { font-size: 17px; }
+    .wrap { padding: 3rem 1.1rem 4rem; }
+    .step { grid-template-columns: 2.4rem 1fr; padding: 1rem; }
+    .titleblock { padding: 1.5rem 1.35rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .step, .card, figure { transition: border-color 0.15s ease; }
+    .card:hover { border-color: var(--accent); }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="titleblock">
+    <p class="eyebrow">Harness walkthrough &middot; pipeline stage 4 of 4</p>
+    <h1>Inside <span style="color:var(--accent)">release-it</span></h1>
+    <p class="standfirst">The batching phase, run after several merged <code class="mono" style="font-size:0.85em">ship-it</code> PRs: a repo-wide correctness and deepening sweep, then a semver bump landed as its own PR, then a tag that triggers the drafted GitHub Release. The one skill explicitly forbidden from triggering itself.</p>
+    <dl class="facts">
+      <div><dt>invocation</dt><dd>HUMAN only, never auto</dd></div>
+      <div><dt>input</dt><dd>a batch of merged PRs</dd></div>
+      <div><dt>output</dt><dd>published Release + vX.Y.Z tag</dd></div>
+      <div><dt>human gates</dt><dd>three</dd></div>
+      <div><dt>cadence</dt><dd>patch / minor / major</dd></div>
+      <div><dt>recursion</dt><dd>findings re-enter the pipeline</dd></div>
+    </dl>
+  </header>
+
+  <div class="pipeline" role="img" aria-label="Pipeline: design-it, code-it, ship-it, then release-it (current)">
+    <span class="stage">/design-it</span>
+    <span class="stage">/code-it</span>
+    <span class="stage">/ship-it</span>
+    <span class="stage on">/release-it</span>
+  </div>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">01</span>
+    <h2>What it does</h2>
+    <p class="lede">Not part of any single change's flow &mdash; it sits on top of a batch of merged PRs. Eleven steps, of which two (3 and 5) can eject work back through <code class="mono">/design-it</code> &rarr; <code class="mono">/code-it</code> &rarr; <code class="mono">/ship-it</code> and restart the sweep. It is <strong>tag-driven</strong>: pushing <code class="mono">vX.Y.Z</code> is what actually cuts the release, and CI produces it as a draft.</p>
+
+    <div class="legend" aria-hidden="true">
+      <span><span class="dot skill"></span> skill acts</span>
+      <span><span class="dot human"></span> [HUMAN] gate</span>
+      <span><span class="dot done"></span> phase complete</span>
+    </div>
+
+    <ol class="steps">
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>1</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Arm the guardrail</h3><span class="role">skill</span></div>
+          <p><code class="mono">node harness/hooks/skill-guard.mjs phase release</code>. Release bumps, tags and pushes &mdash; it does not edit source &mdash; so the hook denies writes to <code class="mono">src/</code> and <code class="mono">test/</code>.</p>
+          <div class="calls"><span class="k">runs</span><span class="chip">harness/hooks/skill-guard.mjs</span></div>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>2</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Verify CI on main</h3><span class="role">skill</span></div>
+          <p><code class="mono">gh run list --branch main --limit 5</code> &mdash; every recent run shows ✓ before anything else happens. This is the step the two recursion loops return to.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">gh</span></div>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>3</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Repo-wide review</h3><span class="role">skill &middot; recurses</span></div>
+          <p><code class="mono">/code-review</code> over the repo (or <code class="mono">/simplify</code> on <code class="mono">main</code>) &mdash; a correctness plus over-engineering pass across everything the batch touched. Any finding &rarr; fix it through <code class="mono">/design-it</code> + <code class="mono">/code-it</code> + <code class="mono">/ship-it</code>, merge, then re-run this step. Continue only once it comes back clean.</p>
+          <div class="calls"><span class="k">runs</span><span class="chip">/code-review</span><span class="chip">/simplify</span></div>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>4</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Refresh LESSONS.md</h3><span class="role">skill</span></div>
+          <p>~2 minutes, human eyes: drop any entry whose named guardrail no longer exists, and merge any duplicates that slipped past <code class="mono">explain-it compound</code>'s dedupe.</p>
+          <div class="calls"><span class="k">edits</span><span class="chip">LESSONS.md</span></div>
+        </div>
+      </li>
+
+      <li class="step human">
+        <div class="marker">step<b>[ ]</b>5</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Deepening scan</h3><span class="role">human &middot; recurses</span></div>
+          <p>Run <code class="mono">/design-it</code> with no issue number &mdash; the repo-wide deepening scan. Any opportunity you accept &rarr; it files the issue, then <code class="mono">/code-it</code> + <code class="mono">/ship-it</code>, merge, then restart from step 2. Continue only once nothing is left worth taking.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">/design-it (no arg)</span></div>
+        </div>
+      </li>
+
+      <li class="step human">
+        <div class="marker">step<b>[ ]</b>6</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Decide the semver bump</h3><span class="role">human</span></div>
+          <p>State it, don't pick it silently. <strong>patch</strong> &mdash; fixes, docs, no API change; batch freely. <strong>minor</strong> &mdash; new export or toolchain feature, backward-compatible; after 2&ndash;3 PRs. <strong>major</strong> &mdash; any breaking change (removed / renamed export, changed signature, consumers must update); release immediately after merge.</p>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>7</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Bump on a release branch &rarr; PR</h3><span class="role">skill</span></div>
+          <p><code class="mono">git checkout -b release/vX.Y.Z</code>; <code class="mono">npm version &lt;bump&gt; --no-git-tag-version</code> (edits <code class="mono">package.json</code> only &mdash; no commit, no tag, because a bare <code class="mono">npm version</code> shells out to a plain <code class="mono">git commit</code> and <code class="mono">pre-commit</code> blocks every commit on <code class="mono">main</code>); <code class="mono">git commit -am</code>; push; <code class="mono">gh pr create</code>; wait for CI; <code class="mono">gh pr merge --squash --delete-branch</code> &mdash; a normal PR like any <code class="mono">/ship-it</code>.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">npm version</span><span class="chip">git</span><span class="chip">gh</span><span class="chip">.githooks/pre-commit</span></div>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>8</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Tag main</h3><span class="role">skill</span></div>
+          <p><code class="mono">git checkout main &amp;&amp; git pull</code>; <code class="mono">git tag vX.Y.Z</code>; <code class="mono">git push origin vX.Y.Z</code>. A tag is not a commit, so the <code class="mono">main</code> guard never fires. The tag push runs <code class="mono">release.yml</code>, which checks the tag is valid semver strictly greater than the previous release and creates the GitHub Release as a <strong>draft</strong> &mdash; every release, always.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">git</span><span class="chip">release.yml</span></div>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>9</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Write the release notes</h3><span class="role">skill</span></div>
+          <p><code class="mono">gh release edit &lt;tag&gt; --notes-file -</code>. Not a commit dump &mdash; read <code class="mono">git log &lt;prev-tag&gt;..&lt;tag&gt;</code> and the merged PRs, then translate into what a consumer sees. Two sections and a link line: <strong>What's new</strong> (features and changes worth knowing, in the consumer's words &mdash; drop internal churn); <strong>What you'll notice right after updating</strong> (the immediate effect of <code class="mono">npm install</code> &mdash; re-wiring, new peer deps, changed commands, any breaking change and its one migration step; or "Nothing &mdash; drop-in."); <strong>Full changelog</strong> compare link.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">gh release</span><span class="chip">git log</span></div>
+        </div>
+      </li>
+
+      <li class="loopbar">
+        <span class="turn" aria-hidden="true">&#9632;</span>
+        <span><b>Step 10 &mdash; publish gate.</b> A human publishes the draft from the GitHub Releases UI, once the notes and the <code class="mono">dist/&lt;project&gt;.js</code> asset check out.</span>
+      </li>
+
+      <li class="step done">
+        <div class="marker">step<b>[x]</b>11</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Clear the phase</h3><span class="role">phase complete</span></div>
+          <p><code class="mono">node harness/hooks/skill-guard.mjs phase clear</code>. Output: <strong>one published GitHub Release</strong>, <code class="mono">vX.Y.Z</code> tagged on <code class="mono">main</code>. Consumers pick it up on their next install.</p>
+          <div class="calls"><span class="k">runs</span><span class="chip">harness/hooks/skill-guard.mjs</span></div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">02</span>
+    <h2>The shape of a run</h2>
+    <p class="lede">Two of the sweep steps can eject work back through the whole pipeline and restart from step 2. Only a sweep that comes back empty reaches the version bump.</p>
+
+    <figure>
+      <div class="scroll">
+        <svg viewBox="0 0 1200 320" role="img" aria-label="release-it arms the release guardrail, verifies CI on main, then runs a sweep of repo-wide review, lessons cleanup and a deepening scan. A finding or accepted opportunity goes out through design-it, code-it and ship-it, merges, and restarts the run at step 2. A clean sweep proceeds to the human bump decision, the bump PR, the tag that triggers release.yml's draft, the notes, a human publish gate, and phase clear.">
+          <defs>
+            <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-soft)"/>
+            </marker>
+            <marker id="arrRj" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--reject)"/>
+            </marker>
+          </defs>
+
+          <rect x="20" y="30" width="1030" height="150" rx="10" style="fill:var(--accent);stroke:var(--accent)" fill-opacity="0.06" stroke-dasharray="5 4"/>
+          <text class="svg-label" x="34" y="50" font-size="11" style="fill:var(--accent)">phase: release &mdash; bumps &amp; tags only</text>
+          <text class="svg-sub" x="34" y="66" font-size="10">denied: src/ &amp; test/ writes</text>
+
+          <g font-family="JetBrains Mono, monospace">
+            <rect class="svg-box" x="34" y="92" width="120" height="48" rx="8"/>
+            <text class="svg-sub" x="94" y="112" text-anchor="middle" font-size="9">steps 1&ndash;2</text>
+            <text class="svg-label" x="94" y="128" text-anchor="middle" font-size="10.5">arm &middot; CI ✓</text>
+
+            <rect class="svg-box" x="188" y="86" width="210" height="60" rx="8" style="stroke:var(--reject)"/>
+            <text class="svg-sub" x="293" y="106" text-anchor="middle" font-size="9" style="fill:var(--reject)">steps 3&ndash;5 &middot; sweep</text>
+            <text class="svg-label" x="293" y="122" text-anchor="middle" font-size="10.5">review &middot; lessons &middot; deepen</text>
+            <text class="svg-sub" x="293" y="137" text-anchor="middle" font-size="8.5">must come back empty</text>
+
+            <rect class="svg-box" x="432" y="86" width="150" height="60" rx="8" style="stroke:var(--human);fill:var(--human-soft)"/>
+            <text class="svg-sub" x="507" y="106" text-anchor="middle" font-size="9" style="fill:var(--human)">step 6 &middot; HUMAN</text>
+            <text class="svg-label" x="507" y="123" text-anchor="middle" font-size="10.5" style="fill:var(--human)">decide bump</text>
+
+            <rect class="svg-box" x="616" y="92" width="150" height="48" rx="8"/>
+            <text class="svg-sub" x="691" y="112" text-anchor="middle" font-size="9">step 7</text>
+            <text class="svg-label" x="691" y="128" text-anchor="middle" font-size="10.5">bump PR</text>
+
+            <rect class="svg-box" x="800" y="86" width="170" height="60" rx="8" style="stroke:var(--accent)"/>
+            <text class="svg-sub" x="885" y="106" text-anchor="middle" font-size="9">step 8</text>
+            <text class="svg-label" x="885" y="122" text-anchor="middle" font-size="10.5">tag vX.Y.Z</text>
+            <text class="svg-sub" x="885" y="137" text-anchor="middle" font-size="8.5">&rarr; release.yml (draft)</text>
+
+            <rect class="svg-box" x="1004" y="92" width="120" height="48" rx="8"/>
+            <text class="svg-sub" x="1064" y="112" text-anchor="middle" font-size="9">step 9</text>
+            <text class="svg-label" x="1064" y="128" text-anchor="middle" font-size="10.5">notes</text>
+          </g>
+
+          <path class="svg-edge" d="M154 116 L188 116" marker-end="url(#arrR)"/>
+          <path class="svg-edge" d="M398 116 L432 116" marker-end="url(#arrR)"/>
+          <text class="svg-edge-label" x="415" y="108" text-anchor="middle" font-size="9" style="fill:var(--done)">clean</text>
+          <path class="svg-edge" d="M582 116 L616 116" marker-end="url(#arrR)"/>
+          <path class="svg-edge" d="M766 116 L800 116" marker-end="url(#arrR)"/>
+          <path class="svg-edge" d="M970 116 L1004 116" marker-end="url(#arrR)"/>
+
+          <!-- recursion loop -->
+          <path class="svg-edge" d="M240 146 C240 210 700 220 700 220 L120 220 C94 220 94 168 94 146" marker-end="url(#arrRj)" style="stroke:var(--reject)"/>
+          <text class="svg-edge-label" x="470" y="238" text-anchor="middle" font-size="9.5" style="fill:var(--reject)">finding / opportunity &rarr; design-it &rarr; code-it &rarr; ship-it &rarr; merge &rarr; restart at step 2</text>
+
+          <!-- publish + clear -->
+          <path class="svg-edge" d="M1064 140 L1064 168 L560 168" marker-end="url(#arrR)"/>
+          <rect class="svg-box" x="392" y="256" width="180" height="52" rx="9" style="stroke:var(--human);fill:var(--human-soft)"/>
+          <text class="svg-sub" x="482" y="278" text-anchor="middle" font-size="9" font-family="JetBrains Mono, monospace" style="fill:var(--human)">step 10 &middot; HUMAN</text>
+          <text class="svg-label" x="482" y="295" text-anchor="middle" font-size="10.5" font-family="JetBrains Mono, monospace">publish the draft</text>
+          <path class="svg-edge" d="M560 168 C400 168 392 220 392 260" marker-end="url(#arrR)"/>
+
+          <rect class="svg-box" x="640" y="256" width="200" height="52" rx="9" style="stroke:var(--done);fill:var(--done-soft)"/>
+          <text class="svg-label" x="740" y="280" text-anchor="middle" font-size="10.5" font-family="JetBrains Mono, monospace" style="fill:var(--done)">step 11 &middot; phase clear</text>
+          <text class="svg-sub" x="740" y="296" text-anchor="middle" font-size="8.5" font-family="JetBrains Mono, monospace" style="fill:var(--done)">published Release + tag</text>
+          <path class="svg-edge" d="M572 282 L640 282" marker-end="url(#arrR)"/>
+        </svg>
+      </div>
+      <figcaption>Steps 3 and 5 are gates, not tasks: each has to return nothing before the run moves on, and anything either one surfaces is fixed through the normal pipeline and merged before the sweep restarts. The version number only moves once the repo is quiet.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">03</span>
+    <h2>Why the bump is a PR, and the tag is not</h2>
+    <p class="lede">The naive move &mdash; <code class="mono">npm version</code> on <code class="mono">main</code> &mdash; trips the same <code class="mono">pre-commit</code> guard as any other direct commit. The release path splits the bump (a commit, so: a PR) from the tag (not a commit, so: applied straight to <code class="mono">main</code>).</p>
+
+    <figure>
+      <div class="scroll">
+        <svg viewBox="0 0 1120 340" role="img" aria-label="Left: npm version run on main creates a commit and a tag, and pre-commit blocks the commit to main, so it fails. Right: on a release branch, npm version with no-git-tag-version edits package.json only with no commit; git commit on the branch, a PR, and a squash-merge land the bump on main; then git tag vX.Y.Z is applied directly to main because a tag is not a commit and the guard never fires; pushing the tag runs release.yml which drafts the GitHub Release.">
+          <defs>
+            <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-soft)"/>
+            </marker>
+            <marker id="arrBd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--done)"/>
+            </marker>
+          </defs>
+
+          <line x1="530" y1="20" x2="530" y2="320" style="stroke:var(--line)" stroke-dasharray="3 4"/>
+
+          <!-- LEFT: naive -->
+          <text class="svg-label" x="40" y="34" font-size="12" style="fill:var(--reject)">&#10005;&nbsp; npm version on main</text>
+          <g font-family="JetBrains Mono, monospace">
+            <rect class="svg-box" x="40" y="56" width="180" height="52" rx="9"/>
+            <text class="svg-label" x="130" y="80" text-anchor="middle" font-size="10.5">npm version minor</text>
+            <text class="svg-sub" x="130" y="97" text-anchor="middle" font-size="8.5">on main</text>
+
+            <rect class="svg-box" x="40" y="150" width="180" height="52" rx="9"/>
+            <text class="svg-label" x="130" y="174" text-anchor="middle" font-size="10.5">git commit + git tag</text>
+            <text class="svg-sub" x="130" y="191" text-anchor="middle" font-size="8.5">npm version shells out</text>
+
+            <rect class="svg-box" x="40" y="244" width="180" height="60" rx="9" style="stroke:var(--reject);fill:var(--reject-soft)"/>
+            <text class="svg-label" x="130" y="268" text-anchor="middle" font-size="10.5" style="fill:var(--reject)">pre-commit</text>
+            <text class="svg-sub" x="130" y="285" text-anchor="middle" font-size="8.5" style="fill:var(--reject)">commits to main blocked</text>
+            <text class="svg-label" x="130" y="299" text-anchor="middle" font-size="11" style="fill:var(--reject)">&#10005; fails</text>
+          </g>
+          <path class="svg-edge" d="M130 108 L130 150" marker-end="url(#arrB)"/>
+          <path class="svg-edge" d="M130 202 L130 244" marker-end="url(#arrB)" style="stroke:var(--reject)"/>
+
+          <!-- RIGHT: release path -->
+          <text class="svg-label" x="560" y="34" font-size="12" style="fill:var(--done)">&#10003;&nbsp; bump via PR, tag after merge</text>
+          <g font-family="JetBrains Mono, monospace">
+            <rect class="svg-box" x="560" y="52" width="230" height="56" rx="9"/>
+            <text class="svg-label" x="675" y="74" text-anchor="middle" font-size="10">npm version --no-git-tag-version</text>
+            <text class="svg-sub" x="675" y="91" text-anchor="middle" font-size="8.5">release/vX.Y.Z &middot; package.json only, no commit</text>
+
+            <rect class="svg-box" x="560" y="130" width="230" height="52" rx="9"/>
+            <text class="svg-label" x="675" y="152" text-anchor="middle" font-size="10">git commit -am &rarr; PR &rarr; squash-merge</text>
+            <text class="svg-sub" x="675" y="169" text-anchor="middle" font-size="8.5">through pre-commit + CI, like any change</text>
+
+            <rect class="svg-box" x="560" y="204" width="230" height="40" rx="9" style="stroke:var(--accent)"/>
+            <text class="svg-label" x="675" y="229" text-anchor="middle" font-size="10">bump commit is on main</text>
+
+            <rect class="svg-box" x="560" y="266" width="230" height="56" rx="9" style="stroke:var(--done);fill:var(--done-soft)"/>
+            <text class="svg-label" x="675" y="288" text-anchor="middle" font-size="10" style="fill:var(--done)">git tag vX.Y.Z &rarr; git push origin vX.Y.Z</text>
+            <text class="svg-sub" x="675" y="305" text-anchor="middle" font-size="8.5" style="fill:var(--done)">a tag is not a commit &rarr; guard never fires</text>
+            <text class="svg-sub" x="675" y="317" text-anchor="middle" font-size="8.5" style="fill:var(--done)">release.yml drafts the GitHub Release</text>
+          </g>
+          <path class="svg-edge" d="M675 108 L675 130" marker-end="url(#arrB)"/>
+          <path class="svg-edge" d="M675 182 L675 204" marker-end="url(#arrB)"/>
+          <path class="svg-edge" d="M675 244 L675 266" marker-end="url(#arrBd)" style="stroke:var(--done)"/>
+        </svg>
+      </div>
+      <figcaption><code class="mono">--no-git-tag-version</code> is the one flag that makes <code class="mono">npm version</code> safe here: it edits <code class="mono">package.json</code> and stops, leaving the commit to the normal branch-and-PR path. The tag is applied to <code class="mono">main</code> only <em>after</em> the bump has merged, and CI's <code class="mono">release.yml</code> turns that tag push into a draft Release &mdash; never a direct publish.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">04</span>
+    <h2>What it uses</h2>
+    <p class="lede">One phase of the shared hook, the CI it hands off to, and &mdash; uniquely &mdash; the rest of the pipeline as a subroutine when the sweep turns something up.</p>
+
+    <div class="uses">
+      <div class="use-group">
+        <h3>Guardrail hook</h3>
+        <div class="use-row">
+          <span class="path">harness/hooks/skill-guard.mjs<br>&middot; skill-guard.json</span>
+          <span class="what">Phase <code class="mono">release</code> denies <code class="mono">src/</code> + <code class="mono">test/</code> writes; it bumps, tags and pushes. Step 11 clears the phase.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">harness/.githooks/pre-commit</span>
+          <span class="what">Its no-commits-to-<code class="mono">main</code> guard is <em>why</em> step 7 runs <code class="mono">npm version --no-git-tag-version</code> on a branch, and why step 8's tag (not a commit) goes straight onto <code class="mono">main</code>.</span>
+        </div>
+      </div>
+
+      <div class="use-group">
+        <h3>CI workflows</h3>
+        <div class="use-row">
+          <span class="path">.github/workflows/self-check.yml</span>
+          <span class="what">Per-PR gate: actionlint, shellcheck, the smoke build, and a check that committed <code class="mono">dist/</code> matches a fresh build. The bump PR passes it like any other.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">.github/workflows/release.yml</span>
+          <span class="what">Fires on a <code class="mono">vX.Y.Z</code> tag push: validates the tag is semver strictly greater than the previous release, then publishes a GitHub Release &mdash; always as a <strong>draft</strong>; <code class="mono">vX.Y.Z-beta.1</code>-style tags publish as pre-releases.</span>
+        </div>
+      </div>
+
+      <div class="use-group">
+        <h3>The pipeline, recursively</h3>
+        <div class="use-row">
+          <span class="path">/code-review &middot; /simplify</span>
+          <span class="what">Step 3's repo-wide correctness + over-engineering pass.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">/design-it (no arg)</span>
+          <span class="what">Step 5's repo-wide deepening scan &mdash; files its own issue for anything accepted.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">/design-it + /code-it + /ship-it</span>
+          <span class="what">The full loop any step-3 finding or step-5 opportunity is routed through before the sweep restarts.</span>
+        </div>
+      </div>
+
+      <div class="use-group">
+        <h3>External &amp; records</h3>
+        <div class="use-row">
+          <span class="path">gh</span>
+          <span class="what"><code class="mono">run list</code> (2), <code class="mono">pr create</code> / <code class="mono">pr merge</code> (7), <code class="mono">release edit --notes-file</code> (9).</span>
+        </div>
+        <div class="use-row">
+          <span class="path">git &middot; npm version</span>
+          <span class="what"><code class="mono">checkout -b</code>, <code class="mono">commit</code>, <code class="mono">tag</code>, <code class="mono">push</code>; <code class="mono">npm version --no-git-tag-version</code> for the <code class="mono">package.json</code> edit.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">package.json &middot; LESSONS.md<br>&middot; the GitHub Release</span>
+          <span class="what">Version field bumped (7); stale / duplicate entries pruned (4); the draft Release written and published (9&ndash;10).</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">05</span>
+    <h2>How it addresses the task</h2>
+    <p class="lede">The task is to cut a coherent, consumer-legible release from a batch of merged changes &mdash; without shipping latent problems or design debt, and without tripping the main-branch guard. Six choices do that work.</p>
+
+    <div class="cards">
+      <div class="card">
+        <h3><span class="n">a</span> Never autonomous</h3>
+        <p>The only skill carrying an explicit "never trigger this on your own" rule. A release is a stated human decision, not something the model reaches for.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">b</span> Sweep before bump</h3>
+        <p>A repo-wide correctness pass and a repo-wide deepening scan both have to come back empty before a version number moves. Findings aren't noted for later &mdash; they go back through the pipeline now, and the sweep restarts.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">c</span> The bump obeys the same rules as any change</h3>
+        <p>It lands as a PR through <code>pre-commit</code> and CI, not forced onto <code>main</code>. <code>--no-git-tag-version</code> plus a branch is how <code>npm version</code> is made to comply.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">d</span> Tag-driven, draft-first</h3>
+        <p>Pushing <code>vX.Y.Z</code> is the trigger; <code>release.yml</code> checks semver monotonicity and always produces a <em>draft</em>, so a human sees the notes and the built asset before anything is public.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">e</span> Notes written for the consumer, not from the log</h3>
+        <p>"What's new" and "what you'll notice after <code>npm install</code>" in the consumer's words, with the one migration step spelled out &mdash; or "Nothing &mdash; drop-in." stated outright.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">f</span> Cadence matched to blast radius</h3>
+        <p>Patch batches freely, minor after a few PRs, major the moment it merges. The bump size and the release timing are decided together, out loud.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <b>Harness walkthrough &mdash; 4 of 4 entry points.</b><br>
+    <a href="design-it.html">design-it</a> &rarr; <a href="code-it.html">code-it</a> &rarr; <a href="ship-it.html">ship-it</a> &rarr; release-it &nbsp;&middot;&nbsp; steps 3 &amp; 5 recurse into the first three<br>
+    Source: <span class="mono">harness/skills/release-it/SKILL.md</span> in <span class="mono">ha-card-shared</span>.
+  </footer>
+
+</div>
+</body>
+</html>

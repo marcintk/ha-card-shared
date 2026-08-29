@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside design-it</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+
+<style>
+  /* ---- tokens : light (bare :root) ------------------------------------ */
+  :root {
+    color-scheme: light dark;
+    --paper:      #F4F6F8;
+    --surface:    #FFFFFF;
+    --surface-2:  #EDF1F4;
+    --ink:        #17263F;
+    --ink-soft:   #4B5A73;
+    --line:       #D2D9E2;
+    --grid:       #17263F0A;
+
+    --accent:      #0E7C9B;   /* the skill's own actions   */
+    --accent-soft: #E0EEF2;
+    --human:       #A2661E;   /* [HUMAN] gates             */
+    --human-soft:  #F3E8D7;
+    --agent:       #565CA0;   /* delegated to a sub-agent  */
+    --agent-soft:  #E7E8F4;
+    --done:        #3B7A56;   /* approved / terminal state */
+    --done-soft:   #E0EDE5;
+
+    --shadow: 0 1px 2px #17263F14, 0 8px 24px #17263F0F;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0E1A2E;
+      --surface:    #16243D;
+      --surface-2:  #1C2C48;
+      --ink:        #DEE5EF;
+      --ink-soft:   #9AAAC0;
+      --line:       #2B3B57;
+      --grid:       #46B2D214;
+
+      --accent:      #4CB4D4;
+      --accent-soft: #12313C;
+      --human:       #DA9E5C;
+      --human-soft:  #322818;
+      --agent:       #9298DE;
+      --agent-soft:  #23264A;
+      --done:        #67A984;
+      --done-soft:   #183020;
+
+      --shadow: 0 1px 2px #0006, 0 10px 30px #0007;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #0E1A2E;
+    --surface:    #16243D;
+    --surface-2:  #1C2C48;
+    --ink:        #DEE5EF;
+    --ink-soft:   #9AAAC0;
+    --line:       #2B3B57;
+    --grid:       #46B2D214;
+
+    --accent:      #4CB4D4;
+    --accent-soft: #12313C;
+    --human:       #DA9E5C;
+    --human-soft:  #322818;
+    --agent:       #9298DE;
+    --agent-soft:  #23264A;
+    --done:        #67A984;
+    --done-soft:   #183020;
+
+    --shadow: 0 1px 2px #0006, 0 10px 30px #0007;
+  }
+
+  /* ---- base --------------------------------------------------------- */
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 34px 34px;
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 4.5rem 1.5rem 6rem;
+  }
+
+  h1, h2, h3, .eyebrow, .pill, .chip, .k, .mono, .role, code {
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  }
+  .mono, code, .k, .marker, .cmd {
+    font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+
+  a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  /* ---- title block ------------------------------------------------- */
+  .titleblock {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 2rem 2rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 6vw, 3rem);
+    line-height: 1.04;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.18rem;
+    color: var(--ink-soft);
+    margin: 0 0 1.5rem;
+    max-width: 60ch;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+    margin: 0;
+  }
+  .facts div { display: flex; flex-direction: column; gap: 2px; }
+  .facts dt {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .facts dd {
+    margin: 0;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  /* ---- pipeline strip -------------------------------------------- */
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 1.75rem 0 0;
+    flex-wrap: wrap;
+  }
+  .pipeline .stage {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    padding: 0.5rem 0.85rem;
+    border: 1px dashed var(--line);
+    color: var(--ink-soft);
+    background: var(--surface);
+    position: relative;
+  }
+  .pipeline .stage:not(:last-child) { border-right: none; }
+  .pipeline .stage:first-child { border-radius: 8px 0 0 8px; }
+  .pipeline .stage:last-child { border-radius: 0 8px 8px 0; }
+  .pipeline .stage.on {
+    border-style: solid;
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 700;
+    z-index: 1;
+  }
+
+  /* ---- sections ------------------------------------------------- */
+  section { margin-top: 3.75rem; }
+  h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.4rem;
+  }
+  .lede {
+    color: var(--ink-soft);
+    margin: 0 0 1.75rem;
+    max-width: 62ch;
+  }
+  .section-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  /* ---- legend ------------------------------------------------- */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 2rem;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 0.5rem; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .dot.skill { background: var(--accent); }
+  .dot.human { background: var(--human); }
+  .dot.agent { background: var(--agent); }
+  .dot.done  { background: var(--done); }
+
+  /* ---- step list --------------------------------------------- */
+  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+  .step {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    gap: 0 1rem;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--role, var(--accent));
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .step.skill { --role: var(--accent); }
+  .step.human { --role: var(--human); }
+  .step.agent { --role: var(--agent); }
+  .step.done  { --role: var(--done); }
+
+  .marker {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .marker b {
+    display: block;
+    font-size: 20px;
+    color: var(--role, var(--accent));
+    font-weight: 500;
+  }
+  .step.done .marker b { color: var(--done); }
+
+  .step-body { min-width: 0; }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.7rem;
+    margin-bottom: 0.35rem;
+  }
+  .step-head h3 {
+    font-size: 1.06rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+  .role {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: var(--role-soft, var(--accent-soft));
+    color: var(--role, var(--accent));
+    white-space: nowrap;
+  }
+  .step.skill .role { --role-soft: var(--accent-soft); }
+  .step.human .role { --role-soft: var(--human-soft); }
+  .step.agent .role { --role-soft: var(--agent-soft); }
+  .step.done  .role { --role-soft: var(--done-soft); }
+
+  .step p { margin: 0.35rem 0 0; font-size: 1rem; }
+  .calls {
+    margin-top: 0.7rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .calls .k {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .chip {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .loopbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.2rem 0 0.2rem 1rem;
+    padding: 0.6rem 1rem;
+    border: 1px dashed var(--accent);
+    border-radius: 10px;
+    background: var(--accent-soft);
+    font-size: 0.98rem;
+    color: var(--ink);
+  }
+  .loopbar .turn { font-size: 1.3rem; color: var(--accent); line-height: 1; }
+
+  /* ---- figures --------------------------------------------- */
+  figure {
+    margin: 2rem 0 0;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.5rem 1.25rem 1rem;
+    box-shadow: var(--shadow);
+  }
+  .scroll { overflow-x: auto; }
+  figure svg { display: block; width: 100%; height: auto; min-width: 640px; color: var(--ink); }
+  figcaption {
+    margin-top: 0.9rem;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .svg-box { fill: var(--surface); stroke: var(--line); }
+  .svg-label { fill: var(--ink); font-family: "JetBrains Mono", monospace; }
+  .svg-sub { fill: var(--ink-soft); font-family: "JetBrains Mono", monospace; }
+  .svg-edge { stroke: var(--ink-soft); fill: none; }
+  .svg-edge-label { fill: var(--ink-soft); font-family: "JetBrains Mono", monospace; }
+
+  /* ---- stance cards ------------------------------------- */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+  .card {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.25rem 1.35rem;
+    box-shadow: var(--shadow);
+  }
+  .card h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 0 0 0.4rem;
+    display: flex;
+    gap: 0.55rem;
+    align-items: baseline;
+  }
+  .card h3 .n {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--accent);
+    flex: none;
+  }
+  .card p { margin: 0; font-size: 0.98rem; color: var(--ink-soft); }
+  .card code {
+    font-size: 0.85em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+
+  /* ---- uses table ------------------------------------- */
+  .uses { display: flex; flex-direction: column; gap: 1.5rem; }
+  .use-group h3 {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.7rem;
+    font-weight: 700;
+  }
+  .use-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 260px) 1fr;
+    gap: 0.4rem 1.25rem;
+    padding: 0.7rem 0;
+    border-top: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .use-row:last-child { border-bottom: 1px solid var(--line); }
+  .use-row .path {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    word-break: break-word;
+  }
+  .use-row .what { font-size: 0.96rem; color: var(--ink-soft); }
+
+  /* ---- footer ---------------------------------------- */
+  footer {
+    margin-top: 4.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.8;
+  }
+  footer b { color: var(--ink); font-weight: 700; }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 560px) {
+    body { font-size: 17px; }
+    .wrap { padding: 3rem 1.1rem 4rem; }
+    .step { grid-template-columns: 2.4rem 1fr; padding: 1rem; }
+    .titleblock { padding: 1.5rem 1.35rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .step, .card, figure { transition: border-color 0.15s ease; }
+    .step:hover { border-left-width: 3px; }
+    .card:hover { border-color: var(--accent); }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="titleblock">
+    <p class="eyebrow">Harness walkthrough &middot; pipeline stage 1 of 4</p>
+    <h1>Inside <span style="color:var(--accent)">design-it</span></h1>
+    <p class="standfirst">The design phase for every change in the <span class="mono" style="font-size:0.9em">ha-card-shared</span> pipeline. It turns one filed GitHub issue into one approved design note &mdash; and it refuses to converge early.</p>
+    <dl class="facts">
+      <div><dt>invocation</dt><dd>HUMAN only</dd></div>
+      <div><dt>input</dt><dd>a filed GH issue</dd></div>
+      <div><dt>output</dt><dd>1 approved design note</dd></div>
+      <div><dt>whole state</dt><dd>the note + the issue</dd></div>
+      <div><dt>hands off to</dt><dd>/code-it</dd></div>
+      <div><dt>re-runnable</dt><dd>yes &mdash; reopens &amp; re-grills</dd></div>
+    </dl>
+  </header>
+
+  <div class="pipeline" role="img" aria-label="Pipeline: design-it (current), then code-it, ship-it, release-it">
+    <span class="stage on">/design-it</span>
+    <span class="stage">/code-it</span>
+    <span class="stage">/ship-it</span>
+    <span class="stage">/release-it</span>
+  </div>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">01</span>
+    <h2>What it does</h2>
+    <p class="lede">One entry point for design, whatever the change &mdash; a bug fix, a feature, a chore, a one-line dependency bump. A trivial change still takes this path; it just moves fast. The skill prints each step as <code class="mono">- [ ]</code> before starting it and <code class="mono">- [x]</code> when done, and never skips one silently &mdash; if a step can't be honestly checked, it stops and asks.</p>
+
+    <div class="legend" aria-hidden="true">
+      <span><span class="dot skill"></span> skill acts</span>
+      <span><span class="dot human"></span> [HUMAN] gate</span>
+      <span><span class="dot agent"></span> sub-agent</span>
+      <span><span class="dot done"></span> approved</span>
+    </div>
+
+    <ol class="steps">
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>1</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Arm the guardrail</h3><span class="role">skill</span></div>
+          <p><code class="mono">node harness/hooks/skill-guard.mjs phase design</code> &mdash; sets the active phase. From now on the hook denies writes to <code class="mono">src/</code> and <code class="mono">test/</code> and denies <code class="mono">git commit</code> / <code class="mono">push</code> / <code class="mono">gh pr</code> / <code class="mono">npm version</code>. Survives Stop; expires after 8&nbsp;h.</p>
+          <div class="calls"><span class="k">runs</span><span class="chip">harness/hooks/skill-guard.mjs</span></div>
+        </div>
+      </li>
+
+      <li class="step human">
+        <div class="marker">step<b>[ ]</b>2</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Read the issue</h3><span class="role">human input</span></div>
+          <p><code class="mono">gh issue view &lt;n&gt; --json title,body,comments</code>. The issue is the entire input &mdash; nothing else is assumed.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">gh</span></div>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>3</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Grep the lessons log</h3><span class="role">skill</span></div>
+          <p>Search <code class="mono">LESSONS.md</code> for this problem class <em>before</em> thinking about an approach. Report any prior root cause and the guardrail already in place &mdash; a fix already guarded against is not this issue.</p>
+          <div class="calls"><span class="k">reads</span><span class="chip">LESSONS.md</span></div>
+        </div>
+      </li>
+
+      <li class="step agent">
+        <div class="marker">step<b>[ ]</b>4</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Reconnaissance</h3><span class="role">sub-agent &middot; explorer</span></div>
+          <p>1&ndash;3 <code class="mono">explorer</code> agents in parallel when scope is uncertain: reproduce the bug with concrete evidence and state what's ruled out, or scan prior art and reusable patterns for a feature. Read-only &mdash; the hook blocks it from writing files or mutating git. Skipped for a genuinely trivial change.</p>
+          <div class="calls"><span class="k">spawns</span><span class="chip">harness/agents/explorer.md</span></div>
+        </div>
+      </li>
+
+      <li class="step human">
+        <div class="marker">step<b>[ ]</b>5</div>
+        <div class="step-body">
+          <div class="step-head"><h3>The grill</h3><span class="role">human &middot; brainstorm-it</span></div>
+          <p>Runs <code class="mono">brainstorm-it</code> as a sub-skill: one question at a time, each with a recommended answer, but the decisions are the human's. One concern per issue &mdash; anything extra becomes a separate GH issue, not scope creep.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">harness/skills/brainstorm-it</span></div>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>6</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Design it twice</h3><span class="role">skill</span></div>
+          <p>For anything non-trivial: 3+ parallel sub-agents each produce a <em>radically different</em> interface &mdash; minimal, maximally flexible, common-case-trivial, ports-and-adapters &mdash; compared on depth, locality, and seam placement before any is judged. A single-approach note cannot be finished. Works from <code class="mono">design-methods/</code>.</p>
+          <div class="calls"><span class="k">reads</span><span class="chip">design-methods/glossary.md</span><span class="chip">design.md</span><span class="chip">discipline.md</span><span class="chip">processes.md</span></div>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>7</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Adjacent-opportunity pass</h3><span class="role">skill</span></div>
+          <p>Before converging: what does this change make cheap, and what does it foreclose? Anything worth doing separately is named and filed as its own GH issue &mdash; never folded in here.</p>
+        </div>
+      </li>
+
+      <li class="step skill">
+        <div class="marker">step<b>[ ]</b>8</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Write the note</h3><span class="role">skill &middot; explain-it</span></div>
+          <p><code class="mono">explain-it start &lt;n&gt; &lt;slug&gt;</code> creates <code class="mono">docs/design-notes/issue-&lt;n&gt;-&lt;slug&gt;.html</code> at status <code class="mono">in progress</code>, adds the README row, and opens it in the browser. The slices this change breaks into are declared directly in the note.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">harness/skills/explain-it</span></div>
+        </div>
+      </li>
+
+      <li class="loopbar">
+        <span class="turn" aria-hidden="true">&#8630;</span>
+        <span><b>Step 9 &mdash; loop 5&#8202;&ndash;&#8202;8</b> until the human approves. Re-grill, re-design, re-slice. The skill deliberately does not settle on the first workable answer.</span>
+      </li>
+
+      <li class="step done">
+        <div class="marker">step<b>[x]</b>10</div>
+        <div class="step-body">
+          <div class="step-head"><h3>Approve</h3><span class="role">done</span></div>
+          <p>On the human's approval, <code class="mono">explain-it approve &lt;n&gt; &lt;slug&gt;</code> flips the status badge to <code class="mono">approved</code>. Output: <strong>one approved design note</strong>, ready for <code class="mono">/code-it</code>.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">harness/skills/explain-it</span></div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">02</span>
+    <h2>Two ways in</h2>
+    <p class="lede">The steps above assume an issue number. When there isn't one, the skill either scans for a candidate and files it, or hands off to <code class="mono">brainstorm-it</code> to draft it first.</p>
+
+    <figure>
+      <div class="scroll">
+        <svg viewBox="0 0 1120 300" role="img" aria-label="Three entry modes converge on Steps 2 to 10. The numbered form goes straight in; the bare form scans and files an issue first; a fuzzy idea is drafted into an issue by brainstorm-it.">
+          <defs>
+            <marker id="arrE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-soft)"/>
+            </marker>
+          </defs>
+
+          <!-- mode A -->
+          <rect class="svg-box" x="40" y="38" width="210" height="48" rx="8" style="stroke:var(--accent)"/>
+          <text class="svg-label" x="145" y="62" text-anchor="middle" font-size="13" style="fill:var(--accent)">/design-it &lt;n&gt;</text>
+          <text class="svg-sub" x="145" y="79" text-anchor="middle" font-size="10.5">issue already filed</text>
+
+          <!-- mode B -->
+          <rect class="svg-box" x="40" y="126" width="210" height="48" rx="8" style="stroke:var(--accent)"/>
+          <text class="svg-label" x="145" y="150" text-anchor="middle" font-size="13" style="fill:var(--accent)">/design-it</text>
+          <text class="svg-sub" x="145" y="167" text-anchor="middle" font-size="10.5">no number &mdash; discovery</text>
+
+          <!-- mode C -->
+          <rect class="svg-box" x="40" y="214" width="210" height="48" rx="8"/>
+          <text class="svg-label" x="145" y="238" text-anchor="middle" font-size="12.5">fuzzy idea</text>
+          <text class="svg-sub" x="145" y="255" text-anchor="middle" font-size="10.5">no issue yet</text>
+
+          <!-- B pipeline -->
+          <rect class="svg-box" x="330" y="120" width="250" height="60" rx="8"/>
+          <text class="svg-label" x="455" y="144" text-anchor="middle" font-size="11.5">scan git-log hot spots</text>
+          <text class="svg-sub" x="455" y="163" text-anchor="middle" font-size="10.5">+ explorer pass &rarr; ranked report</text>
+
+          <rect class="svg-box" x="620" y="120" width="230" height="60" rx="8"/>
+          <text class="svg-label" x="735" y="144" text-anchor="middle" font-size="11.5">HUMAN picks one</text>
+          <text class="svg-sub" x="735" y="163" text-anchor="middle" font-size="10.5">gh issue create</text>
+
+          <!-- C pipeline -->
+          <rect class="svg-box" x="330" y="214" width="290" height="48" rx="8"/>
+          <text class="svg-label" x="475" y="238" text-anchor="middle" font-size="11.5">brainstorm-it drafts title + body</text>
+          <text class="svg-sub" x="475" y="254" text-anchor="middle" font-size="10.5">the human files it</text>
+
+          <!-- target -->
+          <rect class="svg-box" x="900" y="96" width="180" height="108" rx="10" style="stroke:var(--done);fill:var(--done-soft)"/>
+          <text class="svg-label" x="990" y="142" text-anchor="middle" font-size="14" style="fill:var(--done)">Steps 2&#8202;&ndash;&#8202;10</text>
+          <text class="svg-sub" x="990" y="162" text-anchor="middle" font-size="10.5" style="fill:var(--done)">the ten steps</text>
+
+          <!-- edges -->
+          <path class="svg-edge" d="M250 60 L610 60 Q900 60 900 130" marker-end="url(#arrE)"/>
+          <text class="svg-edge-label" x="470" y="52" text-anchor="middle" font-size="10">straight in</text>
+
+          <path class="svg-edge" d="M250 150 L330 150" marker-end="url(#arrE)"/>
+          <path class="svg-edge" d="M580 150 L620 150" marker-end="url(#arrE)"/>
+          <path class="svg-edge" d="M850 150 L900 150" marker-end="url(#arrE)"/>
+          <text class="svg-edge-label" x="875" y="143" text-anchor="middle" font-size="10">from step 2</text>
+
+          <path class="svg-edge" d="M250 238 L330 238" marker-end="url(#arrE)"/>
+          <path class="svg-edge" d="M620 238 Q720 238 720 180" marker-end="url(#arrE)"/>
+          <text class="svg-edge-label" x="700" y="205" text-anchor="middle" font-size="10">then /design-it &lt;n&gt;</text>
+        </svg>
+      </div>
+      <figcaption>All three modes converge on the same Steps 2&ndash;10. The numbered form is the only one that skips issue creation; the bare form owns the scan-and-file, and a raw idea is routed through <code class="mono">brainstorm-it</code> first (which files nothing itself).</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">03</span>
+    <h2>The shape of a run</h2>
+    <p class="lede">Steps 1&ndash;8 execute inside the armed guardrail. Steps 5&ndash;8 are a loop, not a line &mdash; they repeat until the human approves. Step 6 fans out.</p>
+
+    <figure>
+      <div class="scroll">
+        <svg viewBox="0 0 1200 300" role="img" aria-label="Steps 1 to 8 run under the design-phase guardrail that blocks source and test writes and any commit, push, PR or version bump. Steps 5 to 8 form a loop that repeats until the human approves, then the run outputs an approved note to code-it.">
+          <defs>
+            <marker id="arrS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-soft)"/>
+            </marker>
+          </defs>
+
+          <!-- guardrail band -->
+          <rect x="20" y="34" width="946" height="150" rx="10" style="fill:var(--accent);stroke:var(--accent)" fill-opacity="0.06" stroke-dasharray="5 4"/>
+          <text class="svg-label" x="34" y="54" font-size="11" style="fill:var(--accent)">phase: design &mdash; guardrail armed</text>
+          <text class="svg-sub" x="34" y="70" font-size="10">no src/ or test/ writes &middot; no commit / push / PR / npm version</text>
+
+          <!-- inner loop rect around 5-8 -->
+          <rect x="486" y="82" width="474" height="86" rx="10" style="stroke:var(--ink-soft);fill:none" stroke-dasharray="4 4"/>
+          <text class="svg-sub" x="723" y="98" text-anchor="middle" font-size="10">loop</text>
+
+          <!-- step chips -->
+          <g font-family="JetBrains Mono, monospace">
+            <rect class="svg-box" x="42" y="106" width="96" height="46" rx="8"/>
+            <circle cx="54" cy="118" r="4" style="fill:var(--accent)"/>
+            <text class="svg-sub" x="90" y="126" text-anchor="middle" font-size="9">step 1</text>
+            <text class="svg-label" x="90" y="141" text-anchor="middle" font-size="10.5">arm guard</text>
+
+            <rect class="svg-box" x="160" y="106" width="96" height="46" rx="8"/>
+            <circle cx="172" cy="118" r="4" style="fill:var(--human)"/>
+            <text class="svg-sub" x="208" y="126" text-anchor="middle" font-size="9">step 2</text>
+            <text class="svg-label" x="208" y="141" text-anchor="middle" font-size="10.5">read issue</text>
+
+            <rect class="svg-box" x="278" y="106" width="96" height="46" rx="8"/>
+            <circle cx="290" cy="118" r="4" style="fill:var(--accent)"/>
+            <text class="svg-sub" x="326" y="126" text-anchor="middle" font-size="9">step 3</text>
+            <text class="svg-label" x="326" y="141" text-anchor="middle" font-size="10.5">grep LESSONS</text>
+
+            <rect class="svg-box" x="396" y="106" width="96" height="46" rx="8"/>
+            <circle cx="408" cy="118" r="4" style="fill:var(--agent)"/>
+            <text class="svg-sub" x="444" y="126" text-anchor="middle" font-size="9">step 4</text>
+            <text class="svg-label" x="444" y="141" text-anchor="middle" font-size="10.5">explorer</text>
+
+            <rect class="svg-box" x="514" y="106" width="96" height="46" rx="8"/>
+            <circle cx="526" cy="118" r="4" style="fill:var(--human)"/>
+            <text class="svg-sub" x="562" y="126" text-anchor="middle" font-size="9">step 5</text>
+            <text class="svg-label" x="562" y="141" text-anchor="middle" font-size="10.5">grill</text>
+
+            <rect class="svg-box" x="632" y="106" width="96" height="46" rx="8"/>
+            <circle cx="644" cy="118" r="4" style="fill:var(--accent)"/>
+            <text class="svg-sub" x="680" y="126" text-anchor="middle" font-size="9">step 6</text>
+            <text class="svg-label" x="680" y="141" text-anchor="middle" font-size="10.5">design &times;2</text>
+
+            <rect class="svg-box" x="750" y="106" width="96" height="46" rx="8"/>
+            <circle cx="762" cy="118" r="4" style="fill:var(--accent)"/>
+            <text class="svg-sub" x="798" y="126" text-anchor="middle" font-size="9">step 7</text>
+            <text class="svg-label" x="798" y="141" text-anchor="middle" font-size="10.5">adjacent</text>
+
+            <rect class="svg-box" x="868" y="106" width="96" height="46" rx="8"/>
+            <circle cx="880" cy="118" r="4" style="fill:var(--accent)"/>
+            <text class="svg-sub" x="916" y="126" text-anchor="middle" font-size="9">step 8</text>
+            <text class="svg-label" x="916" y="141" text-anchor="middle" font-size="10.5">note</text>
+          </g>
+
+          <!-- flow arrows -->
+          <path class="svg-edge" d="M138 129 L160 129" marker-end="url(#arrS)"/>
+          <path class="svg-edge" d="M256 129 L278 129" marker-end="url(#arrS)"/>
+          <path class="svg-edge" d="M374 129 L396 129" marker-end="url(#arrS)"/>
+          <path class="svg-edge" d="M492 129 L514 129" marker-end="url(#arrS)"/>
+          <path class="svg-edge" d="M610 129 L632 129" marker-end="url(#arrS)"/>
+          <path class="svg-edge" d="M728 129 L750 129" marker-end="url(#arrS)"/>
+          <path class="svg-edge" d="M846 129 L868 129" marker-end="url(#arrS)"/>
+
+          <!-- loop-back -->
+          <path class="svg-edge" d="M916 152 L916 212 L562 212 L562 154" marker-end="url(#arrS)" style="stroke:var(--accent)"/>
+          <text class="svg-edge-label" x="739" y="230" text-anchor="middle" font-size="10.5" style="fill:var(--accent)">steps 5&#8202;&ndash;&#8202;8 repeat until the human approves</text>
+
+          <!-- output -->
+          <path class="svg-edge" d="M964 129 L1010 129" marker-end="url(#arrS)"/>
+          <rect class="svg-box" x="1012" y="98" width="168" height="62" rx="10" style="stroke:var(--done);fill:var(--done-soft)"/>
+          <text class="svg-label" x="1096" y="123" text-anchor="middle" font-size="12" style="fill:var(--done)">note: approved</text>
+          <text class="svg-sub" x="1096" y="141" text-anchor="middle" font-size="10" style="fill:var(--done)">&rarr; /code-it</text>
+        </svg>
+      </div>
+      <figcaption>The guardrail (dashed band) is set by step 1 and stays armed for the whole phase. Step 9 is the loop-back edge, not a task of its own; step 10 is reached only on the human's approval, and its output is the single artifact the next skill consumes.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="scroll">
+        <svg viewBox="0 0 900 280" role="img" aria-label="Step 6 frames the problem, spawns four parallel sub-agents each designing a radically different interface, then compares them on depth, locality and seam placement to reach a recommendation.">
+          <defs>
+            <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-soft)"/>
+            </marker>
+          </defs>
+
+          <rect class="svg-box" x="30" y="110" width="200" height="60" rx="9" style="stroke:var(--accent)"/>
+          <text class="svg-label" x="130" y="134" text-anchor="middle" font-size="11.5" style="fill:var(--accent)">step 6 &mdash; frame</text>
+          <text class="svg-sub" x="130" y="152" text-anchor="middle" font-size="10">constraints + code sketch</text>
+
+          <g font-family="JetBrains Mono, monospace">
+            <rect class="svg-box" x="330" y="20" width="230" height="44" rx="8"/>
+            <text class="svg-label" x="445" y="41" text-anchor="middle" font-size="10.5">agent 1 &mdash; minimal interface</text>
+            <text class="svg-sub" x="445" y="55" text-anchor="middle" font-size="9">1&ndash;3 entry points, max leverage</text>
+
+            <rect class="svg-box" x="330" y="78" width="230" height="44" rx="8"/>
+            <text class="svg-label" x="445" y="99" text-anchor="middle" font-size="10.5">agent 2 &mdash; max flexibility</text>
+            <text class="svg-sub" x="445" y="113" text-anchor="middle" font-size="9">many use cases, extension</text>
+
+            <rect class="svg-box" x="330" y="136" width="230" height="44" rx="8"/>
+            <text class="svg-label" x="445" y="157" text-anchor="middle" font-size="10.5">agent 3 &mdash; common case</text>
+            <text class="svg-sub" x="445" y="171" text-anchor="middle" font-size="9">default case trivial</text>
+
+            <rect class="svg-box" x="330" y="194" width="230" height="44" rx="8"/>
+            <text class="svg-label" x="445" y="215" text-anchor="middle" font-size="10.5">agent 4 &mdash; ports &amp; adapters</text>
+            <text class="svg-sub" x="445" y="229" text-anchor="middle" font-size="9">for cross-seam deps</text>
+          </g>
+
+          <rect class="svg-box" x="650" y="96" width="220" height="88" rx="10" style="stroke:var(--accent)"/>
+          <text class="svg-label" x="760" y="128" text-anchor="middle" font-size="11">compare</text>
+          <text class="svg-sub" x="760" y="146" text-anchor="middle" font-size="9.5">depth &middot; locality &middot; seam</text>
+          <text class="svg-sub" x="760" y="162" text-anchor="middle" font-size="9.5">&rarr; opinionated recommendation</text>
+
+          <path class="svg-edge" d="M230 128 C280 128 285 42 330 42" marker-end="url(#arrT)"/>
+          <path class="svg-edge" d="M230 135 C285 135 290 100 330 100" marker-end="url(#arrT)"/>
+          <path class="svg-edge" d="M230 145 C285 145 290 158 330 158" marker-end="url(#arrT)"/>
+          <path class="svg-edge" d="M230 152 C280 152 285 216 330 216" marker-end="url(#arrT)"/>
+
+          <path class="svg-edge" d="M560 42 C610 42 615 120 650 120" marker-end="url(#arrT)"/>
+          <path class="svg-edge" d="M560 100 C605 100 610 132 650 132" marker-end="url(#arrT)"/>
+          <path class="svg-edge" d="M560 158 C605 158 610 144 650 144" marker-end="url(#arrT)"/>
+          <path class="svg-edge" d="M560 216 C610 216 615 160 650 160" marker-end="url(#arrT)"/>
+        </svg>
+      </div>
+      <figcaption>Step 6, non-trivial changes only. Your first idea is rarely the best one, so at least two materially different approaches are written out in full and compared before any is judged. The glossary and domain vocabulary go into every brief so the designs stay comparable.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">04</span>
+    <h2>What it uses</h2>
+    <p class="lede">The skill file is ~55 lines. Almost everything it does is delegation &mdash; to a hook, two sub-skills, one sub-agent, and a four-file reference.</p>
+
+    <div class="uses">
+      <div class="use-group">
+        <h3>Guardrail hook</h3>
+        <div class="use-row">
+          <span class="path">harness/hooks/skill-guard.mjs<br>&middot; skill-guard.json</span>
+          <span class="what">Phase/role-aware <code class="mono">PreToolUse</code> gate. Step 1 sets phase <code class="mono">design</code>; the policy then denies <code class="mono">src/</code> + <code class="mono">test/</code> writes and <code class="mono">commit</code>&nbsp;/&nbsp;<code class="mono">push</code>&nbsp;/&nbsp;<code class="mono">pr</code>&nbsp;/&nbsp;<code class="mono">version</code>. Every decision is logged; unreadable state fails open.</span>
+        </div>
+      </div>
+
+      <div class="use-group">
+        <h3>Sub-skills</h3>
+        <div class="use-row">
+          <span class="path">harness/skills/brainstorm-it</span>
+          <span class="what">The step-5 grill. One question at a time, recommended answer each, decisions stay with the human. Also the pre-issue on-ramp that drafts an issue from a raw idea.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">harness/skills/explain-it</span>
+          <span class="what">Single owner of <code class="mono">docs/design-notes/</code> and <code class="mono">LESSONS.md</code>. <code class="mono">start</code> creates the note (step 8); <code class="mono">approve</code> flips the badge (step 10). Later phases &mdash; <code class="mono">slice</code>, <code class="mono">compound</code>, <code class="mono">finalize</code> &mdash; belong to <code class="mono">/code-it</code> and <code class="mono">/ship-it</code>.</span>
+        </div>
+      </div>
+
+      <div class="use-group">
+        <h3>Sub-agent</h3>
+        <div class="use-row">
+          <span class="path">harness/agents/explorer.md</span>
+          <span class="what">Read-only reconnaissance for step 4 (and the no-arg scan). Traces the real code path, gathers concrete evidence, reports <code class="mono">file:line</code> pointers &mdash; proposes no fix. <code class="mono">skill-guard</code> blocks it from any write or mutating git.</span>
+        </div>
+      </div>
+
+      <div class="use-group">
+        <h3>Design-methods reference</h3>
+        <div class="use-row">
+          <span class="path">design-methods/glossary.md</span>
+          <span class="what">The fixed vocabulary &mdash; module, interface, depth, seam, adapter, leverage, locality. Read every run; used verbatim in the note and in conversation.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">design-methods/design.md</span>
+          <span class="what">How to shape an interface. Read on every non-trivial change (step 6).</span>
+        </div>
+        <div class="use-row">
+          <span class="path">design-methods/discipline.md</span>
+          <span class="what">The fast checks &mdash; deletion test, one-adapter-vs-two, replace-don't-layer, the red-flag list &mdash; run against each proposed design.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">design-methods/processes.md</span>
+          <span class="what">The playbooks: <em>scanning for candidates</em> (no-arg mode), <em>deepening a cluster</em>, <em>design it twice</em> (step 6).</span>
+        </div>
+      </div>
+
+      <div class="use-group">
+        <h3>External</h3>
+        <div class="use-row">
+          <span class="path">gh</span>
+          <span class="what"><code class="mono">gh issue view</code> for the input (step 2); <code class="mono">gh issue create</code> in no-arg mode and whenever an adjacent opportunity is split off.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">LESSONS.md</span>
+          <span class="what">The by-symptom log, grepped at step 3 before any approach is considered.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <section>
+    <span class="section-num">05</span>
+    <h2>How it addresses the task</h2>
+    <p class="lede">The task is not "produce a plan" &mdash; it is "don't let the codebase accrete complexity one reasonable-looking commit at a time." Six design choices do that work.</p>
+
+    <div class="cards">
+      <div class="card">
+        <h3><span class="n">a</span> State is just the note and the issue</h3>
+        <p>There is no hidden progress to lose. Re-invoking <code>/design-it &lt;n&gt;</code> on an existing note &mdash; from any conversation &mdash; reopens and re-grills it. The design survives the session that made it.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">b</span> It refuses to converge early</h3>
+        <p>The grill, design-it-twice, and the adjacent-opportunity pass are where the "keep the design clean" budget is spent. Step 9 loops 5&ndash;8 until the human &mdash; not the skill &mdash; is satisfied. A single-approach note is declared unfinishable.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">c</span> Guardrails, not good intentions</h3>
+        <p>Step 1 arms <code>skill-guard</code> so the phase <em>cannot</em> write <code>src/</code> or <code>test/</code> or commit anything. The <code>explorer</code> sub-agent is additionally read-only. A block means someone strayed out of scope.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">d</span> One issue, one concern</h3>
+        <p>Extras surfaced during the grill or the adjacent pass become their own GH issues on the spot. Scope cannot creep because the skill files the creep as separate work.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">e</span> Fixed vocabulary</h3>
+        <p>Every run reads <code>glossary.md</code> and uses its terms exactly &mdash; no "component", "service", "API", "boundary". Notes and grills stay comparable across changes and across time.</p>
+      </div>
+      <div class="card">
+        <h3><span class="n">f</span> Every step is visible</h3>
+        <p>Each step is printed <code>- [ ]</code> then <code>- [x]</code>; a step that can't be honestly checked stops the run. Every <code>[HUMAN]</code> gate opens with what changed, why it matters, and the risk if wrong &mdash; not a status recap.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <b>Harness walkthrough &mdash; 1 of 4 entry points.</b><br>
+    design-it &rarr; <a href="code-it.html">code-it</a> &rarr; ship-it &rarr; release-it &nbsp;&middot;&nbsp; sub-skills: brainstorm-it, explain-it, commit-it<br>
+    Source: <span class="mono">harness/skills/design-it/SKILL.md</span> in <span class="mono">ha-card-shared</span>.
+  </footer>
+
+</div>
+</body>
+</html>

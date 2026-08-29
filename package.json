@@ -1,6 +1,6 @@
 {
   "name": "ha-card-shared",
-  "version": "2.0.1",
+  "version": "2.0.0",
   "type": "module",
   "files": [
     "biome.json",
@@ -8,6 +8,7 @@
     "globals.d.ts",
     "prettier.config.json",
     "rollup.base.mjs",
+    "rollup.base.d.mts",
     "tsconfig.base.json",
     "vitest.base.mjs",
     "CLAUDE.md",

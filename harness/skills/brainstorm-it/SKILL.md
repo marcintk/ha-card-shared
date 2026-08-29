@@ -1,6 +1,6 @@
 ---
 name: brainstorm-it
-description: Interrogate a plan, idea, or design decision one question at a time until there is shared understanding. Called by feature-it (design gate) and improve-it (chosen candidate); also the pre-issue on-ramp — turns a fuzzy idea into a filable issue.
+description: Interrogate a plan, idea, or design decision one question at a time until there is shared understanding. Called by design-it (design gate) and improve-it (chosen candidate); also the pre-issue on-ramp — turns a fuzzy idea into a filable issue.
 ---
 
 # Brainstorm-It
@@ -23,4 +23,4 @@ Do not act on the outcome until the human confirms the understanding is shared.
 
 When invoked on an idea with no GH issue yet: run the interview as above, then end by drafting
 the issue — a one-line title and a body (context, the change, acceptance) ready to paste into
-`gh issue create`. The human files it; `/fix-it` or `/feature-it` takes it from there.
+`gh issue create`. The human files it; `/design-it` takes it from there.

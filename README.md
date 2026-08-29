@@ -18,8 +18,8 @@ The exported configs expect these tools installed in the consumer (declared as p
 
 ### Claude Code skills
 
-The `/fix-it`, `/feature-it`, and `/ship-it` pipelines are self-contained — `npm install`
-symlinks the bundled skills and subagents and wires the `skill-guard` hook (see
+The `/design-it`, `/code-it`, `/ship-it`, and `/release-it` pipeline is self-contained —
+`npm install` symlinks the bundled skills and subagents and wires the `skill-guard` hook (see
 [Claude Code config](#claude-code-config)). No marketplace plugins to install. The only
 external references are Claude Code built-ins every install already has: `/code-review`,
 `/simplify`, `/rewind`, `artifact-design`.

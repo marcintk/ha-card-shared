@@ -1,6 +1,6 @@
 ---
 name: improve-it
-description: Scan the codebase for deepening opportunities — shallow modules whose interface is nearly as complex as their implementation — and present them as a ranked markdown report, then grill through the one you pick. Run from ship-it, or directly with "/improve-it".
+description: Scan the codebase for deepening opportunities — shallow modules whose interface is nearly as complex as their implementation — and present them as a ranked markdown report, then grill through the one you pick. Run from release-it, or directly with "/improve-it".
 disable-model-invocation: true
 ---
 

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Four Verbs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root {
+    --ground: #f6f7fa;
+    --surface: #ffffff;
+    --ink: #1b1e26;
+    --muted: #5a6070;
+    --rule: #dde0ea;
+    --accent: #4257b2;
+    --accent-ink: #2f3f88;
+    --accent-soft: #e9ecf9;
+    --amber: #9a6a15;
+    --amber-soft: #f6ecd8;
+    --shadow: 0 1px 2px rgba(20, 24, 40, .04), 0 8px 24px rgba(20, 24, 40, .05);
+  }
+  :root:not([data-theme="light"]) {
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1116;
+      --surface: #171a21;
+      --ink: #e3e5ec;
+      --muted: #959bad;
+      --rule: #292d38;
+      --accent: #8fa2f0;
+      --accent-ink: #b3c0f7;
+      --accent-soft: #1f2540;
+      --amber: #d7ab63;
+      --amber-soft: #2e2717;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0f1116;
+    --surface: #171a21;
+    --ink: #e3e5ec;
+    --muted: #959bad;
+    --rule: #292d38;
+    --accent: #8fa2f0;
+    --accent-ink: #b3c0f7;
+    --accent-soft: #1f2540;
+    --amber: #d7ab63;
+    --amber-soft: #2e2717;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 43rem;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 5vw, 2.5rem) 6rem;
+  }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .72rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  header { display: grid; gap: 1.5rem; }
+  h1 {
+    font-family: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    line-height: 1.15;
+    text-wrap: balance;
+    margin: .4rem 0 0;
+    letter-spacing: -.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.5rem;
+    padding: 1rem 0 1.25rem;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+  .meta b { color: var(--ink); font-weight: 500; }
+  .meta a { color: var(--accent-ink); text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .12rem .6rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 500;
+    background: var(--amber-soft);
+    color: var(--amber);
+  }
+  .pill::before {
+    content: "";
+    width: .5rem; height: .5rem;
+    border-radius: 999px;
+    background: currentColor;
+  }
+  .pill.approved { background: var(--accent-soft); color: var(--accent-ink); }
+
+  main { display: grid; gap: 3rem; margin-top: 3rem; }
+  section { display: grid; gap: 1rem; }
+  h2 {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin: 0;
+    letter-spacing: -.005em;
+  }
+  h2 .eyebrow { display: block; margin-bottom: .35rem; }
+  p { margin: 0; max-width: 40rem; }
+  a { color: var(--accent-ink); }
+  code {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .86em;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: .08em .35em;
+  }
+
+  ul.plain { margin: 0; padding: 0; list-style: none; display: grid; gap: .75rem; }
+  ul.plain li { padding-left: 1.35rem; position: relative; max-width: 40rem; }
+  ul.plain li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: .68em;
+    width: .45rem; height: .45rem;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+
+  ol.edits { margin: 0; padding: 0; list-style: none; display: grid; gap: .9rem; counter-reset: e; }
+  ol.edits li {
+    counter-increment: e;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1rem 1.1rem 1rem 3rem;
+    position: relative;
+    box-shadow: var(--shadow);
+  }
+  ol.edits li::before {
+    content: counter(e);
+    position: absolute;
+    left: 1.1rem; top: 1rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    width: 1.4rem; height: 1.4rem;
+    display: grid; place-items: center;
+    border-radius: 6px;
+  }
+  ol.edits b { font-weight: 600; }
+
+  .files {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: .88rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .7rem .9rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { background: var(--ground); }
+  td.path { white-space: nowrap; font-family: "IBM Plex Mono", monospace; font-size: .82rem; }
+
+  .swap {
+    display: grid;
+    gap: .5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .84rem;
+    box-shadow: var(--shadow);
+    max-width: 40rem;
+  }
+  .swap .row { display: flex; gap: .8rem; align-items: baseline; flex-wrap: wrap; }
+  .swap .tag {
+    color: var(--muted);
+    font-size: .68rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    min-width: 4.5rem;
+  }
+  .swap .was { color: var(--muted); text-decoration: line-through; }
+  .swap .now { color: var(--accent-ink); font-weight: 600; }
+
+  .callout {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: .9rem 1.1rem;
+    max-width: 40rem;
+  }
+  .callout.amber { background: var(--amber-soft); border-left-color: var(--amber); }
+  .callout p + p { margin-top: .5rem; }
+
+  ol.steps { margin: 0; padding-left: 1.3rem; display: grid; gap: .55rem; max-width: 40rem; }
+  ol.steps li { padding-left: .2rem; }
+  ol.steps li::marker { color: var(--accent); font-family: "IBM Plex Mono", monospace; font-size: .85rem; }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .76rem;
+    color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    a { transition: color .15s ease; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <span class="eyebrow">Design note &middot; ha-card-shared</span>
+      <h1>Four verbs: collapsing nine skills to design-it, code-it, ship-it, release-it</h1>
+    </div>
+    <div class="meta">
+      <span>issue <b><a href="https://github.com/marcintk/ha-card-shared/issues/37">#37</a></b></span>
+      <span>branch <b>refactor/four-entry-points</b></span>
+      <span>drafted <b>2026-08-29</b></span>
+      <span class="pill approved">approved</span>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2><span class="eyebrow">01</span>Problem</h2>
+      <p>Nine skills, and a split that never earned its keep: <code>/fix-it</code> for a bug,
+      <code>/feature-it</code> for everything else, with near-identical steps duplicated between
+      them and a judgment call at the door (&ldquo;is this really a bug or a small feature?&rdquo;)
+      that nobody needed to make. No single artifact a change lived in &mdash; the design note
+      existed, but the GH issue body was <i>also</i> called &ldquo;the state store,&rdquo; and
+      neither had a resumable, reopenable shape.</p>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">02</span>The collapse</h2>
+      <div class="diagram"><p><code>/design-it &lt;n&gt;</code> &rarr; <code>/code-it &lt;n&gt;</code>
+      &rarr; <code>/ship-it</code> &rarr; <code>/release-it</code></p></div>
+      <table>
+      <tr><th>Old</th><th>New</th></tr>
+      <tr><td><code>fix-it</code> + <code>feature-it</code> (design half)</td><td><code>design-it</code></td></tr>
+      <tr><td><code>fix-it</code> + <code>feature-it</code> (TDD half)</td><td><code>code-it</code></td></tr>
+      <tr><td><code>pr-it</code></td><td><code>ship-it</code> (renamed &amp; promoted to a human-typed entry)</td></tr>
+      <tr><td><code>ship-it</code> (release)</td><td><code>release-it</code> (renamed)</td></tr>
+      </table>
+      <p>The bug/feature judgment call is gone &mdash; <code>/design-it</code> takes any GH issue,
+      and its own first steps (grep <code>LESSONS.md</code>, then either reproduce or scan prior
+      art) already branch on what the issue actually is, without the human pre-classifying it at
+      the command line.</p>
+      <p><b>A genuine rename hid inside the collapse.</b> The table in the issue names the new
+      <code>/ship-it</code> as &ldquo;commit, PR, explain-diff comment, CI, squash-merge&rdquo;
+      &mdash; that was the <i>old</i> <code>pr-it</code>'s job, an AI-invoked sub-skill nobody
+      typed directly. The old <code>/ship-it</code> &mdash; bump semver, tag, release &mdash;
+      becomes <code>/release-it</code>. Two skills swapped names as part of the same change; get
+      this backwards and the acceptance criteria's own end-to-end sequence
+      (<code>design-it &rarr; code-it &rarr; ship-it &rarr; release-it</code>) stops making sense.</p>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">03</span>What's new, not just renamed</h2>
+      <p><b><code>/design-it</code> is built to not converge early.</b> Two additions beyond what
+      <code>fix-it</code>/<code>feature-it</code> did: <b>design it twice</b> &mdash; for anything
+      non-trivial, at least two materially different approaches, written out and compared, before
+      either is judged (the existing <code>codebase-design</code> skill already had a
+      <code>DESIGN-IT-TWICE.md</code> companion note describing exactly this pattern; referenced,
+      not re-explained) &mdash; and an <b>adjacent-opportunity pass</b>: before converging, name
+      what this change makes cheap and what it forecloses, and split off anything worth doing
+      separately into its own issue rather than folding it in.</p>
+      <p><b>Phase wiring, finally.</b> #36 built <code>skill-guard.mjs phase</code> and fully
+      tested it, but nothing called it &mdash; explicitly deferred as that issue's non-goal. Each
+      of the four skills now opens with exactly that call:
+      <code>design-it</code> &rarr; <code>phase design</code>,
+      <code>code-it</code> &rarr; <code>phase code</code> (plus <code>red</code>/<code>green</code>
+      around each slice), <code>ship-it</code> &rarr; <code>phase ship</code>, <code>release-it</code>
+      &rarr; <code>phase release</code>. The guard's role half was already live; this makes the
+      phase half live too.</p>
+      <p><b>The approval moment moved.</b> Under the old model, a design note's status flipped to
+      <code>approved</code> once, right before the PR &mdash; conflating &ldquo;the plan is
+      good&rdquo; with &ldquo;the code shipped.&rdquo; Under the new one, <code>/design-it</code>
+      approves the <i>plan</i>, before any code exists; <code>explain-it</code> gained an
+      <code>approve</code> phase to do exactly that, and its <code>finalize</code> phase (called
+      by <code>/ship-it</code>, once there's an actual diff) no longer touches the status badge
+      &mdash; it only renders the explain-diff and fills in the README's Explain-diff link. The PR
+      link fills in one step later, inside <code>/ship-it</code> itself, once <code>gh pr
+      create</code> actually returns a number &mdash; the old flow's <code>finalize</code> claimed
+      to fill that link too, one full step before the PR it was linking to existed.</p>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">04</span>Staying small</h2>
+      <p>Four files, 199 lines combined &mdash; against 223 for the four they replace
+      (<code>fix-it</code> 58 + <code>feature-it</code> 62 + <code>pr-it</code> 35 + old
+      <code>ship-it</code> 68), despite adding design-it-twice, the adjacent-opportunity pass, and
+      explicit phase wiring throughout. No file exceeds 69 lines; the constraint asked for
+      &ldquo;roughly under 80.&rdquo; No <code>references/</code> directory anywhere &mdash; every
+      procedure a skill needs lives in its own body or is one line pointing at an existing
+      companion note (<code>DESIGN-IT-TWICE.md</code>), never a subtree of its own to load.</p>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">05</span>Guardrail</h2>
+      <p><code>test/skills/claude-shared.test.ts</code> now asserts the acceptance criteria
+      directly: all four entry points exist and carry <code>disable-model-invocation: true</code>;
+      <code>fix-it</code>, <code>feature-it</code>, and <code>pr-it</code> are confirmed gone (not
+      just untested); each entry point's <code>SKILL.md</code> is &le;85 lines; none adds a
+      <code>references/</code> directory. <code>test/skills/release-it.test.ts</code> (renamed
+      from <code>ship-it.test.ts</code>, retargeted) keeps #34's release-flow assertions pointed
+      at the file that now actually owns that flow, and gained one more: <code>ship-it/SKILL.md</code>
+      must never again contain the string <code>&quot;npm version&quot;</code> &mdash; a tripwire
+      against the two skills quietly re-merging later.</p>
+      <p>Live-verified, not just asserted: a real <code>setup-claude.js</code> run against a
+      scratch consumer shows exactly the ten intended skills symlinked, none of the retired three
+      present; a second run with a stale <code>fix-it</code> symlink planted first (simulating a
+      real upgrading consumer) confirms it's pruned automatically &mdash; the existing
+      broken-symlink cleanup, built originally for &ldquo;a skill removed in a newer
+      ha-card-shared,&rdquo; doing exactly the job it was built for.</p>
+    </section>
+
+    <section>
+      <h2><span class="eyebrow">06</span>Non-goals</h2>
+      <p>A full autonomous live dogfood of the new chain on a real issue
+      (<code>/design-it</code> through <code>/release-it</code>). <code>brainstorm-it</code>'s
+      whole design is a human interview, one question at a time &mdash; genuinely running it
+      requires the user's real engagement, not something to simulate mid-sequence. Structural
+      correctness is verified above; the live run is the user's to invoke whenever they pick up
+      the new pipeline.</p>
+      <p>The v1.4.1&rarr;2.0.0 recipe. This is consumer-breaking (<code>/fix-it</code> and
+      <code>/feature-it</code> disappear from their <code>.claude/skills/</code>), so the recipe
+      does need a migration line &mdash; added once #33&ndash;#38 are ready to ship as one release,
+      matching the deferral already recorded in #35 and #36's notes.</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,6 +1,6 @@
 ---
 name: commit-it
-description: Write a Conventional Commits message for the staged change, with the mandated Co-Authored-By / Claude-Session trailers. Message only — the caller runs git commit. Called by pr-it.
+description: Write a Conventional Commits message for the staged change, with the mandated Co-Authored-By / Claude-Session trailers. Message only — the caller runs git commit. Called by ship-it.
 ---
 
 # Commit-It

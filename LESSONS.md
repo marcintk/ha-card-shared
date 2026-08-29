@@ -6,6 +6,27 @@ the by-symptom index.
 
 <!-- ponytail: single file; split by area if it outgrows one screen-scroll -->
 
+## A skill split on "bug vs. feature" makes the human classify before starting
+
+- **Root cause:** `fix-it` and `feature-it` duplicated nearly every step, differing mainly in
+  whether the first step was "reproduce" or "design + grill." The human had to pre-classify the
+  change to pick the right command, and the two skills' steps drifted independently over time.
+- **Guardrail:** one entry point, `design-it`, whose own early steps (grep `LESSONS.md`, then
+  `pipeline-explore` to reproduce or scan prior art) branch on what the issue actually is — the
+  classification happens inside the skill, from evidence, not at the command line from a guess.
+- **Ref:** [#37](https://github.com/marcintk/ha-card-shared/issues/37) · 2026-08-29
+
+## A design note approved once conflates "the plan is good" with "the code shipped"
+
+- **Root cause:** the note's status flipped to `approved` a single time, right before the PR —
+  so "approved" meant nothing was reviewable as a plan before code existed to review; it only
+  ever meant "this is about to ship."
+- **Guardrail:** `design-it` approves the design note itself, before any code exists (a new
+  `explain-it approve` phase); `finalize` (called later by `ship-it`, once there's a diff) no
+  longer touches the status badge — it only renders the explain-diff. Two distinct moments get
+  two distinct signals, not one flag doing both jobs.
+- **Ref:** [#37](https://github.com/marcintk/ha-card-shared/issues/37) · 2026-08-29
+
 ## A `Stop`-cleared hook state never survives past the first human gate
 
 - **Root cause:** `skill-guard`'s skill-layer state lived in one slot written by a

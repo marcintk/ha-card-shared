@@ -3,12 +3,12 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const root = resolve(process.cwd());
-const doc = readFileSync(`${root}/harness/skills/ship-it/SKILL.md`, "utf8");
+const doc = readFileSync(`${root}/harness/skills/release-it/SKILL.md`, "utf8");
 
 // pre-commit blocks every commit on main (harness/.githooks/pre-commit). A bare `npm version
 // <bump>` shells out to a plain `git commit` on whatever branch is checked out, so run on main it
 // is blocked and the release never happens. See LESSONS.md.
-describe("ship-it/SKILL.md release steps", () => {
+describe("release-it/SKILL.md release steps", () => {
   it("never lets npm version create a commit directly on main", () => {
     const bashBlocks = [...doc.matchAll(/```bash\n([\s\S]*?)```/g)].map((m) => m[1]);
     const versionLines = bashBlocks
@@ -31,5 +31,10 @@ describe("ship-it/SKILL.md release steps", () => {
     const checkoutMainIdx = doc.lastIndexOf("checkout main", tagIdx);
     expect(checkoutMainIdx).toBeGreaterThan(-1);
     expect(checkoutMainIdx).toBeLessThan(tagIdx);
+  });
+
+  it("ship-it/SKILL.md does not carry the release flow — release-it owns it alone", () => {
+    const shipDoc = readFileSync(`${root}/harness/skills/ship-it/SKILL.md`, "utf8");
+    expect(shipDoc).not.toContain("npm version");
   });
 });

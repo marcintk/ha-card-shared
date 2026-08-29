@@ -18,20 +18,25 @@ npm run format:md      # prettier for markdown files
 npm run check:ci       # CI gate: typecheck + biome check + prettier check
 ```
 
-> To change this workflow: edit `CLAUDE-SHARED.md` and/or the pipeline files in `ha-card-shared` — `harness/skills/{fix-it,feature-it,ship-it,improve-it,explain-it,pr-it,commit-it,brainstorm-it}`, `harness/agents/`, `harness/hooks/skill-guard.*` — iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.
+> To change this workflow: edit `CLAUDE-SHARED.md` and/or the pipeline files in `ha-card-shared` — `harness/skills/{design-it,code-it,ship-it,release-it,improve-it,explain-it,commit-it,brainstorm-it}`, `harness/agents/`, `harness/hooks/skill-guard.*` — iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.
 
 ## Making a change
 
-Every change starts from a GH issue and runs through one of two skills — no third path, including chores, docs, and trivial edits:
+Every change starts from a GH issue and runs through the same four steps — no third path,
+including chores, docs, and trivial edits:
 
-- **`/fix-it <issue#>`** — a bug fix. Reproduce, red test, minimal fix, one PR.
-- **`/feature-it <issue#>`** — everything else. Design + grill, red-green per slice, one PR or a small queue. Trivial changes still go through it — the steps just move fast.
+- **`/design-it <issue#>`** — design phase. Reproduce or scope, grill, design it twice for
+  anything non-trivial, approved design note with slices declared.
+- **`/code-it <issue#>`** — TDD phase. Red test, minimal fix, review, per slice, until the note
+  is fully implemented.
+- **`/ship-it`** — commit, PR, explain-diff comment, merge.
+- **`/release-it`** — batched across several merged PRs: bump semver, tag, draft release notes.
 
-No issue number yet → file the issue first, then run the skill. If the idea is still fuzzy,
+No issue number yet → file the issue first, then run `/design-it`. If the idea is still fuzzy,
 run `brainstorm-it` on it first — it interviews you to a spec and drafts the issue. The skill
 files own the full procedure; nothing here duplicates it.
 
-Both pipelines maintain `LESSONS.md` at the repo root — one greppable entry per shipped
+The pipeline maintains `LESSONS.md` at the repo root — one greppable entry per shipped
 change that taught something reusable: symptom, root cause, the guardrail now preventing
 recurrence. Grep it for the symptom before reproducing or designing; append to it before the
 PR. Per-issue detail stays in `docs/design-notes/`.

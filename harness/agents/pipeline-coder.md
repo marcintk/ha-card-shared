@@ -1,6 +1,6 @@
 ---
 name: pipeline-coder
-description: Implements the minimal code to make the current failing test pass — nothing more. Spawned for the implementation step of a fix-it / feature-it slice. Guarded by skill-guard: cannot edit test files, and cannot write under src/ until a test is red.
+description: Implements the minimal code to make the current failing test pass — nothing more. Spawned for the implementation step of a code-it slice. Guarded by skill-guard: cannot edit test files, and cannot write under src/ until a test is red.
 tools: Read, Edit, Write, Bash, Grep, Glob
 ---
 

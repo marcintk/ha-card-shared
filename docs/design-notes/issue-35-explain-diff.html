@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gates for the Gatekeeper</title>
+<style>
+  :root {
+    --bg: #fafaf8; --fg: #1a1a1a; --accent: #b5541f; --muted: #6b6b6b;
+    --code-bg: #282c34; --code-fg: #e6e6e6; --callout-bg: #fff4e8; --border: #e0ddd6;
+  }
+  body { font-family: Georgia, 'Times New Roman', serif; background: var(--bg); color: var(--fg);
+    max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem 6rem; line-height: 1.65; }
+  h1 { font-size: 1.9rem; border-bottom: 3px solid var(--accent); padding-bottom: .5rem; }
+  h2 { font-size: 1.4rem; margin-top: 3rem; color: var(--accent); }
+  h3 { font-size: 1.1rem; margin-top: 1.8rem; }
+  code { font-family: 'SF Mono', Consolas, monospace; background: #eee; padding: .1rem .3rem;
+    border-radius: 3px; font-size: .92em; }
+  pre { background: var(--code-bg); color: var(--code-fg); padding: 1rem 1.2rem; border-radius: 8px;
+    overflow-x: auto; white-space: pre-wrap; font-family: 'SF Mono', Consolas, monospace;
+    font-size: .88rem; line-height: 1.5; }
+  pre code { background: none; padding: 0; color: inherit; }
+  .callout { background: var(--callout-bg); border-left: 4px solid var(--accent); padding: .9rem 1.2rem;
+    border-radius: 0 6px 6px 0; margin: 1.2rem 0; }
+  .toc { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.5rem; margin: 1.5rem 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc ul { margin: .3rem 0; }
+  .diagram { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem;
+    margin: 1.2rem 0; font-family: 'SF Mono', Consolas, monospace; font-size: .85rem; }
+  .flow { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; justify-content: center; padding: .5rem 0; }
+  .box { border: 2px solid var(--accent); border-radius: 8px; padding: .6rem 1rem; background: #fdf6ee;
+    text-align: center; min-width: 120px; }
+  .box.fail { border-color: #b91c1c; background: #fef2f2; }
+  .arrow { font-size: 1.4rem; color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+  th, td { border: 1px solid var(--border); padding: .5rem .7rem; text-align: left; }
+  th { background: #f0ede6; }
+  .quiz-q { background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem 1.5rem; margin: 1.2rem 0; }
+  .quiz-opt { display: block; width: 100%; text-align: left; padding: .6rem 1rem; margin: .4rem 0;
+    border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer;
+    font-family: inherit; font-size: .95rem; }
+  .quiz-opt:hover { background: #f5f2ec; }
+  .quiz-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .feedback { display: none; margin-top: .6rem; padding: .6rem 1rem; border-radius: 6px; font-size: .9rem; }
+  .feedback.correct { background: #ecfdf3; color: #166534; border-left: 3px solid #16a34a; }
+  .feedback.incorrect { background: #fef2f2; color: #991b1b; border-left: 3px solid #dc2626; }
+  @media (max-width: 600px) { body { padding: 1rem; } .flow { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<h1>Gates for the Gatekeeper</h1>
+<p style="color:var(--muted); margin-top:-.5rem;">Prepared 2026-08-29 · PR #42 · issue #35</p>
+
+<div class="toc">
+<strong>Contents</strong>
+<ul>
+  <li><a href="#background">Background</a></li>
+  <li><a href="#intuition">Two corrections before a line of config changed</a></li>
+  <li><a href="#code">What shipped</a></li>
+  <li><a href="#quiz">Quiz</a></li>
+</ul>
+</div>
+
+<h2 id="background">Background</h2>
+<p>Every consumer of this toolchain lives under a strict bargain: <code>check:ci</code> must pass (typecheck, lint, markdown format) and <code>test:coverage</code> must hold 100% statements, branches, functions and lines, or the change doesn't merge. It's enforced twice &mdash; a local <code>pre-commit</code>/<code>pre-push</code> pair, and <code>self-check.yml</code> in CI as the real backstop.</p>
+<p>The bargain has a blind spot. <code>check:ci</code>'s <code>tsc</code> invocation only ever pointed at <code>src/**/*.ts</code> and <code>test/**/*.ts</code>; Biome was only ever invoked as <code>biome check src/ test/</code>. <code>harness/</code> &mdash; the postinstall script that wires every consumer's git hooks and Claude Code config, and the hook that enforces the whole TDD pipeline &mdash; sat outside both. Two JavaScript files carrying real conditional logic, checked by nobody's linter, typed by nobody's compiler.</p>
+
+<h2 id="intuition">Two corrections before a line of config changed</h2>
+<p>This issue got two things wrong, and both were caught before implementing rather than after.</p>
+<p><b>The first:</b> it claimed the harness was &ldquo;never linted, typechecked, or tested.&rdquo; The testing half was false &mdash; roughly 500 lines already existed across <code>test/scripts/setup-claude.test.ts</code> and <code>test/skills/</code>, running in CI on every PR. Scope was corrected down to the two things genuinely missing: lint and typecheck.</p>
+<p><b>The second</b> surfaced mid-implementation. The plan called for widening <code>vitest.config.mjs</code>'s <code>coverage.include</code> to catch the harness files under the existing coverage gate. Tried it, empirically, before writing it into the config:</p>
+<pre><code>All files          |   25.73 |    20.32 |   51.51 |   27.32
+ harness           |       0 |        0 |       0 |       0
+  setup-claude.js  |       0 |        0 |       0 |       0
+</code></pre>
+<p>100% dropped to 26%. Not a bug in the files &mdash; a structural blind spot in the measurement. Vitest's v8 coverage provider instruments the vitest worker process; both harness scripts are tested by spawning them as real subprocesses, which is the <i>correct</i> way to test a CLI script (it's literally how they run in production, invoked by git hooks and <code>postinstall</code>). A parent process's v8 coverage has no visibility into what a child process executed. Vitest ships no built-in mechanism to merge subprocess coverage back in.</p>
+<div class="callout"><p><b>The distinction that mattered:</b> these files aren't untested. They're tested by a method the coverage tool structurally cannot count. Forcing the number to include them wouldn't have made the measurement more honest &mdash; it would have broken a 100% invariant this repo treats as load-bearing, for files that were already well covered by a better-suited method. Dropped from scope, and the reasoning recorded so nobody re-proposes it without re-deriving the same 26%.</p></div>
+
+<h2 id="code">What shipped</h2>
+<p><b>Biome</b> extended to <code>harness/</code> in both <code>check</code> and <code>check:ci</code>. It found four real, entirely mechanical issues &mdash; missing <code>node:</code> import prefixes, unsorted imports, a string concatenation that reads better as a template literal &mdash; auto-fixed, zero behavior change.</p>
+<p><b>checkJs</b> (<code>tsconfig.harness.json</code>, <code>allowJs</code> + <code>checkJs</code> + <code>strict</code>, extending the same base config as the main <code>tsconfig.json</code>) was the substantive piece. Turned on cold, it surfaced 30 errors across the two files, almost all one repeating shape:</p>
+<pre><code>let payload = {};
+// ...
+payload = JSON.parse(readFileSync(0, "utf8"));
+// ...
+const cwd = payload.cwd || process.cwd();
+//                  ^^^ TS2339: Property 'cwd' does not exist on type '{}'</code></pre>
+<p>An empty-object initializer pins the variable's type to <code>{}</code> for its whole scope &mdash; a later reassignment to a JSON.parse'd value doesn't widen it. Every subsequent property read on <code>payload</code> or <code>settings</code> failed the same way. Fixed with two small JSDoc <code>@typedef</code>s &mdash; <code>HookPayload</code> for the hook's stdin JSON, <code>ClaudeSettings</code>/<code>GuardHookEntry</code> for the merged Claude settings file &mdash; plus <code>@param</code> tags on arrow functions whose parameters had no inferred type. No runtime behavior changed; these are doc comments TypeScript reads.</p>
+<p>Two spots needed an actual line, not just a comment: <code>String(tool)</code> before an <code>.includes()</code> call, because <code>tool</code> (<code>payload.tool_name</code>) is legitimately optional and <code>Array.prototype.includes</code> wants its argument to match the array's element type &mdash; stringifying first preserves the exact existing behavior (<code>undefined</code> still matches nothing) while satisfying the type. And an inline JSDoc cast on a caught error's <code>.code</code>, since TypeScript treats catch-clause variables as <code>unknown</code> by default and Node's filesystem errors aren't the built-in <code>Error</code> shape.</p>
+<div class="callout"><p><b>Not cosmetic.</b> A typed <code>HookPayload</code> is exactly the shape that would make <code>payload.agent_type</code> versus a typo of it impossible to ship silently &mdash; the class of bug this whole rebuild keeps catching by hand, one issue at a time.</p></div>
+<p><code>pre-commit</code> gained <code>npm run --if-present typecheck:harness</code> after the existing <code>typecheck</code> line. The <code>--if-present</code> matters: this hook file is shared with every consumer via <code>core.hooksPath</code>, and only this repo's own <code>package.json</code> defines that script &mdash; every consumer silently skips the line, exactly like the existing <code>format:md</code> step above it.</p>
+<p><code>self-check.yml</code> gained <code>python3 -m py_compile</code> on <code>render.py</code> in the lint job: a syntax gate distinct from <code>test/skills/render.test.ts</code>'s behavior checks, and the first place the previously undeclared python3 dependency is spelled out explicitly.</p>
+
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz-q">
+<p><strong>Why did widening vitest&#x27;s `coverage.include` to the harness scripts drop overall coverage from 100% to 26%, even though those scripts are tested?</strong></p>
+<button class="quiz-opt" data-correct="false">The threshold check runs before the harness tests finish executing.</button>
+<button class="quiz-opt" data-correct="false">vitest&#x27;s coverage.include glob doesn&#x27;t support .mjs extensions.</button>
+<button class="quiz-opt" data-correct="false">The tests for those scripts were skipped in CI due to a missing dependency.</button>
+<button class="quiz-opt" data-correct="true">They&#x27;re tested by spawning them as subprocesses, and vitest&#x27;s v8 provider only instruments the vitest worker process — it can&#x27;t see what a child process executed.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>Why does `let payload = {}; payload = JSON.parse(...)` fail typechecking under checkJs + strict, even though JSON.parse returns `any`?</strong></p>
+<button class="quiz-opt" data-correct="false">JSON.parse&#x27;s return type is `never` under strict mode.</button>
+<button class="quiz-opt" data-correct="false">The `{}` literal is interpreted as a type annotation rather than a value.</button>
+<button class="quiz-opt" data-correct="true">TypeScript infers `payload`&#x27;s type from its initializer (`{}`) and does not widen it on a later reassignment.</button>
+<button class="quiz-opt" data-correct="false">checkJs forbids reassigning a `let` variable to a different shape entirely.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>Why does the fix use `String(tool)` before `.includes()` rather than just annotating `tool` as always a `string`?</strong></p>
+<button class="quiz-opt" data-correct="false">Biome&#x27;s formatter requires all `.includes()` arguments to be explicitly cast.</button>
+<button class="quiz-opt" data-correct="false">TypeScript cannot narrow union types inside array literals.</button>
+<button class="quiz-opt" data-correct="true">`tool` (payload.tool_name) is legitimately optional at runtime; String(tool) preserves that undefined still matches nothing, while satisfying the type checker&#x27;s element-type requirement.</button>
+<button class="quiz-opt" data-correct="false">`.includes()` requires its argument to be pre-stringified for performance reasons.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>Why does `harness/.githooks/pre-commit` call `npm run --if-present typecheck:harness` instead of `npm run typecheck:harness`?</strong></p>
+<button class="quiz-opt" data-correct="false">It suppresses the script&#x27;s stdout so pre-commit output stays short.</button>
+<button class="quiz-opt" data-correct="true">This hook file is shared with every consumer repo via core.hooksPath, but only ha-card-shared&#x27;s own package.json defines that script — consumers need it to silently skip.</button>
+<button class="quiz-opt" data-correct="false">`--if-present` runs the script only when there are staged changes under harness/.</button>
+<button class="quiz-opt" data-correct="false">npm requires --if-present for any script name containing a colon.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>During this change, `git checkout -- harness/hooks/skill-guard.mjs` was used to revert an experimental edit and it discarded more than intended. Why?</strong></p>
+<button class="quiz-opt" data-correct="false">The command was run from the wrong working directory.</button>
+<button class="quiz-opt" data-correct="false">Biome&#x27;s formatter had already rewritten the file, so the checkout restored the pre-format version.</button>
+<button class="quiz-opt" data-correct="true">`git checkout --` resets a file to HEAD, not to its state before the last edit — on a branch with no commits yet, HEAD was still main, so every uncommitted change to that file was lost, not just the one being undone.</button>
+<button class="quiz-opt" data-correct="false">The file was on a symlink and the checkout followed it to the wrong target.</button>
+</div>
+
+<script>
+document.querySelectorAll('.quiz-q').forEach(q => {
+  q.querySelectorAll('.quiz-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (opt.disabled) return;
+      q.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = true; });
+      const correct = opt.dataset.correct === 'true';
+      const fb = document.createElement('div');
+      fb.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+      fb.textContent = correct
+        ? '✅ Correct.'
+        : '❌ Not quite — reread the section above.';
+      opt.insertAdjacentElement('afterend', fb);
+      fb.style.display = 'block';
+    });
+  });
+});
+</script>
+
+</body>
+</html>

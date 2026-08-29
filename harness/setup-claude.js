@@ -1,21 +1,31 @@
-import { execSync } from 'child_process';
+import { execSync } from "node:child_process";
 import {
-  readFileSync,
-  writeFileSync,
-  mkdirSync,
-  symlinkSync,
-  readdirSync,
-  readlinkSync,
   lstatSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  readlinkSync,
   realpathSync,
-  statSync,
   rmSync,
-} from 'fs';
-import { join, dirname, relative, resolve, sep } from 'path';
-import { fileURLToPath } from 'url';
+  statSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
+
+/**
+ * @typedef {object} GuardHookEntry
+ * @property {string} [matcher]
+ * @property {{type: string, command: string, timeout?: number, statusMessage?: string}[]} hooks
+ */
+/**
+ * @typedef {object} ClaudeSettings
+ * @property {{PreToolUse?: GuardHookEntry[], Stop?: GuardHookEntry[], SessionStart?: GuardHookEntry[]}} [hooks]
+ */
 
 const root = process.env.INIT_CWD ?? process.cwd();
-const claudeDir = join(root, '.claude');
+const claudeDir = join(root, ".claude");
 const sharedRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
 // Path to the hook, relative to the consumer root and slash-normalised, so a consumer that
@@ -23,8 +33,8 @@ const sharedRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 // only if the package sits outside the tree (unusual: npm link, odd hoisting).
 const relToShared = relative(root, sharedRoot);
 const guardBase =
-  relToShared && !relToShared.startsWith('..' + sep) && relToShared !== '..'
-    ? relToShared.split(sep).join('/')
+  relToShared && !relToShared.startsWith(`..${sep}`) && relToShared !== ".."
+    ? relToShared.split(sep).join("/")
     : sharedRoot;
 const guard = `${guardBase}/harness/hooks/skill-guard.mjs`;
 
@@ -36,6 +46,7 @@ const guard = `${guardBase}/harness/hooks/skill-guard.mjs`;
 // the package copy, which the next install discards. Drop the link so a real file replaces it —
 // but only when it points into node_modules or dangles; a link the consumer aims somewhere of
 // their own (dotfiles, say) is theirs to keep.
+/** @param {string} settingsPath */
 function dropPackageSymlink(settingsPath) {
   let link;
   try {
@@ -51,45 +62,50 @@ function dropPackageSymlink(settingsPath) {
     rmSync(settingsPath); // dangling
     return;
   }
-  if (target.split(sep).includes('node_modules')) rmSync(settingsPath);
+  if (target.split(sep).includes("node_modules")) rmSync(settingsPath);
 }
 
 function mergeHooks() {
-  const settingsPath = join(claudeDir, 'settings.json');
+  const settingsPath = join(claudeDir, "settings.json");
   dropPackageSymlink(settingsPath);
+  /** @type {ClaudeSettings} */
   let settings = {};
   try {
-    settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+    settings = JSON.parse(readFileSync(settingsPath, "utf8"));
   } catch {}
   settings.hooks ??= {};
 
+  /** @param {GuardHookEntry} e */
   const isGuard = (e) =>
     (e.hooks ?? []).some(
-      (h) => typeof h.command === 'string' && h.command.includes('skill-guard.mjs'),
+      (h) => typeof h.command === "string" && h.command.includes("skill-guard.mjs")
     );
+  /** @param {GuardHookEntry[] | undefined} arr */
   const keep = (arr) => (arr ?? []).filter((e) => !isGuard(e));
-  const cmd = (arg) => ({ type: 'command', command: `node "${guard}" ${arg}`, timeout: 30 });
+  /** @param {string} arg */
+  const cmd = (arg) => ({ type: "command", command: `node "${guard}" ${arg}`, timeout: 30 });
 
   settings.hooks.PreToolUse = [
     ...keep(settings.hooks.PreToolUse),
-    { matcher: 'Skill', hooks: [cmd('enter')] },
-    { matcher: 'Bash|Edit|Write|MultiEdit|NotebookEdit', hooks: [cmd('check')] },
+    { matcher: "Skill", hooks: [cmd("enter")] },
+    { matcher: "Bash|Edit|Write|MultiEdit|NotebookEdit", hooks: [cmd("check")] },
   ];
-  settings.hooks.Stop = [...keep(settings.hooks.Stop), { hooks: [cmd('clear')] }];
+  settings.hooks.Stop = [...keep(settings.hooks.Stop), { hooks: [cmd("clear")] }];
 
   if (settings.hooks.SessionStart) {
     settings.hooks.SessionStart = settings.hooks.SessionStart.filter(
-      (e) => !(e.hooks ?? []).some((h) => String(h.statusMessage).includes('ha-card-shared')),
+      (e) => !(e.hooks ?? []).some((h) => String(h.statusMessage).includes("ha-card-shared"))
     );
     if (settings.hooks.SessionStart.length === 0) delete settings.hooks.SessionStart;
   }
 
   mkdirSync(claudeDir, { recursive: true });
-  writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
+  writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
 }
 
 // Symlink every entry of <sharedRoot>/<srcRel> into <claudeDir>/<destName>, and prune any of our
 // own symlinks there that no longer resolve (e.g. a skill removed in a newer ha-card-shared).
+/** @param {string} srcRel @param {string} [destName] */
 function linkInto(srcRel, destName = srcRel) {
   const src = join(sharedRoot, srcRel);
   const dest = join(claudeDir, destName);
@@ -122,7 +138,7 @@ function linkInto(srcRel, destName = srcRel) {
     try {
       symlinkSync(join(src, entry.name), join(dest, entry.name));
     } catch (e) {
-      if (e.code !== 'EEXIST') throw e;
+      if (/** @type {NodeJS.ErrnoException} */ (e).code !== "EEXIST") throw e;
     }
   }
 }
@@ -131,13 +147,15 @@ function linkInto(srcRel, destName = srcRel) {
 // repo, or has already set core.hooksPath to something of their own (don't clobber that).
 function wireGitHooks() {
   const desired = `${guardBase}/harness/.githooks`;
+  /** @param {string} args @param {boolean} [capture] */
   const git = (args, capture) =>
     execSync(`git ${args}`, {
       cwd: root,
-      stdio: capture ? ['ignore', 'pipe', 'ignore'] : 'ignore',
+      stdio: capture ? ["ignore", "pipe", "ignore"] : "ignore",
     });
   // A value naming a missing or empty directory hooks nothing — git silently runs no hook. Treat
   // it as a leftover to take over, so a consumer isn't stranded with dead hooks forever.
+  /** @param {string} p */
   const hasHooks = (p) => {
     try {
       return readdirSync(resolve(root, p)).length > 0;
@@ -147,9 +165,9 @@ function wireGitHooks() {
   };
 
   try {
-    const current = git('config --local --get core.hooksPath', true).toString().trim();
+    const current = git("config --local --get core.hooksPath", true).toString().trim();
     if (current === desired) return; // already ours
-    if (current && !current.includes('ha-card-shared') && hasHooks(current)) return; // theirs
+    if (current && !current.includes("ha-card-shared") && hasHooks(current)) return; // theirs
   } catch {
     // unset, or not a git repo — the set below decides which
   }
@@ -162,5 +180,5 @@ function wireGitHooks() {
 
 mergeHooks();
 wireGitHooks();
-linkInto('harness/skills', 'skills');
-linkInto('harness/agents', 'agents');
+linkInto("harness/skills", "skills");
+linkInto("harness/agents", "agents");

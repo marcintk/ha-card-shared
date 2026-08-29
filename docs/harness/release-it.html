@@ -422,7 +422,7 @@
         <div class="marker">step<b>[ ]</b>1</div>
         <div class="step-body">
           <div class="step-head"><h3>Arm the guardrail</h3><span class="role">skill</span></div>
-          <p><code class="mono">node harness/hooks/skill-guard.mjs phase release</code>. Release bumps, tags and pushes &mdash; it does not edit source &mdash; so the hook denies writes to <code class="mono">src/</code> and <code class="mono">test/</code>.</p>
+          <p><code class="mono">node .claude/hooks/skill-guard.mjs phase release</code>. Release bumps, tags and pushes &mdash; it does not edit source &mdash; so the hook denies writes to <code class="mono">src/</code> and <code class="mono">test/</code>.</p>
           <div class="calls"><span class="k">runs</span><span class="chip">harness/hooks/skill-guard.mjs</span></div>
         </div>
       </li>
@@ -507,7 +507,7 @@
         <div class="marker">step<b>[x]</b>11</div>
         <div class="step-body">
           <div class="step-head"><h3>Clear the phase</h3><span class="role">phase complete</span></div>
-          <p><code class="mono">node harness/hooks/skill-guard.mjs phase clear</code>. Output: <strong>one published GitHub Release</strong>, <code class="mono">vX.Y.Z</code> tagged on <code class="mono">main</code>. Consumers pick it up on their next install.</p>
+          <p><code class="mono">node .claude/hooks/skill-guard.mjs phase clear</code>. Output: <strong>one published GitHub Release</strong>, <code class="mono">vX.Y.Z</code> tagged on <code class="mono">main</code>. Consumers pick it up on their next install.</p>
           <div class="calls"><span class="k">runs</span><span class="chip">harness/hooks/skill-guard.mjs</span></div>
         </div>
       </li>

@@ -426,7 +426,7 @@
         <div class="marker">step<b>[ ]</b>1</div>
         <div class="step-body">
           <div class="step-head"><h3>Arm the guardrail</h3><span class="role">skill</span></div>
-          <p><code class="mono">node harness/hooks/skill-guard.mjs phase ship</code>. This phase commits, pushes and opens the PR, so those are allowed &mdash; but the hook now denies writes to <code class="mono">src/</code> and <code class="mono">test/</code> and denies <code class="mono">npm version</code>. Shipping does not edit source.</p>
+          <p><code class="mono">node .claude/hooks/skill-guard.mjs phase ship</code>. This phase commits, pushes and opens the PR, so those are allowed &mdash; but the hook now denies writes to <code class="mono">src/</code> and <code class="mono">test/</code> and denies <code class="mono">npm version</code>. Shipping does not edit source.</p>
           <div class="calls"><span class="k">runs</span><span class="chip">harness/hooks/skill-guard.mjs</span></div>
         </div>
       </li>
@@ -528,7 +528,7 @@
         <div class="marker">step<b>[x]</b>13</div>
         <div class="step-body">
           <div class="step-head"><h3>Clear the phase</h3><span class="role">phase complete</span></div>
-          <p><code class="mono">node harness/hooks/skill-guard.mjs phase clear</code> &mdash; the guardrail state is reset so the next <code class="mono">/design-it</code> starts clean. Output: <strong>one merged PR, <code class="mono">main</code> up to date</strong> &mdash; ready for <code class="mono">/release-it</code> to batch.</p>
+          <p><code class="mono">node .claude/hooks/skill-guard.mjs phase clear</code> &mdash; the guardrail state is reset so the next <code class="mono">/design-it</code> starts clean. Output: <strong>one merged PR, <code class="mono">main</code> up to date</strong> &mdash; ready for <code class="mono">/release-it</code> to batch.</p>
           <div class="calls"><span class="k">runs</span><span class="chip">harness/hooks/skill-guard.mjs</span></div>
         </div>
       </li>

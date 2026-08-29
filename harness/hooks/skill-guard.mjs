@@ -17,6 +17,7 @@
 
 import {
   appendFileSync,
+  existsSync,
   mkdirSync,
   readFileSync,
   realpathSync,
@@ -73,12 +74,36 @@ if (sub === "check") {
   }
 }
 
+/**
+ * Walk up from `start` to the nearest directory holding a `.git` entry — the project root. The
+ * session cwd can be a subdirectory; resolving the phase file and the `^src/` / `^test/` anchors
+ * against a subdir would silently disarm the guard. Falls back to `start` if no `.git` is found.
+ * @param {string} start
+ */
+function findProjectRoot(start) {
+  let dir = resolve(start);
+  for (;;) {
+    if (existsSync(join(dir, ".git"))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) return resolve(start);
+    dir = parent;
+  }
+}
+
 /** @type {Policy} */
-const policy = JSON.parse(readFileSync(join(HERE, "skill-guard.json"), "utf8"));
+let policy = {};
+try {
+  policy = JSON.parse(readFileSync(join(HERE, "skill-guard.json"), "utf8"));
+} catch (e) {
+  // A broken policy file must not throw (Node would exit 1, which Claude Code treats as
+  // non-blocking — the guard would be off and unlogged). Fail open, but say so.
+  process.stderr.write(`skill-guard: policy unreadable, allowing — ${e}\n`);
+  ok();
+}
 const phaseStaleMs = (policy.settings?.phase_stale_seconds ?? 28800) * 1000;
 const redStaleMs = (policy.settings?.red_stale_seconds ?? 1800) * 1000;
 
-const cwd = payload.cwd || process.cwd();
+const cwd = findProjectRoot(payload.cwd || process.cwd());
 const stateDir = join(cwd, ".claude", "skill-guard");
 const phaseFile = join(stateDir, "phase");
 const redFile = join(stateDir, "red");
@@ -122,26 +147,32 @@ function isRed() {
 }
 
 /** Strip git's global options — anything valid between `git` and the subcommand — so
- * `git -C /x --no-pager commit` reads as `git commit` for subcommand matching. Covers the
- * value-taking flags (quoted or bare) and the standalone toggles; an unrecognised global flag
- * still shifts the subcommand and is caught by the `stripQuotedSpans`-then-boundary matching. */
+ * `git -C /x --no-pager commit` reads as `git commit` for subcommand matching. The two
+ * separate-value short flags (`-C path`, `-c k=v`) are matched explicitly; every long flag is
+ * caught by a generic `--flag` / `--flag=value` alternative, so an option this list has never
+ * heard of still can't shift the subcommand past the deny check. */
 /** @param {string} cmd */
 function stripGitGlobalFlags(cmd) {
   const value = `(?:"[^"]*"|'[^']*'|\\S+)`;
   const opt =
-    `(?:\\s+-C\\s+${value}` +
-    `|\\s+-c\\s+\\S+?=${value}` +
-    `|\\s+(?:--git-dir|--work-tree|--namespace|--exec-path|--super-prefix)(?:=\\S+|\\s+${value})` +
-    `|\\s+(?:--no-pager|--paginate|-P|--bare|--no-replace-objects|--literal-pathspecs|--glob-pathspecs|--noglob-pathspecs|--icase-pathspecs))+`;
+    `(?:\\s+-C\\s+${value}` + // -C <path>
+    `|\\s+-c\\s+\\S+?=${value}` + // -c <key>=<value>
+    `|\\s+--(?:git-dir|work-tree|namespace|exec-path|super-prefix|attr-source|config-env)(?:=|\\s+)${value}` +
+    `|\\s+-[Pp]` + // -P / -p
+    `|\\s+--[a-z][a-z-]*(?:=${value})?)+`; // any other long flag, bare or --flag=value
   return cmd.replace(new RegExp(`\\bgit${opt}`, "g"), "git");
 }
 
-/** Blank quoted spans so a deny pattern can't match text inside an argument — e.g. the
- * literal "git push" in `git commit -m "todo: git push later"`. Runs after
- * stripGitGlobalFlags, which needs the quotes intact to consume `-C "a b"`. */
+/** Blank only the value of a message-carrying flag, so a deny word inside a commit message
+ * (`git commit -m "todo: git push later"`) isn't matched — while a mutating command handed to
+ * a wrapper (`bash -c 'git push'`, `` `git push` ``) stays visible. Runs after
+ * stripGitGlobalFlags, which needs quotes intact to consume `-C "a b"`. */
 /** @param {string} cmd */
-function stripQuotedSpans(cmd) {
-  return cmd.replace(/"[^"]*"|'[^']*'/g, " ");
+function stripMessageArgs(cmd) {
+  return cmd.replace(
+    /(?:^|\s)(?:-m|-F|-t|--message|--file|--template)(?:=|\s+)(?:"[^"]*"|'[^']*'|\S+)/g,
+    " "
+  );
 }
 
 /**
@@ -269,11 +300,18 @@ if (sub === "check") {
     const why = `${label}: ${rules.reason}`;
 
     if (tool === "Bash" && rules.deny_bash) {
-      const cmd = stripQuotedSpans(stripGitGlobalFlags(String(input.command || "")));
+      const cmd = stripMessageArgs(stripGitGlobalFlags(String(input.command || "")));
       for (const re of rules.deny_bash) {
-        // Anchor to a command position — start of string or just after a shell separator — so
-        // `legit push` / `mygit commit` don't match a bare `git …` pattern mid-token.
-        if (new RegExp(`(?:^|[\\s;&|(])(?:${re})`).test(cmd)) {
+        // Anchor to a command position — start of string, or just after a shell separator /
+        // wrapper boundary (`;` `&&` `|` `(` backtick quote) — so `legit push` / `mygit commit`
+        // don't match a bare `git …` pattern mid-token, while `bash -c 'git push'` still does.
+        let hit = false;
+        try {
+          hit = new RegExp("(?:^|[\\s;&|(`'\"])(?:" + re + ")").test(cmd);
+        } catch (e) {
+          process.stderr.write(`skill-guard: bad deny_bash pattern ${JSON.stringify(re)} — ${e}\n`);
+        }
+        if (hit) {
           logDecision(phaseName, agentType, tool, "deny", why);
           deny(why);
         }
@@ -294,7 +332,15 @@ if (sub === "check") {
           deny(outsideMsg);
         }
         for (const re of rules.deny_write) {
-          if (path && new RegExp(re).test(path)) {
+          let hit = false;
+          try {
+            hit = !!path && new RegExp(re).test(path);
+          } catch (e) {
+            process.stderr.write(
+              `skill-guard: bad deny_write pattern ${JSON.stringify(re)} — ${e}\n`
+            );
+          }
+          if (hit) {
             logDecision(phaseName, agentType, tool, "deny", why);
             deny(why);
           }

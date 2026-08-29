@@ -226,6 +226,19 @@ describe("path normalization", () => {
     expect(res.status).toBe(0);
   });
 
+  it("anchors src/ and test/ at the git root even when the session cwd is a subdirectory", () => {
+    mkdirSync(join(tmp, ".git"), { recursive: true });
+    mkdirSync(join(tmp, "src"), { recursive: true });
+    cli("phase", "design"); // design denies ^src/ writes
+    const res = check({
+      cwd: join(tmp, "src"), // session started inside src/
+      tool_name: "Edit",
+      tool_input: { file_path: join(tmp, "src", "widget.ts") },
+    });
+    expect(res.status).toBe(2);
+    expect(res.stderr).toContain("phase design");
+  });
+
   it("resolves a symlinked cwd without a false-positive escape", () => {
     mkdirSync(join(tmp, "real", "src"), { recursive: true });
     symlinkSync(join(tmp, "real"), join(tmp, "alt"));
@@ -301,12 +314,46 @@ describe("deny_bash bypass patterns", () => {
     expect(denied("git commit-tree -m x")).toBe(0);
   });
 
-  it("does not match a trigger word that only appears inside a quoted argument", () => {
+  it("denies an unrecognised git global flag before the subcommand", () => {
+    expect(denied("git --no-optional-locks commit -m x")).toBe(2);
+    expect(denied("git --attr-source=HEAD push")).toBe(2);
+  });
+
+  it("sees a mutating command handed to a shell wrapper or command substitution", () => {
+    expect(denied(`bash -c 'git commit -am wip && git push'`)).toBe(2);
+    expect(denied('eval "gh pr merge 1"')).toBe(2);
+    expect(denied("echo $(git push)")).toBe(2);
+    expect(denied("x=`git push`")).toBe(2);
+  });
+
+  it("still ignores a trigger word inside a commit-message flag value", () => {
     cli("phase", "code"); // `code` denies `git push` but must allow a commit that mentions it
     const res = check({
       cwd: tmp,
       tool_name: "Bash",
       tool_input: { command: `git commit -m "todo: git push later"` },
+    });
+    expect(res.status).toBe(0);
+  });
+});
+
+describe("release phase npm version", () => {
+  it("denies a bare `npm version` (it would make its own commit and tag)", () => {
+    cli("phase", "release");
+    const res = check({
+      cwd: tmp,
+      tool_name: "Bash",
+      tool_input: { command: "npm version patch" },
+    });
+    expect(res.status).toBe(2);
+  });
+
+  it("allows `npm version <bump> --no-git-tag-version`", () => {
+    cli("phase", "release");
+    const res = check({
+      cwd: tmp,
+      tool_name: "Bash",
+      tool_input: { command: "npm version minor --no-git-tag-version" },
     });
     expect(res.status).toBe(0);
   });

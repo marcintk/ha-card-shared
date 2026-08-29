@@ -12,5 +12,6 @@ rendered — GitHub itself shows a linked `.html` file as source, not a page. Pa
 `main` `/docs`, so this folder (`docs/design-notes/`) is served under `/design-notes/`;
 `docs/.nojekyll` stops Jekyll from reprocessing the files.
 
-| Issue | Note | Explain-diff | Status | PR  |
-| ----- | ---- | ------------ | ------ | --- |
+| Issue                                                       | Note                                                                                                       | Explain-diff                                                                                      | Status   | PR  |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | -------- | --- |
+| [#32](https://github.com/marcintk/ha-card-shared/issues/32) | [Naming the bundle](https://marcintk.github.io/ha-card-shared/design-notes/issue-32-build-project-js.html) | [Explain-diff](https://marcintk.github.io/ha-card-shared/design-notes/issue-32-explain-diff.html) | approved | #39 |

@@ -39,9 +39,10 @@ jobs:
 
       - name: Stage Pages artifact
         run: |
+          NAME=$(node -p "require('./package.json').name")
           mkdir -p _site
           cp docs/index.html _site/index.html
-          cp dist/card.js _site/card.js
+          cp "dist/$NAME.js" "_site/$NAME.js"
 
       - uses: actions/configure-pages@v6
 

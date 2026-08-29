@@ -50,4 +50,4 @@ changed, why it matters, the risk if wrong — before asking, not a status recap
    - `**Full changelog**: https://github.com/marcintk/ha-card-shared/compare/<prev-tag>...<tag>`
      (`<prev-tag>` = the previous release tag, `git describe --tags --abbrev=0 HEAD^`).
 9. **[HUMAN]** Publish the draft from the GitHub Releases UI once the notes and the
-   `dist/card.js` asset check out.
+   `dist/<project>.js` asset check out.

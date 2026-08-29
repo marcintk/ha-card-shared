@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naming the Bundle</title>
+<style>
+  :root {
+    --bg: #fafaf8; --fg: #1a1a1a; --accent: #b5541f; --muted: #6b6b6b;
+    --code-bg: #282c34; --code-fg: #e6e6e6; --callout-bg: #fff4e8; --border: #e0ddd6;
+  }
+  body { font-family: Georgia, 'Times New Roman', serif; background: var(--bg); color: var(--fg);
+    max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem 6rem; line-height: 1.65; }
+  h1 { font-size: 1.9rem; border-bottom: 3px solid var(--accent); padding-bottom: .5rem; }
+  h2 { font-size: 1.4rem; margin-top: 3rem; color: var(--accent); }
+  h3 { font-size: 1.1rem; margin-top: 1.8rem; }
+  code { font-family: 'SF Mono', Consolas, monospace; background: #eee; padding: .1rem .3rem;
+    border-radius: 3px; font-size: .92em; }
+  pre { background: var(--code-bg); color: var(--code-fg); padding: 1rem 1.2rem; border-radius: 8px;
+    overflow-x: auto; white-space: pre-wrap; font-family: 'SF Mono', Consolas, monospace;
+    font-size: .88rem; line-height: 1.5; }
+  pre code { background: none; padding: 0; color: inherit; }
+  .callout { background: var(--callout-bg); border-left: 4px solid var(--accent); padding: .9rem 1.2rem;
+    border-radius: 0 6px 6px 0; margin: 1.2rem 0; }
+  .toc { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.5rem; margin: 1.5rem 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc ul { margin: .3rem 0; }
+  .diagram { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem;
+    margin: 1.2rem 0; font-family: 'SF Mono', Consolas, monospace; font-size: .85rem; }
+  .flow { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; justify-content: center; padding: .5rem 0; }
+  .box { border: 2px solid var(--accent); border-radius: 8px; padding: .6rem 1rem; background: #fdf6ee;
+    text-align: center; min-width: 120px; }
+  .box.fail { border-color: #b91c1c; background: #fef2f2; }
+  .arrow { font-size: 1.4rem; color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+  th, td { border: 1px solid var(--border); padding: .5rem .7rem; text-align: left; }
+  th { background: #f0ede6; }
+  .quiz-q { background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.2rem 1.5rem; margin: 1.2rem 0; }
+  .quiz-opt { display: block; width: 100%; text-align: left; padding: .6rem 1rem; margin: .4rem 0;
+    border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer;
+    font-family: inherit; font-size: .95rem; }
+  .quiz-opt:hover { background: #f5f2ec; }
+  .quiz-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .feedback { display: none; margin-top: .6rem; padding: .6rem 1rem; border-radius: 6px; font-size: .9rem; }
+  .feedback.correct { background: #ecfdf3; color: #166534; border-left: 3px solid #16a34a; }
+  .feedback.incorrect { background: #fef2f2; color: #991b1b; border-left: 3px solid #dc2626; }
+  @media (max-width: 600px) { body { padding: 1rem; } .flow { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<h1>Naming the Bundle</h1>
+<p style="color:var(--muted); margin-top:-.5rem;">Prepared 2026-08-29 · PR #39 · issue #32</p>
+
+<div class="toc">
+<strong>Contents</strong>
+<ul>
+  <li><a href="#background">Background</a></li>
+  <li><a href="#intuition">The idea</a></li>
+  <li><a href="#code">What changed</a></li>
+  <li><a href="#quiz">Quiz</a></li>
+</ul>
+</div>
+
+<h2 id="background">Background</h2>
+<p>A Home Assistant dashboard is built from <b>cards</b>. Some ship with HA; the rest are custom cards &mdash; JavaScript files a user registers as a <i>Lovelace resource</i>, after which the card's tag can be used in a dashboard. Most people install them through <b>HACS</b>, a community add-on store that downloads a card's release asset from GitHub and drops it into <code>/hacsfiles/&lt;repo-name&gt;/</code>.</p>
+<p>This repository, <code>ha-card-shared</code>, is not itself a card. It is the shared toolchain four sibling card repos install as a dev dependency: one TypeScript config, one Rollup config, one Vitest config, one lint config, plus the reusable CI workflows. A card repo writes its own <code>src/</code> and inherits everything about <i>how</i> it is built.</p>
+<p>The relevant inherited piece is <code>cardBundle()</code> in <code>rollup.base.mjs</code>. A consumer's entire <code>rollup.config.mjs</code> is two lines:</p>
+<pre><code>import { cardBundle } from "ha-card-shared/rollup.base.mjs";
+export default cardBundle();</code></pre>
+<p>That function returned a config whose output file was the string literal <code>"dist/card.js"</code>. Every one of the four cards therefore built a file with the identical name. Nothing was broken by this &mdash; HACS keeps each card in its own folder, so the paths never collided &mdash; but the name carried no information.</p>
+<div class="callout"><p>The nuance that makes this worth a change: the folder disambiguates the file on disk, but the <b>resource URL</b> is what a user reads and edits in the HA settings UI. With five cards installed you see five entries ending in <code>card.js</code>, and the only distinguishing part is a directory name several segments back.</p></div>
+
+<h2 id="intuition">The idea</h2>
+<p>The fix is one line. <code>cardBundle()</code> already accepted a <code>name</code> option, defaulting to <code>process.env.npm_package_name</code> &mdash; the package name npm exports into the environment of any <code>npm run</code> script. That name was used for the banner comment at the top of the bundle, and nowhere else. It just had to reach the filename too.</p>
+<div class="diagram"><p><code>package.json</code> <code>name</code> &rarr; <code>npm run build</code> sets <code>npm_package_name</code> &rarr; <code>cardBundle()</code> default &rarr; <code>dist/&lt;name&gt;.js</code></p></div>
+<p>Concretely, for the scoreboard card:</p>
+<div class="box fail"><p><b>before</b><br><code>/hacsfiles/ha-teamtracker-scoreboard-card/card.js</code></p></div>
+<div class="box"><p><b>after</b><br><code>/hacsfiles/ha-teamtracker-scoreboard-card/ha-teamtracker-scoreboard-card.js</code></p></div>
+<p>The interesting decisions were not in the line itself but around it.</p>
+<p><b>Why a fallback rather than an error.</b> The new expression is <code>`dist/${name || "card"}.js`</code>. Run <code>rollup -c</code> directly, outside an npm script, and <code>npm_package_name</code> is simply absent. Failing loudly there would turn a working invocation into a broken one to punish a misconfiguration the bundler cannot fix anyway; falling back to <code>card</code> preserves exactly today's behaviour.</p>
+<p><b>Why the release workflow does <i>not</i> glob.</b> It would have been shorter to upload <code>dist/*.js</code>. But the release asset is the one artifact a mistake reaches users through, so the workflow derives the expected name from <code>package.json</code> and names it explicitly. If the build ever emits something else, the release <i>fails</i> rather than quietly shipping a file nobody expected.</p>
+<div class="callout"><p><b>The load-bearing consequence.</b> HACS decides which release asset to install by reading the <code>filename</code> field in a card's <code>hacs.json</code>. Rename the built file without updating that field and HACS installs break for that card's users. This is why the migration recipe puts <code>hacs.json</code> first, ahead of the README and the demo page.</p></div>
+<p>And one effect no repository change can absorb: an existing user's Lovelace resource URL still points at <code>&hellip;/card.js</code>, which becomes a 404. They must re-point it by hand. That belongs in each card's release notes.</p>
+
+<h2 id="code">What changed</h2>
+<p><b>The seam</b> &mdash; <code>rollup.base.mjs</code>, one line:</p>
+<pre><code>- file: "dist/card.js",
++ file: `dist/${name || "card"}.js`,</code></pre>
+<p><b>The test</b> &mdash; <code>test/rollup-base.test.ts</code>, three cases: an explicit <code>name</code>, the npm-metadata default, and the absent-metadata fallback. Writing it surfaced a trap worth naming:</p>
+<pre><code>// Assigning undefined would store the string "undefined" — delete is the only real unset.
+if (original === undefined) delete process.env.npm_package_name;
+else process.env.npm_package_name = original;</code></pre>
+<p>Everything on <code>process.env</code> is coerced to a string, so <code>process.env.X = undefined</code> leaves the property set to the five characters <code>"undefined"</code> &mdash; which is truthy, and would sail straight past <code>name || "card"</code>. The fallback test would have been asserting nothing.</p>
+<p><b>The workflows.</b> <code>shared-publish-release.yml</code> gains a step that reads the name out of <code>package.json</code> and feeds it to the upload; <code>shared-deploy-demo-page.yml</code> does the same for the Pages copy:</p>
+<pre><code>- name: Derive bundle name from package.json
+  id: name
+  run: echo "name=$(node -p "require('./package.json').name")" &gt;&gt; "$GITHUB_OUTPUT"
+
+# ...
+  files: dist/${{ steps.name.outputs.name }}.js</code></pre>
+<p><b>An unplanned addition.</b> The design called a root-level test free, because coverage <code>include</code> is <code>src/**</code>. True for coverage &mdash; but <code>tsc</code>'s <code>include</code> is a different list, and it rejected the test with <code>TS7016</code>: <code>rollup.base.mjs</code> is untyped JavaScript imported under <code>strict</code>. The answer is a sibling declaration file, <code>rollup.base.d.mts</code>, rather than a suppression comment, because <code>rollup.base.mjs</code> is an exported entry point &mdash; consumers get the types as a side effect. It is listed in <code>package.json</code>'s <code>files</code>.</p>
+<p><b>Docs, version, recipe.</b> <code>CLAUDE-SHARED.md</code>, <code>README.md</code> and <code>ship-it/SKILL.md</code> stop saying <code>dist/card.js</code>. The unreleased <code>2.0.1</code> drops back to <code>2.0.0</code> (neither was ever tagged; <code>v1.4.1</code> is the latest published release), and the migration recipe is renamed to match, gaining the asset-rename checklist. Its references to <code>scripts/setup-claude.js</code> and <code>hooks/skill-guard.mjs</code> &mdash; both moved under <code>harness/</code> in #31 &mdash; were stale, and were corrected while the file was being renamed.</p>
+<div class="callout"><p><b>An incidental proof.</b> <code>fixtures/smoke/rollup.config.mjs</code> calls <code>cardBundle({ name: "smoke" })</code>. The smoke build now emits <code>fixtures/smoke/dist/smoke.js</code>, so the repo's existing end-to-end fixture exercises the rename without anyone adding a check for it.</p></div>
+
+<h2 id="quiz">Quiz</h2>
+
+<div class="quiz-q">
+<p><strong>Why does `cardBundle()` fall back to `card` instead of failing when the package name is missing?</strong></p>
+<button class="quiz-opt" data-correct="false">Rollup rejects a config whose output file is computed at runtime.</button>
+<button class="quiz-opt" data-correct="false">HACS requires at least one asset called `card.js` in every release.</button>
+<button class="quiz-opt" data-correct="true">A name is only absent when rollup runs outside an npm script — a misconfiguration the bundler cannot fix, where failing would break a previously working invocation.</button>
+<button class="quiz-opt" data-correct="false">The banner comment would otherwise render as `undefined`.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>What breaks for a card&#x27;s users if it ships the 2.0.0 rename without editing `hacs.json`?</strong></p>
+<button class="quiz-opt" data-correct="false">Nothing — HACS installs whatever single `.js` file the release contains.</button>
+<button class="quiz-opt" data-correct="false">The demo page 404s, but installs are unaffected.</button>
+<button class="quiz-opt" data-correct="false">The build fails, because Rollup cannot resolve the output path.</button>
+<button class="quiz-opt" data-correct="true">HACS looks for the asset named in `filename`, does not find it, and installs break.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>Why does the release workflow derive an explicit filename rather than uploading `dist/*.js`?</strong></p>
+<button class="quiz-opt" data-correct="false">`softprops/action-gh-release` does not support glob patterns.</button>
+<button class="quiz-opt" data-correct="false">A glob would also upload the sourcemap, which must stay private.</button>
+<button class="quiz-opt" data-correct="false">GitHub requires release asset names to be declared before upload.</button>
+<button class="quiz-opt" data-correct="true">So a build that emits the wrong filename fails the release instead of shipping an unexpected asset.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>In the test, why is `delete process.env.npm_package_name` used rather than assigning `undefined`?</strong></p>
+<button class="quiz-opt" data-correct="false">Vitest freezes `process.env`, so assignment silently no-ops.</button>
+<button class="quiz-opt" data-correct="false">The default parameter is evaluated once at import time, so a later assignment has no effect.</button>
+<button class="quiz-opt" data-correct="true">Assignment coerces to the string `&quot;undefined&quot;`, which is truthy and would defeat the `|| &quot;card&quot;` fallback the test is meant to exercise.</button>
+<button class="quiz-opt" data-correct="false">`delete` is faster, and the assignment leaks between test files.</button>
+</div>
+
+<div class="quiz-q">
+<p><strong>The design predicted a root-level test would be &quot;free&quot;. What did that miss?</strong></p>
+<button class="quiz-opt" data-correct="false">Coverage thresholds are computed per directory, so a root test lowers the total.</button>
+<button class="quiz-opt" data-correct="true">Coverage `include` and tsconfig `include` are different scopes — free for coverage, but `tsc` still typechecks the test and rejected the untyped `.mjs` import.</button>
+<button class="quiz-opt" data-correct="false">The 100% coverage gate counts every file the suite imports, including `rollup.base.mjs`.</button>
+<button class="quiz-opt" data-correct="false">Vitest does not discover test files outside `test/`.</button>
+</div>
+
+<script>
+document.querySelectorAll('.quiz-q').forEach(q => {
+  q.querySelectorAll('.quiz-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (opt.disabled) return;
+      q.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = true; });
+      const correct = opt.dataset.correct === 'true';
+      const fb = document.createElement('div');
+      fb.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+      fb.textContent = correct
+        ? '✅ Correct.'
+        : '❌ Not quite — reread the section above.';
+      opt.insertAdjacentElement('afterend', fb);
+      fb.style.display = 'block';
+    });
+  });
+});
+</script>
+
+</body>
+</html>

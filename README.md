@@ -41,7 +41,9 @@ Use each export by extending or referencing it from the matching consumer file:
 | `ha-card-shared/runtime`              | `import { SubscriptionManager, DebugMetrics, timeAgo } from "ha-card-shared/runtime"`    |
 | `ha-card-shared/test-utils`           | `import { snapHtml } from "ha-card-shared/test-utils"` in `test/snapshot.test.ts`        |
 
-`cardBundle` bundles `src/index.ts` → `dist/card.js` and stamps `__CARD_VERSION__` from the
+`cardBundle` bundles `src/index.ts` → `dist/<project>.js` — the name comes from `cardBundle`'s
+`name` option, defaulting to `package.json`'s `name`, and falls back to `card` when npm metadata is
+absent. It stamps `__CARD_VERSION__` from the
 `VERSION` env (set from the git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest).
 `globals.d.ts` types that global plus the HA `customCards` window hook.
 

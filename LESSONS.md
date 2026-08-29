@@ -29,6 +29,25 @@ the by-symptom index.
   anything.
 - **Ref:** [#33](https://github.com/marcintk/ha-card-shared/issues/33) · 2026-08-29
 
+## A test outside `src/` passes coverage but fails `tsc` with TS7016
+
+- **Root cause:** coverage `include` (`src/**/*.ts`) and tsconfig `include`
+  (`src/**/*.ts`, `test/**/*.ts`) are different scopes. A root-level test is free for coverage,
+  but importing an untyped `.mjs` config from it is an implicit `any` under `strict`.
+- **Guardrail:** shared `.mjs` entry points that tests import ship a sibling declaration file —
+  `rollup.base.d.mts` — listed in `package.json` `files` so consumers get the types too. Reach for
+  a `.d.mts`, not a `@ts-expect-error`.
+- **Ref:** [#32](https://github.com/marcintk/ha-card-shared/issues/32) · 2026-08-29
+
+## `process.env.X = undefined` does not unset the variable
+
+- **Root cause:** assigning to `process.env` coerces the value to a string, so the property becomes
+  the literal `"undefined"` — truthy, and it silently defeats a `name || "card"` fallback, making a
+  fallback test pass for the wrong reason or fail confusingly.
+- **Guardrail:** `delete process.env.X` is the only real unset; restore in `afterEach` by branching
+  on whether the original was `undefined`. Noted inline in `test/rollup-base.test.ts`.
+- **Ref:** [#32](https://github.com/marcintk/ha-card-shared/issues/32) · 2026-08-29
+
 ## Design-note links show `.html` as source, or route through a third-party proxy
 
 - **Root cause:** GitHub renders a linked `.html` file as source, not a page; `raw.githack.com`

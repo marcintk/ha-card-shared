@@ -7,7 +7,7 @@ export function cardBundle({ name = process.env.npm_package_name } = {}) {
   return {
     input: "src/index.ts",
     output: {
-      file: "dist/card.js",
+      file: `dist/${name || "card"}.js`,
       format: "es",
       banner: `/* ${name} v${version} */`,
       intro: `const __CARD_VERSION__ = '${version}';`,

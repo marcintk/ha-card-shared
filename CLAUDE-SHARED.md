@@ -1,12 +1,12 @@
 # HA Cards — Shared Development Context
 
-TypeScript + Rollup → `dist/card.js` | Vitest | Biome + Prettier | HACS plugin
+TypeScript + Rollup → `dist/<project>.js` | Vitest | Biome + Prettier | HACS plugin
 
 ## Commands
 
 ```bash
 npm install
-npm run build          # bundle src/ → dist/card.js
+npm run build          # bundle src/ → dist/<project>.js (name from package.json)
 npm run build:prod     # minified build (VERSION env var stamps the bundle)
 npm run dev            # rollup watch mode
 npm test               # run tests

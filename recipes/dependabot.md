@@ -44,6 +44,10 @@ updates:
 
 ### v2.0.0
 
+- **Bundle named after the card** — `cardBundle` emits `dist/<project>.js` instead of the generic
+  `dist/card.js`, so each card's Lovelace resource URL is recognisable. Needs a one-time asset
+  rename per consumer (`hacs.json` `filename` first — HACS installs break without it) and an
+  end-user resource-URL update.
 - **Self-contained skill harness** — the `/fix-it`, `/feature-it`, `/ship-it` pipelines no
   longer need marketplace plugins (`ponytail`, `caveman`, `tdd-guard`) or user-global skills
   (`grilling`, `improve-codebase-architecture`). Everything ships in `skills/`, `agents/`,
@@ -51,7 +55,7 @@ updates:
 - **Manual step** — `major` only because it needs one-time consumer work: bump the pin,
   `.gitignore` the generated `.claude/` bits, check the Claude Code version, optionally drop
   the retired plugins. Package API is unchanged. See
-  [`recipe.1.4.1_2.0.1.md`](recipe.1.4.1_2.0.1.md).
+  [`recipe.1.4.1_2.0.0.md`](recipe.1.4.1_2.0.0.md).
 
 ### v1.2.0
 

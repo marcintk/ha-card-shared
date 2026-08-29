@@ -56,10 +56,9 @@ updates:
   longer need marketplace plugins (`ponytail`, `caveman`, `tdd-guard`) or user-global skills
   (`grilling`, `improve-codebase-architecture`). Everything ships in `skills/`, `agents/`,
   `hooks/`. New `skill-guard` PreToolUse hook enforces per-skill / per-role guardrails.
-- **Manual step** — `major` only because it needs one-time consumer work: bump the pin,
-  `.gitignore` the generated `.claude/` bits, check the Claude Code version, optionally drop
-  the retired plugins. Package API is unchanged. See
-  [`recipe.1.4.1_2.0.0.md`](recipe.1.4.1_2.0.0.md).
+- **Manual step** — `major` only because it needs one-time consumer work: bump the pin, rename
+  the bundle asset (`hacs.json` `filename`, resource URL), check the Claude Code version. The
+  npm package API is unchanged.
 
 ### v1.2.0
 

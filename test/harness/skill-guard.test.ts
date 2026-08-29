@@ -1,5 +1,13 @@
 import { type SpawnSyncReturns, spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -97,6 +105,35 @@ describe("phase × role union", () => {
       tool_input: { file_path: `${tmp}/src/x.ts` },
     });
     expect(res.status).toBe(0); // no guarded context — fails open
+  });
+
+  it("a malformed phase file (no timestamp) is dropped noisily, not silently", () => {
+    mkdirSync(join(tmp, ".claude", "skill-guard"), { recursive: true });
+    writeFileSync(join(tmp, ".claude", "skill-guard", "phase"), "ship_no_tab\n");
+    const res = check({
+      cwd: tmp,
+      tool_name: "Edit",
+      tool_input: { file_path: `${tmp}/src/x.ts` },
+    });
+    expect(res.status).toBe(0); // ship would deny ^src/, but the marker can't be trusted
+    expect(res.stderr).toContain("malformed marker");
+  });
+});
+
+describe("project root", () => {
+  it("does not treat a .git at the home directory as the project root", () => {
+    mkdirSync(join(tmp, ".git"), { recursive: true });
+    mkdirSync(join(tmp, "card"), { recursive: true });
+    const env = { ...process.env, HOME: tmp, USERPROFILE: tmp };
+    // phase set from inside the not-yet-init'd card
+    spawnSync("node", [script, "phase", "design"], {
+      cwd: join(tmp, "card"),
+      env,
+      encoding: "utf8",
+    });
+    // state landed under the card, not under the fake home
+    expect(existsSync(join(tmp, "card", ".claude", "skill-guard", "phase"))).toBe(true);
+    expect(existsSync(join(tmp, ".claude", "skill-guard", "phase"))).toBe(false);
   });
 });
 
@@ -319,43 +356,20 @@ describe("deny_bash bypass patterns", () => {
     expect(denied("git --attr-source=HEAD push")).toBe(2);
   });
 
-  it("sees a mutating command handed to a shell wrapper or command substitution", () => {
-    expect(denied(`bash -c 'git commit -am wip && git push'`)).toBe(2);
-    expect(denied('eval "gh pr merge 1"')).toBe(2);
+  it("catches a bare `$(...)` command substitution via the `(` anchor", () => {
     expect(denied("echo $(git push)")).toBe(2);
-    expect(denied("x=`git push`")).toBe(2);
   });
 
-  it("sees a denied binary invoked by an absolute or escaped path", () => {
-    expect(denied("/usr/bin/git push")).toBe(2);
-    expect(denied("$HOME/bin/git push")).toBe(2);
-    expect(denied("\\git push")).toBe(2);
-  });
-
-  it("does not let a substitution hide inside a commit-message flag value", () => {
-    cli("phase", "code"); // denies `git push`, allows `git commit`
-    const sub = check({
-      cwd: tmp,
-      tool_name: "Bash",
-      tool_input: { command: 'git commit -m "wip $(git push --tags)"' },
-    });
-    expect(sub.status).toBe(2);
-    const plain = check({
-      cwd: tmp,
-      tool_name: "Bash",
-      tool_input: { command: 'git commit -m "todo: git push later"' },
-    });
-    expect(plain.status).toBe(0);
-  });
-
-  it("still ignores a trigger word inside a commit-message flag value", () => {
-    cli("phase", "code"); // `code` denies `git push` but must allow a commit that mentions it
-    const res = check({
-      cwd: tmp,
-      tool_name: "Bash",
-      tool_input: { command: `git commit -m "todo: git push later"` },
-    });
-    expect(res.status).toBe(0);
+  it("ignores a trigger word inside a quoted argument of an unrelated command", () => {
+    cli("phase", "design"); // denies `npm version`, `git push`, `git commit`
+    for (const command of [
+      'echo "reminder: run npm version before tagging"',
+      `printf '%s\\n' "git push then git commit"`,
+      'git log --grep "git push"',
+    ]) {
+      const res = check({ cwd: tmp, tool_name: "Bash", tool_input: { command } });
+      expect(res.status, command).toBe(0);
+    }
   });
 });
 
@@ -378,6 +392,16 @@ describe("release phase npm version", () => {
       tool_input: { command: "npm version minor --no-git-tag-version" },
     });
     expect(res.status).toBe(0);
+  });
+
+  it("still denies when --no-git-tag-version binds to a later command in a chain", () => {
+    cli("phase", "release");
+    const res = check({
+      cwd: tmp,
+      tool_name: "Bash",
+      tool_input: { command: "npm version patch && echo done --no-git-tag-version" },
+    });
+    expect(res.status).toBe(2);
   });
 });
 

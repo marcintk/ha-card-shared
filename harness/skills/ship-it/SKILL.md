@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Ship-It
 
-**Invocation:** HUMAN.
+**Invocation:** HUMAN only — `disable-model-invocation` keeps the model from auto-running it.
 
 Reviewed branch → merged PR. Never runs ahead of `/code-it` — a branch with unreviewed or
 unaccepted slices means stop and point back at it, not ship anyway.

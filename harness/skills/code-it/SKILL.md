@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Code-It
 
-**Invocation:** HUMAN.
+**Invocation:** HUMAN only — `disable-model-invocation` keeps the model from auto-running it.
 
 Approved design note → reviewed branch. Never runs ahead of `/design-it` — an unapproved or
 missing note means stop and point back at it, not infer one.

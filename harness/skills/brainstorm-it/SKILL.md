@@ -1,11 +1,12 @@
 ---
 name: brainstorm-it
-description: Interrogate a plan, idea, or design decision one question at a time until there is shared understanding. Called by design-it (design gate) and improve-it (chosen candidate); also the pre-issue on-ramp — turns a fuzzy idea into a filable issue.
+description: Interrogate a plan, idea, or design decision one question at a time until there is shared understanding. Called by design-it — both its design gate and the candidate picked in no-arg scan mode; also the pre-issue on-ramp that turns a fuzzy idea into a filable issue.
 ---
 
 # Brainstorm-It
 
-**Invocation:** AI (a sub-skill; drives a HUMAN).
+**Invocation:** HUMAN or AI — a human runs it as the pre-issue on-ramp; `design-it` calls it as
+a sub-skill, so its frontmatter carries no invocation block.
 
 Interview the human relentlessly about every aspect of this until you reach a shared
 understanding. Walk down each branch of the decision tree, resolving dependencies between

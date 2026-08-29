@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Code-It
 
-**Invocation:** HUMAN.
+**Invocation:** HUMAN only — `disable-model-invocation` keeps the model from auto-running it.
 
 Approved design note → reviewed branch. Never runs ahead of `/design-it` — an unapproved or
 missing note means stop and point back at it, not infer one.
@@ -22,14 +22,14 @@ what changed, why it matters, the risk if wrong — before asking, not a status 
    context (a resumed session) gets the same guardrail check `/design-it` already did once.
 3. Branch, if not already on one: `git checkout -b <type>/<slug>`.
 4. Per slice, in order:
-   1. **[SUBAGENT: `pipeline-test-writer`]** Given only the seam and expected behavior from the
+   1. **[SUBAGENT: `test-writer`]** Given only the seam and expected behavior from the
       note — not the design reasoning — writes one test. Confirm it fails for the right reason.
    2. `node harness/hooks/skill-guard.mjs red <test-file>`.
-   3. **[SUBAGENT: `pipeline-coder`]** Implements the minimal fix. The guard blocks any `src/`
+   3. **[SUBAGENT: `code-writer`]** Implements the minimal fix. The guard blocks any `src/`
       write until step 2's marker is set, and blocks edits to the test itself.
    4. Run the suite. Confirm the target test is green and nothing else broke.
    5. `node harness/hooks/skill-guard.mjs green`.
-   6. **[SUBAGENT: `pipeline-reviewer`]** `/code-review` (correctness + an over-engineering
+   6. **[SUBAGENT: `reviewer`]** `/code-review` (correctness + an over-engineering
       pass) + `/simplify` (apply the reuse / altitude cleanups).
    7. **[HUMAN]** Accept, or grill and loop back to 4.1 for this slice. Third loop on the same
       slice → stop, `/design-it <n>` to re-open the design instead of a fourth patch.

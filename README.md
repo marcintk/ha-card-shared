@@ -61,7 +61,7 @@ ha-card-shared. It:
 - merges the `skill-guard` hook into `.claude/settings.json` — a `PreToolUse` guard that denies
   a call when either the active **phase** (`design`, `code`, `ship`, `release` — set by the
   entry-point skill via `skill-guard.mjs phase …`, and surviving across turns) or the active
-  subagent **role** forbids it (the `pipeline-coder` subagent can't touch tests, and can't write
+  subagent **role** forbids it (the `code-writer` subagent can't touch tests, and can't write
   `src/` until the slice is marked red via `skill-guard.mjs red <test-file>`, and so on). Runtime
   state lives in `.claude/skill-guard/` (self-ignored) — `phase`, `red`, and a `log` of every
   decision; set `SKILL_GUARD_OFF=1` to disable;

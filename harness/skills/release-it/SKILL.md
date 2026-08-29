@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Release-It
 
-**Invocation:** HUMAN.
+**Invocation:** HUMAN only — `disable-model-invocation` keeps the model from auto-running it.
 
 Bumps and tags a release from `main`. Separate from any single `/ship-it` run — this runs after
 a batch of merged PRs.
@@ -27,9 +27,9 @@ changed, why it matters, the risk if wrong — before asking, not a status recap
    merge, then re-run. Only continue once it comes back clean.
 4. Refresh `LESSONS.md`: drop any entry whose named guardrail no longer exists, merge any
    duplicates that slipped past `explain-it compound`'s dedupe. ~2 minutes, human eyes.
-5. **[HUMAN]** Run `/improve-it`. Any deepening opportunity you accept → its own
-   `/design-it` + `/code-it` + `/ship-it` run, merge, then re-run from step 2. Only continue
-   once nothing is left worth taking.
+5. **[HUMAN]** Run `/design-it` with no issue number — the repo-wide deepening scan. Any
+   opportunity you accept → it files the issue, then `/code-it` + `/ship-it`, merge, then re-run
+   from step 2. Only continue once nothing is left worth taking.
 6. **[HUMAN]** Determine the semver bump — state it, don't just pick it silently:
    - **patch** — bug fixes, docs, no API change. Batch freely.
    - **minor** — new export or toolchain feature, backward-compatible. Release after 2–3 PRs.

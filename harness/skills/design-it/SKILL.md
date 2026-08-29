@@ -1,14 +1,14 @@
 ---
 name: design-it
-description: Design phase for any change — bug fix, feature, chore, docs — from an existing GH issue. Produces an approved design note with slices declared; /code-it implements it. Use when the user says "/design-it", "design issue <n>", or wants to plan a change that already has a GH issue filed.
+description: Design phase for any change. `/design-it <n>` designs a filed GH issue into an approved note with slices declared; bare `/design-it` scans the repo for a deepening opportunity, files the issue, then designs it. /code-it implements the note.
 disable-model-invocation: true
 ---
 
 # Design-It
 
-**Invocation:** HUMAN.
+**Invocation:** HUMAN only — `disable-model-invocation` keeps the model from auto-running it.
 
-GH issue → approved design note. The only design entry point — a bug fix, a feature, a chore, a
+Issue → approved design note. The only design entry point — a bug fix, a feature, a chore, a
 one-line dependency bump, all take this path; a trivial change still moves through it, just fast.
 **This skill does not converge early.** Re-invoking `/design-it <n>` on an existing note reopens
 and re-grills it, from any conversation — the note plus the issue are the whole state.
@@ -17,11 +17,16 @@ Print each step as `- [ ] …` before starting it, `- [x] …` once done. Never 
 if a step can't be honestly checked, stop and ask. Every `[HUMAN]` step opens with 2–3 lines —
 what changed, why it matters, the risk if wrong — before asking, not a status recap.
 
-## Precondition
+## Modes
 
-Needs an issue number: `/design-it <n>`. No number, or an idea described in chat with nothing
-filed yet → stop, tell the user to file the issue first (`brainstorm-it` drafts one from a fuzzy
-idea). Don't create it for them.
+- **`/design-it <n>`** — an issue is filed. Go straight to Steps.
+- **`/design-it`** (no number) — discovery. Run **Scanning for candidates** in
+  `harness/design-methods/processes.md`: scope (a named area, else `git log` hot spots), an
+  `explorer` pass for shallow modules, a ranked report. **[HUMAN]** picks one; then `gh issue
+create` with a title + body from the pick and continue at Step 2 with that `<n>`. Run from
+  `/release-it` for the repo-wide pass, or directly.
+- A fuzzy idea already in mind, no issue → `brainstorm-it` drafts one, then `/design-it <n>`.
+  Don't file it for them in that case — that's `brainstorm-it`'s job.
 
 ## Steps
 
@@ -31,15 +36,15 @@ idea). Don't create it for them.
 3. Grep `LESSONS.md` for the problem class _before_ thinking about approach. Report any prior
    root cause and the guardrail already in place — a fix already guarded against is not this
    issue.
-4. **[SUBAGENT: `pipeline-explore`]** 1–3 in parallel if scope is uncertain — reproduce (a bug:
+4. **[SUBAGENT: `explorer`]** 1–3 in parallel if scope is uncertain — reproduce (a bug:
    concrete evidence, what's ruled out) or scan prior art and reusable patterns (a feature). Skip
    outright for a genuinely trivial change — nothing to research.
 5. **[HUMAN]** `brainstorm-it` — one question at a time, recommended answer given, decisions are
    the human's. One concern per issue; extras become a separate GH issue, not scope creep.
-6. **Design it twice**, for anything non-trivial: run `codebase-design`
-   ([DESIGN-IT-TWICE.md](../codebase-design/DESIGN-IT-TWICE.md)) — at least two materially
-   different approaches written out and compared before either is judged. A single-approach note
-   is not finishable.
+6. **Design it twice**, for anything non-trivial: work from `harness/design-methods/`
+   (`glossary.md`, `design.md`, `discipline.md`) and run the **Design it twice** playbook in
+   `processes.md` — at least two materially different approaches written out and compared before
+   either is judged. A single-approach note is not finishable.
 7. **Adjacent-opportunity pass**, before converging: what does this change make cheap, what does
    it foreclose? Anything worth doing separately is named and becomes its own GH issue — not
    folded in here.

@@ -49,7 +49,6 @@ describe("skill set", () => {
     "code-it",
     "ship-it",
     "release-it",
-    "improve-it",
     "explain-it",
     "commit-it",
     "brainstorm-it",
@@ -72,37 +71,60 @@ describe("skill set", () => {
     expect(existsSync(`${root}/harness/skills/explain-it/scripts/render.py`)).toBe(true);
   });
 
-  it.each(["codebase-design", "handoff"])(
-    "vendored reference skill harness/skills/%s/SKILL.md exists",
-    (name) => {
-      expect(existsSync(`${root}/harness/skills/${name}/SKILL.md`)).toBe(true);
-    }
-  );
-
-  it("codebase-design ships its companion notes", () => {
-    const dir = `${root}/harness/skills/codebase-design`;
-    expect(existsSync(`${dir}/DEEPENING.md`)).toBe(true);
-    expect(existsSync(`${dir}/DESIGN-IT-TWICE.md`)).toBe(true);
+  it.each(["codebase-design", "handoff", "improve-it"])("%s is no longer a skill", (name) => {
+    expect(existsSync(`${root}/harness/skills/${name}`)).toBe(false);
   });
 
-  it("design-it defers the deep-module vocabulary to codebase-design", () => {
-    expect(readFileSync(`${root}/harness/skills/design-it/SKILL.md`, "utf8")).toContain(
-      "codebase-design"
-    );
+  it("the design method is a plain doc folder — index + four areas, no skill frontmatter", () => {
+    const dir = `${root}/harness/design-methods`;
+    expect(existsSync(`${root}/harness/deep-modules.md`)).toBe(false); // the single-file step
+    expect(existsSync(`${root}/harness/reference`)).toBe(false); // the reference/ tree
+    for (const f of ["README.md", "glossary.md", "design.md", "discipline.md", "processes.md"]) {
+      expect(existsSync(`${dir}/${f}`), f).toBe(true);
+      expect(readFileSync(`${dir}/${f}`, "utf8"), f).not.toMatch(/^name:/m);
+    }
+    // improve-it's scan + design-it-twice folded into the processes area
+    const processes = readFileSync(`${dir}/processes.md`, "utf8");
+    expect(processes).toContain("Scanning for candidates");
+    expect(processes).toContain("Design it twice");
+    // the filled-in gaps landed
+    expect(readFileSync(`${dir}/design.md`, "utf8")).toMatch(/change amplification/i);
+    expect(readFileSync(`${dir}/design.md`, "utf8")).toMatch(/pull complexity downward/i);
   });
 
-  it("human-triggered pipelines are disable-model-invocation, sub-skills are not", () => {
-    const human = [...entryPoints, "improve-it"];
-    const ai = ["explain-it", "commit-it", "brainstorm-it"];
-    for (const n of human) {
-      expect(readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8")).toContain(
-        "disable-model-invocation: true"
-      );
+  it("design-it points at harness/design-methods/ and drives the no-arg scan", () => {
+    const src = readFileSync(`${root}/harness/skills/design-it/SKILL.md`, "utf8");
+    expect(src).toContain("harness/design-methods/");
+    expect(src).not.toContain("codebase-design");
+    expect(src).not.toContain("deep-modules.md");
+    // bare `/design-it` is a documented mode, not an error
+    expect(src).toContain("Scanning for candidates");
+    expect(src).toMatch(/no number/i);
+  });
+
+  it("release-it's repo-wide pass calls /design-it, not the retired /improve-it", () => {
+    const src = readFileSync(`${root}/harness/skills/release-it/SKILL.md`, "utf8");
+    expect(src).not.toContain("improve-it");
+    expect(src).toContain("/design-it");
+  });
+
+  // Every SKILL.md declares who may invoke it: a `**Invocation:**` body marker whose wording
+  // matches the frontmatter — `disable-model-invocation: true` iff the marker says "HUMAN only".
+  it("every skill declares its invocation, marker matching frontmatter", () => {
+    const modelInvocable: Record<string, string> = {
+      "explain-it": "**Invocation:** HUMAN or AI",
+      "brainstorm-it": "**Invocation:** HUMAN or AI",
+      "commit-it": "**Invocation:** AI (sub-skill)",
+    };
+    for (const n of entryPoints) {
+      const src = readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8");
+      expect(src, n).toContain("disable-model-invocation: true");
+      expect(src, n).toContain("**Invocation:** HUMAN only");
     }
-    for (const n of ai) {
-      expect(readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8")).not.toContain(
-        "disable-model-invocation"
-      );
+    for (const [n, marker] of Object.entries(modelInvocable)) {
+      const src = readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8");
+      expect(src, n).not.toContain("disable-model-invocation");
+      expect(src, n).toContain(marker);
     }
   });
 
@@ -119,12 +141,7 @@ describe("skill set", () => {
 });
 
 describe("skill-guard", () => {
-  const agents = [
-    "pipeline-coder",
-    "pipeline-test-writer",
-    "pipeline-reviewer",
-    "pipeline-explore",
-  ];
+  const agents = ["code-writer", "test-writer", "reviewer", "explorer"];
 
   it.each(agents)("harness/agents/%s.md exists", (name) => {
     expect(existsSync(`${root}/harness/agents/${name}.md`)).toBe(true);

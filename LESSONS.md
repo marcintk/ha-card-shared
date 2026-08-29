@@ -36,7 +36,7 @@ the by-symptom index.
   whether the first step was "reproduce" or "design + grill." The human had to pre-classify the
   change to pick the right command, and the two skills' steps drifted independently over time.
 - **Guardrail:** one entry point, `design-it`, whose own early steps (grep `LESSONS.md`, then
-  `pipeline-explore` to reproduce or scan prior art) branch on what the issue actually is — the
+  `explorer` to reproduce or scan prior art) branch on what the issue actually is — the
   classification happens inside the skill, from evidence, not at the command line from a guess.
 - **Ref:** [#37](https://github.com/marcintk/ha-card-shared/issues/37) · 2026-08-29
 

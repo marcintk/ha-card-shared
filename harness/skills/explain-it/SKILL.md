@@ -5,7 +5,8 @@ description: Owns the design-note lifecycle under docs/design-notes/ plus the LE
 
 # Explain-It
 
-**Invocation:** AI (a sub-skill).
+**Invocation:** HUMAN or AI — `design-it` / `code-it` / `ship-it` call it; a human may run
+`explain-it <phase> <n> <slug>` directly to redo a phase. Frontmatter carries no invocation block.
 
 Single owner of `docs/design-notes/` and `LESSONS.md`. `/design-it`, `/code-it`, and `/ship-it`
 call this instead of carrying the capture logic themselves. One design note per issue, committed

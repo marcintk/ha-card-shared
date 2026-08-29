@@ -5,8 +5,9 @@ description: Write a Conventional Commits message for the staged change, with th
 
 # Commit-It
 
-**Invocation:** AI (a sub-skill). Outputs the message. Does **not** stage, commit, amend, or
-push — the caller does that and loops until `pre-commit` passes.
+**Invocation:** AI (sub-skill) — `ship-it` calls it, so its frontmatter carries no invocation
+block. Outputs the message only. Does **not** stage, commit, amend, or push — the caller does
+that and loops until `pre-commit` passes.
 
 ## Subject
 

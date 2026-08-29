@@ -26,7 +26,7 @@
     }
   },
   "roles": {
-    "pipeline-explore": {
+    "explorer": {
       "deny_write": ["."],
       "deny_bash": [
         "git\\s+(commit|push|checkout|switch|merge|rebase|reset)\\b",
@@ -34,16 +34,16 @@
       ],
       "reason": "reproduce / prior-art scan is read-only."
     },
-    "pipeline-test-writer": {
+    "test-writer": {
       "deny_write": ["^src/"],
       "reason": "the failing-test step writes tests, never implementation."
     },
-    "pipeline-coder": {
+    "code-writer": {
       "deny_write": ["^test/", "\\.test\\.ts$"],
       "tdd": true,
-      "reason": "coder changes implementation; the slice's tests are frozen, and no src/ write until skill-guard.mjs red has marked a test failing."
+      "reason": "code-writer changes implementation; the slice's tests are frozen, and no src/ write until skill-guard.mjs red has marked a test failing."
     },
-    "pipeline-reviewer": {
+    "reviewer": {
       "deny_write": ["^test/", "\\.test\\.ts$"],
       "deny_bash": ["git\\s", "gh\\s"],
       "reason": "review applies /code-review + /simplify cleanups; it doesn't touch tests and doesn't ship."

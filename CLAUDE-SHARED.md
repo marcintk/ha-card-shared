@@ -21,7 +21,7 @@ npm run format:md      # prettier for markdown files
 npm run check:ci       # CI gate: typecheck + biome check + prettier check
 ```
 
-> To change this workflow: edit `CLAUDE-SHARED.md` and/or the pipeline files in `ha-card-shared` — `harness/skills/{design-it,code-it,ship-it,release-it,improve-it,explain-it,commit-it,brainstorm-it}`, `harness/agents/`, `harness/hooks/skill-guard.*` — iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.
+> To change this workflow: edit `CLAUDE-SHARED.md` and/or the pipeline files in `ha-card-shared` — `harness/skills/{design-it,code-it,ship-it,release-it,explain-it,commit-it,brainstorm-it}`, `harness/design-methods/`, `harness/agents/`, `harness/hooks/skill-guard.*` — iterate until final, then tag **once** — no intermediate tags. If the repo isn't accessible locally, stop and ask.
 
 ## Making a change
 
@@ -35,9 +35,10 @@ including chores, docs, and trivial edits:
 - **`/ship-it`** — commit, PR, explain-diff comment, merge.
 - **`/release-it`** — batched across several merged PRs: bump semver, tag, draft release notes.
 
-No issue number yet → file the issue first, then run `/design-it`. If the idea is still fuzzy,
-run `brainstorm-it` on it first — it interviews you to a spec and drafts the issue. The skill
-files own the full procedure; nothing here duplicates it.
+No issue yet? `/design-it` with no number scans the repo for a deepening opportunity and files
+the issue itself. A fuzzy idea already in mind → run `brainstorm-it` first; it interviews you to
+a spec and drafts the issue, then `/design-it <issue#>`. The skill files own the full procedure;
+nothing here duplicates it.
 
 The pipeline maintains `LESSONS.md` at the repo root — one greppable entry per shipped
 change that taught something reusable: symptom, root cause, the guardrail now preventing

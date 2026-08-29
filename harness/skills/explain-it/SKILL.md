@@ -1,18 +1,18 @@
 ---
 name: explain-it
-description: Owns the design-note lifecycle under docs/design-notes/ plus the LESSONS.md log for the fix-it and feature-it pipelines — create the note, update it per slice, compound the transferable learning, finalize it with the explain-diff render and the README row. Those skills call it; run it directly as `explain-it <phase> <n> <slug>` to redo a phase.
+description: Owns the design-note lifecycle under docs/design-notes/ plus the LESSONS.md log for the design-it / code-it / ship-it pipeline — create the note, approve it, update it per slice, compound the transferable learning, finalize it with the explain-diff render and the README row. Those skills call it; run it directly as `explain-it <phase> <n> <slug>` to redo a phase.
 ---
 
 # Explain-It
 
 **Invocation:** AI (a sub-skill).
 
-Single owner of `docs/design-notes/` and `LESSONS.md`. `/fix-it` and `/feature-it` call this at four
-points instead of carrying the capture logic themselves. One design note per issue, committed in
-that issue's PR.
+Single owner of `docs/design-notes/` and `LESSONS.md`. `/design-it`, `/code-it`, and `/ship-it`
+call this instead of carrying the capture logic themselves. One design note per issue, committed
+in that issue's PR.
 
-Phases: `start`, `slice`, `compound`, `finalize`. Args: `<n>` issue number, `<slug>` kebab issue
-slug.
+Phases: `start`, `approve`, `slice`, `compound`, `finalize`. Args: `<n>` issue number, `<slug>`
+kebab issue slug.
 
 ## start `<n> <slug>`
 
@@ -28,14 +28,19 @@ slug.
    status `in progress`; PR `—`. The Pages link is live only after the PR merges to `main`.
 4. `xdg-open docs/design-notes/issue-<n>-<slug>.html 2>/dev/null || true` — always open on first draft.
 
+## approve `<n> <slug>`
+
+`/design-it` calls this once the human approves the design, before any code exists. Status badge
+→ `approved` (edit the file). `xdg-open` it again (guarded). Does not touch the explain-diff —
+that's `finalize`, later, once there's a diff to explain.
+
 ## slice `<n> <slug>`
 
-Edit the note with what the last vertical slice changed. `/feature-it` calls this after each
-slice; `/fix-it` has a single fix and skips it.
+Edit the note with what the last vertical slice changed. `/code-it` calls this after each slice.
 
 ## compound `<n> <slug>`
 
-Runs after the fix/feature is accepted, before `finalize` — so the entry ships in the same PR.
+Runs after a slice is accepted, before `finalize` — so the entry ships in the same PR.
 Append the transferable learning to `LESSONS.md` (repo root), the by-symptom log consulted
 before new work. Distinct from the design note: the note is per-issue detail, this is one
 greppable "if you see X, the cause was Y, and Z now guards it" line for the next run.
@@ -72,8 +77,10 @@ greppable "if you see X, the cause was Y, and Z now guards it" line for the next
 
 ## finalize `<n> <slug>`
 
-1. Status badge → `approved` (edit the file). `xdg-open` it again (guarded).
-2. Render the explain-diff (both formats) with the bundled renderer:
+Status is already `approved` from the `approve` phase; this phase renders the diff, once there
+is one.
+
+1. Render the explain-diff (both formats) with the bundled renderer:
    1. Gather the diff — `git diff main...HEAD`, `git log main...HEAD --oneline`.
    2. Write a JSON content spec to `/tmp/explain-spec.json`:
       - `title`, `subtitle` (`Prepared YYYY-MM-DD · PR #NNN`), `slug` (kebab).
@@ -94,7 +101,7 @@ greppable "if you see X, the cause was Y, and Z now guards it" line for the next
       ```
       The HTML ships in the PR diff; the `.md` is the GFM string returned below. `xdg-open` the
       HTML (guarded).
-3. Update the `docs/design-notes/README.md` row: fill the **Explain-diff** link (same
-   `marcintk.github.io/ha-card-shared/design-notes/` path for `issue-<n>-explain-diff.html`), set
-   status `approved`, add the PR link.
-4. Return the GFM output (`/tmp/issue-<n>-explain-diff.md`) to the caller for `gh pr comment`.
+2. Update the `docs/design-notes/README.md` row: fill the **Explain-diff** link (same
+   `marcintk.github.io/ha-card-shared/design-notes/` path for `issue-<n>-explain-diff.html`). The
+   PR link isn't known yet — `ship-it` fills that in once `gh pr create` returns.
+3. Return the GFM output (`/tmp/issue-<n>-explain-diff.md`) to the caller for `gh pr comment`.

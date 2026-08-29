@@ -1,7 +1,7 @@
 # Design notes
 
-One HTML note per issue, owned by the `explain-it` skill (which `/fix-it` and `/feature-it`
-call) and committed in that issue's PR. Two files per issue once it ships:
+One HTML note per issue, owned by the `explain-it` skill (which `/design-it`, `/code-it`, and
+`/ship-it` call) and committed in that issue's PR. Two files per issue once it ships:
 
 - `issue-<n>-<slug>.html` — the design note (status `in progress` → `approved`)
 - `issue-<n>-explain-diff.html` — the explain-diff render (`explain-it finalize`), archived from the PR
@@ -14,6 +14,7 @@ rendered — GitHub itself shows a linked `.html` file as source, not a page. Pa
 
 | Issue                                                       | Note                                                                                                                               | Explain-diff                                                                                      | Status   | PR  |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | -------- | --- |
+| [#37](https://github.com/marcintk/ha-card-shared/issues/37) | [Four verbs](https://marcintk.github.io/ha-card-shared/design-notes/issue-37-four-entry-points.html)                               | [Explain-diff](https://marcintk.github.io/ha-card-shared/design-notes/issue-37-explain-diff.html) | approved | #44 |
 | [#36](https://github.com/marcintk/ha-card-shared/issues/36) | [Union, not override](https://marcintk.github.io/ha-card-shared/design-notes/issue-36-skill-guard-phase-role.html)                 | [Explain-diff](https://marcintk.github.io/ha-card-shared/design-notes/issue-36-explain-diff.html) | approved | #43 |
 | [#35](https://github.com/marcintk/ha-card-shared/issues/35) | [Gates for the gatekeeper](https://marcintk.github.io/ha-card-shared/design-notes/issue-35-harness-lint-typecheck-gates.html)      | [Explain-diff](https://marcintk.github.io/ha-card-shared/design-notes/issue-35-explain-diff.html) | approved | #42 |
 | [#34](https://github.com/marcintk/ha-card-shared/issues/34) | [Releasing without touching main](https://marcintk.github.io/ha-card-shared/design-notes/issue-34-release-path-vs-main-guard.html) | [Explain-diff](https://marcintk.github.io/ha-card-shared/design-notes/issue-34-explain-diff.html) | approved | #41 |

@@ -1,6 +1,6 @@
 ---
 name: pipeline-reviewer
-description: Reviews a fix-it / feature-it slice for correctness and over-engineering, then runs /simplify to apply the safe cleanups. Guarded by skill-guard: read-only except for what /simplify applies; no git/gh.
+description: Reviews a code-it slice for correctness and over-engineering, then runs /simplify to apply the safe cleanups. Guarded by skill-guard: read-only except for what /simplify applies; no git/gh.
 tools: Read, Grep, Bash, Edit
 ---
 

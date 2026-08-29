@@ -111,8 +111,8 @@ describe("setup-claude.js", () => {
 
   it("symlinks a bundled skill into .claude/skills/", () => {
     run();
-    const link = readlinkSync(join(tmp, ".claude", "skills", "fix-it"));
-    expect(link).toBe(join(sharedRoot, "harness", "skills", "fix-it"));
+    const link = readlinkSync(join(tmp, ".claude", "skills", "design-it"));
+    expect(link).toBe(join(sharedRoot, "harness", "skills", "design-it"));
   });
 
   it("symlinks a pipeline subagent into .claude/agents/", () => {

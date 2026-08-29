@@ -17,9 +17,9 @@ describe("CLAUDE-SHARED.md", () => {
     }
   });
 
-  it("routes every change through /fix-it or /feature-it, with no third path", () => {
-    expect(doc).toContain("/fix-it");
-    expect(doc).toContain("/feature-it");
+  it("routes every change through /design-it and /code-it, with no third path", () => {
+    expect(doc).toContain("/design-it");
+    expect(doc).toContain("/code-it");
     expect(doc).toMatch(/no third path/i);
   });
 
@@ -40,18 +40,23 @@ describe("CLAUDE-SHARED.md", () => {
 
 describe("skill set", () => {
   const skills = [
-    "fix-it",
-    "feature-it",
+    "design-it",
+    "code-it",
     "ship-it",
+    "release-it",
     "improve-it",
     "explain-it",
-    "pr-it",
     "commit-it",
     "brainstorm-it",
   ];
+  const entryPoints = ["design-it", "code-it", "ship-it", "release-it"];
 
   it.each(skills)("harness/skills/%s/SKILL.md exists", (name) => {
     expect(existsSync(`${root}/harness/skills/${name}/SKILL.md`)).toBe(true);
+  });
+
+  it.each(["fix-it", "feature-it", "pr-it"])("the retired %s skill is gone", (name) => {
+    expect(existsSync(`${root}/harness/skills/${name}`)).toBe(false);
   });
 
   it("the retired explain-diff-gfm skill is gone", () => {
@@ -75,17 +80,15 @@ describe("skill set", () => {
     expect(existsSync(`${dir}/DESIGN-IT-TWICE.md`)).toBe(true);
   });
 
-  it("improve-it and feature-it defer the deep-module vocabulary to codebase-design", () => {
-    for (const n of ["improve-it", "feature-it"]) {
-      expect(readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8")).toContain(
-        "codebase-design"
-      );
-    }
+  it("design-it defers the deep-module vocabulary to codebase-design", () => {
+    expect(readFileSync(`${root}/harness/skills/design-it/SKILL.md`, "utf8")).toContain(
+      "codebase-design"
+    );
   });
 
   it("human-triggered pipelines are disable-model-invocation, sub-skills are not", () => {
-    const human = ["fix-it", "feature-it", "ship-it", "improve-it"];
-    const ai = ["explain-it", "pr-it", "commit-it", "brainstorm-it"];
+    const human = [...entryPoints, "improve-it"];
+    const ai = ["explain-it", "commit-it", "brainstorm-it"];
     for (const n of human) {
       expect(readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8")).toContain(
         "disable-model-invocation: true"
@@ -96,6 +99,17 @@ describe("skill set", () => {
         "disable-model-invocation"
       );
     }
+  });
+
+  // The harness stays small on purpose: a skill that needs more than this is doing two jobs.
+  // See LESSONS.md — a 32,800-line alternative was trialled and dropped purely on token cost.
+  it.each(entryPoints)("%s/SKILL.md stays under ~80 lines", (name) => {
+    const lines = readFileSync(`${root}/harness/skills/${name}/SKILL.md`, "utf8").split("\n");
+    expect(lines.length).toBeLessThanOrEqual(85);
+  });
+
+  it.each(entryPoints)("%s adds no references/ directory", (name) => {
+    expect(existsSync(`${root}/harness/skills/${name}/references`)).toBe(false);
   });
 });
 

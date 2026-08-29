@@ -10,6 +10,11 @@ const pkg = JSON.parse(readFileSync(`${root}/package.json`, "utf8")) as {
 };
 
 describe("CLAUDE-SHARED.md", () => {
+  // Deliberately checks only inline `npm run x` mentions in prose, not the fenced ```bash
+  // command block — that block documents the commands a *consumer card* defines (build:prod,
+  // dev, test:watch and friends, per its own convention), not ha-card-shared's own scripts,
+  // which are narrower since it isn't itself a card being bundled/watched. Widening this to the
+  // fenced block would be a false positive, not a fix — see the doc's own caveat above it.
   it("all npm run commands it names exist in package.json", () => {
     const commands = [...doc.matchAll(/`npm run ([\w:]+)`/g)].map((m) => m[1]);
     for (const cmd of new Set(commands)) {

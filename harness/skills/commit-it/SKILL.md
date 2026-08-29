@@ -25,11 +25,10 @@ Always include a body for breaking changes, security fixes, and data migrations.
 
 ## Mandated trailers
 
-Every commit message ends with these two lines, verbatim (do not rely on the harness to add
-them):
+Every commit message ends with these two lines (do not rely on the harness to add them):
 
 ```
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+Co-Authored-By: Claude <the model actually generating this commit — never hardcode one> <noreply@anthropic.com>
 Claude-Session: <the current claude.ai/code session URL>
 ```
 

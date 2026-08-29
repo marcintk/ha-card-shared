@@ -82,7 +82,9 @@ is one.
 
 1. Render the explain-diff (both formats) with the bundled renderer:
    1. Gather the diff — `git diff main...HEAD`, `git log main...HEAD --oneline`.
-   2. Write a JSON content spec to `/tmp/explain-spec.json`:
+   2. `mkdir -p docs/design-notes/.work` (gitignored — a handoff scratch space scoped to this
+      repo, not the machine-wide `/tmp` every sibling card repo also writes into).
+   3. Write a JSON content spec to `docs/design-notes/.work/issue-<n>-explain-spec.json`:
       - `title`, `subtitle` (`Prepared YYYY-MM-DD · PR #NNN`), `slug` (kebab).
       - `sections[]` — **background** (deep context for beginners + narrow context for this
         change), **intuition** (the essence, concrete toy-data examples, figures),
@@ -92,16 +94,19 @@ is one.
       - `quiz[]` — five medium-difficulty questions, exactly 4 options each, exactly 1
         `correct`. Not gotchas — checks real understanding.
       - Prose in the clear, flowing style of Martin Kleppmann.
-   3. Render:
+   4. Render:
       ```bash
-      python harness/skills/explain-it/scripts/render.py /tmp/explain-spec.json \
+      python harness/skills/explain-it/scripts/render.py \
+        docs/design-notes/.work/issue-<n>-explain-spec.json \
         -o docs/design-notes/issue-<n>-explain-diff.html
-      python harness/skills/explain-it/scripts/render.py /tmp/explain-spec.json --format gfm \
-        -o /tmp/issue-<n>-explain-diff.md
+      python harness/skills/explain-it/scripts/render.py \
+        docs/design-notes/.work/issue-<n>-explain-spec.json --format gfm \
+        -o docs/design-notes/.work/issue-<n>-explain-diff.md
       ```
       The HTML ships in the PR diff; the `.md` is the GFM string returned below. `xdg-open` the
       HTML (guarded).
 2. Update the `docs/design-notes/README.md` row: fill the **Explain-diff** link (same
    `marcintk.github.io/ha-card-shared/design-notes/` path for `issue-<n>-explain-diff.html`). The
    PR link isn't known yet — `ship-it` fills that in once `gh pr create` returns.
-3. Return the GFM output (`/tmp/issue-<n>-explain-diff.md`) to the caller for `gh pr comment`.
+3. Return the GFM output (`docs/design-notes/.work/issue-<n>-explain-diff.md`) to the caller for
+   `gh pr comment`.

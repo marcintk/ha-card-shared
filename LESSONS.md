@@ -6,6 +6,17 @@ the by-symptom index.
 
 <!-- ponytail: single file; split by area if it outgrows one screen-scroll -->
 
+## `/ship-it` cannot commit — `npm version` blocked by the main-branch guard
+
+- **Root cause:** `harness/.githooks/pre-commit` blocks every commit on `main`, and the release
+  step ran `npm version <bump>` there — which shells out to a plain `git commit` — so the guard
+  meant for `/fix-it`/`/feature-it` also caught the one pipeline that never goes through a PR.
+- **Guardrail:** `npm version <bump> --no-git-tag-version` runs on a `release/vX.Y.Z` branch,
+  committed and merged through a normal PR; the tag is applied to `main` only after merge, since a
+  tag is not a commit and never trips the hook. Asserted by `test/skills/ship-it.test.ts` against
+  the skill's own prose.
+- **Ref:** [#34](https://github.com/marcintk/ha-card-shared/issues/34) · 2026-08-29
+
 ## Design-note links show `.html` as source, or route through a third-party proxy
 
 - **Root cause:** GitHub renders a linked `.html` file as source, not a page; `raw.githack.com`

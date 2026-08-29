@@ -12,5 +12,6 @@ rendered — GitHub itself shows a linked `.html` file as source, not a page. Pa
 `main` `/docs`, so this folder (`docs/design-notes/`) is served under `/design-notes/`;
 `docs/.nojekyll` stops Jekyll from reprocessing the files.
 
-| Issue | Note | Explain-diff | Status | PR  |
-| ----- | ---- | ------------ | ------ | --- |
+| Issue                                                       | Note                                                                                                                               | Explain-diff                                                                                      | Status   | PR  |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | -------- | --- |
+| [#34](https://github.com/marcintk/ha-card-shared/issues/34) | [Releasing without touching main](https://marcintk.github.io/ha-card-shared/design-notes/issue-34-release-path-vs-main-guard.html) | [Explain-diff](https://marcintk.github.io/ha-card-shared/design-notes/issue-34-explain-diff.html) | approved | #41 |

@@ -14,7 +14,6 @@
     "CLAUDE.md",
     "CLAUDE-SHARED.md",
     "README.md",
-    "recipes/",
     "harness/"
   ],
   "exports": {

@@ -7,8 +7,9 @@ Bump both refs together — the npm dep and the workflow `uses:` pins — on a b
 ```bash
 git checkout -b chore/bump-ha-card-shared-vX.Y.Z
 npm install ha-card-shared@github:marcintk/ha-card-shared#vX.Y.Z   # package.json + lockfile
+# workflow `uses:` refs — rewrite only the ha-card-shared pins, leave other action tags alone
 grep -rl 'marcintk/ha-card-shared/.github/workflows/.*@v' .github/workflows/ \
-  | xargs sed -i 's#@v[0-9.]\+#@vX.Y.Z#g'                          # workflow refs
+  | xargs sed -i -E 's#(marcintk/ha-card-shared/[^@]+)@v[0-9.]+#\1@vX.Y.Z#g'
 git commit -am "chore: bump ha-card-shared to vX.Y.Z" && gh pr create --fill
 ```
 

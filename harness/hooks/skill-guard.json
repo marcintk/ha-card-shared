@@ -49,8 +49,11 @@
     },
     "reviewer": {
       "deny_write": ["^test/", "\\.test\\.ts$"],
-      "deny_bash": ["git\\s", "gh\\s"],
-      "reason": "review applies /code-review + /simplify cleanups; it doesn't touch tests and doesn't ship."
+      "deny_bash": [
+        "git\\s+(?:commit|push|checkout|switch|merge|rebase|reset)(?:\\s|$)",
+        "gh\\s+pr\\s+(?:create|merge|close)(?:\\s|$)"
+      ],
+      "reason": "review applies /code-review + /simplify cleanups; read-only git (the diff) is fine, but it doesn't mutate history, touch tests, or ship."
     }
   }
 }

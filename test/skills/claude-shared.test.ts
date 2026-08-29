@@ -62,6 +62,27 @@ describe("skill set", () => {
     expect(existsSync(`${root}/harness/skills/explain-it/scripts/render.py`)).toBe(true);
   });
 
+  it.each(["codebase-design", "handoff"])(
+    "vendored reference skill harness/skills/%s/SKILL.md exists",
+    (name) => {
+      expect(existsSync(`${root}/harness/skills/${name}/SKILL.md`)).toBe(true);
+    }
+  );
+
+  it("codebase-design ships its companion notes", () => {
+    const dir = `${root}/harness/skills/codebase-design`;
+    expect(existsSync(`${dir}/DEEPENING.md`)).toBe(true);
+    expect(existsSync(`${dir}/DESIGN-IT-TWICE.md`)).toBe(true);
+  });
+
+  it("improve-it and feature-it defer the deep-module vocabulary to codebase-design", () => {
+    for (const n of ["improve-it", "feature-it"]) {
+      expect(readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8")).toContain(
+        "codebase-design"
+      );
+    }
+  });
+
   it("human-triggered pipelines are disable-model-invocation, sub-skills are not", () => {
     const human = ["fix-it", "feature-it", "ship-it", "improve-it"];
     const ai = ["explain-it", "pr-it", "commit-it", "brainstorm-it"];

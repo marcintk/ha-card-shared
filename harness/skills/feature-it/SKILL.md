@@ -31,7 +31,8 @@ idea). Don't create it for them.
    outright for a genuinely trivial change (a typo, a version bump) — nothing to research.
 3. **[HUMAN]** Design + grill (`brainstorm-it` skill) — approach, files touched, trade-offs,
    every open question closed. One concern per PR — extras become a separate GH issue. For a
-   trivial change this is one or two lines, not a proposal; it still happens, just short.
+   trivial change this is one or two lines, not a proposal; it still happens, just short. For an
+   architectural change, run `codebase-design` first for the vocabulary and the deletion test.
 4. **[SKILL: explain-it]** Run `explain-it start <n> <slug>` — it creates the design note from
    step 3's approach, sets status `in progress`, adds the `docs/design-notes/README.md` row, and opens
    the note in the browser.

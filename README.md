@@ -41,7 +41,9 @@ Use each export by extending or referencing it from the matching consumer file:
 | `ha-card-shared/runtime`              | `import { SubscriptionManager, DebugMetrics, timeAgo } from "ha-card-shared/runtime"`    |
 | `ha-card-shared/test-utils`           | `import { snapHtml } from "ha-card-shared/test-utils"` in `test/snapshot.test.ts`        |
 
-`cardBundle` bundles `src/index.ts` → `dist/card.js` and stamps `__CARD_VERSION__` from the
+`cardBundle` bundles `src/index.ts` → `dist/<project>.js` — the name comes from `cardBundle`'s
+`name` option, defaulting to `package.json`'s `name`, and falls back to `card` when npm metadata is
+absent. It stamps `__CARD_VERSION__` from the
 `VERSION` env (set from the git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest).
 `globals.d.ts` types that global plus the HA `customCards` window hook.
 
@@ -77,13 +79,16 @@ Every consumer project must have:
 ## Git hooks
 
 `postinstall` points `core.hooksPath` at `node_modules/ha-card-shared/harness/.githooks` (local
-config only; skipped if you're not in a git repo or have already set your own `core.hooksPath`).
+config only; skipped if you're not in a git repo, or if `core.hooksPath` already names a directory
+of your own that actually contains hooks).
 
 - `pre-commit` — biome check + prettier (markdown) + typecheck
 - `pre-push` — tests at 100% coverage
 
 Opt out with `git config --unset core.hooksPath` (or point it elsewhere — `postinstall` won't
-override a non-ha-card value).
+override a non-ha-card value). One exception: a value naming a **missing or empty** directory hooks
+nothing and git says nothing about it, so `postinstall` treats that as a leftover and takes it over
+rather than leaving you with silently dead hooks.
 
 ## Shared workflows
 

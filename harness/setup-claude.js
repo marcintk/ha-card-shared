@@ -6,10 +6,12 @@ import {
   symlinkSync,
   readdirSync,
   readlinkSync,
+  lstatSync,
+  realpathSync,
   statSync,
   rmSync,
 } from 'fs';
-import { join, dirname, relative, sep } from 'path';
+import { join, dirname, relative, resolve, sep } from 'path';
 import { fileURLToPath } from 'url';
 
 const root = process.env.INIT_CWD ?? process.cwd();
@@ -29,8 +31,32 @@ const guard = `${guardBase}/harness/hooks/skill-guard.mjs`;
 // Merge the skill-guard PreToolUse / Stop hooks into the consumer's .claude/settings.json.
 // Idempotent: any hook entry whose command mentions skill-guard.mjs is replaced. Also drops
 // the pre-1.5 "missing required plugins" SessionStart hook if it's still there.
+// A pre-2.0 consumer has .claude/settings.json symlinked into node_modules. Writing through that
+// link either throws (v2 stopped shipping .claude/, so the target is gone) or silently lands in
+// the package copy, which the next install discards. Drop the link so a real file replaces it —
+// but only when it points into node_modules or dangles; a link the consumer aims somewhere of
+// their own (dotfiles, say) is theirs to keep.
+function dropPackageSymlink(settingsPath) {
+  let link;
+  try {
+    link = lstatSync(settingsPath);
+  } catch {
+    return; // nothing there
+  }
+  if (!link.isSymbolicLink()) return;
+  let target;
+  try {
+    target = realpathSync(settingsPath);
+  } catch {
+    rmSync(settingsPath); // dangling
+    return;
+  }
+  if (target.split(sep).includes('node_modules')) rmSync(settingsPath);
+}
+
 function mergeHooks() {
   const settingsPath = join(claudeDir, 'settings.json');
+  dropPackageSymlink(settingsPath);
   let settings = {};
   try {
     settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
@@ -110,10 +136,20 @@ function wireGitHooks() {
       cwd: root,
       stdio: capture ? ['ignore', 'pipe', 'ignore'] : 'ignore',
     });
+  // A value naming a missing or empty directory hooks nothing — git silently runs no hook. Treat
+  // it as a leftover to take over, so a consumer isn't stranded with dead hooks forever.
+  const hasHooks = (p) => {
+    try {
+      return readdirSync(resolve(root, p)).length > 0;
+    } catch {
+      return false;
+    }
+  };
+
   try {
     const current = git('config --local --get core.hooksPath', true).toString().trim();
     if (current === desired) return; // already ours
-    if (current && !current.includes('ha-card-shared')) return; // consumer's own — leave it
+    if (current && !current.includes('ha-card-shared') && hasHooks(current)) return; // theirs
   } catch {
     // unset, or not a git repo — the set below decides which
   }

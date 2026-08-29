@@ -12,5 +12,6 @@ rendered — GitHub itself shows a linked `.html` file as source, not a page. Pa
 `main` `/docs`, so this folder (`docs/design-notes/`) is served under `/design-notes/`;
 `docs/.nojekyll` stops Jekyll from reprocessing the files.
 
-| Issue | Note | Explain-diff | Status | PR  |
-| ----- | ---- | ------------ | ------ | --- |
+| Issue                                                       | Note                                                                                                                               | Explain-diff                                                                                      | Status   | PR  |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | -------- | --- |
+| [#33](https://github.com/marcintk/ha-card-shared/issues/33) | [Unsticking the installer](https://marcintk.github.io/ha-card-shared/design-notes/issue-33-postinstall-symlink-and-hookspath.html) | [Explain-diff](https://marcintk.github.io/ha-card-shared/design-notes/issue-33-explain-diff.html) | approved | #40 |

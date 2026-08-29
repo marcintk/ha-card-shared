@@ -6,6 +6,29 @@ the by-symptom index.
 
 <!-- ponytail: single file; split by area if it outgrows one screen-scroll -->
 
+## `npm install` fails in a consumer with ENOENT on `.claude/settings.json`
+
+- **Root cause:** pre-2.0 consumers symlink `.claude/settings.json` into
+  `node_modules/ha-card-shared/.claude/`; v2 stopped shipping that directory, so the link dangles
+  and `writeFileSync` — which follows symlinks — throws out of `postinstall`. Where the target
+  survives, the write silently lands in `node_modules` and the next install discards it.
+- **Guardrail:** `setup-claude.js` `lstat`s the path first and drops a symlink that dangles or
+  resolves inside `node_modules`, before reading it. Covered by
+  `test/scripts/setup-claude.test.ts`. Generally: never write to a path the installer did not
+  create without checking what is actually there.
+- **Ref:** [#33](https://github.com/marcintk/ha-card-shared/issues/33) · 2026-08-29
+
+## Git hooks silently do nothing in a consumer repo
+
+- **Root cause:** `core.hooksPath` named a directory that was missing or empty — git runs no hook
+  and reports nothing — and `wireGitHooks` skipped any value not containing `ha-card-shared`, so
+  the leftover was permanent.
+- **Guardrail:** a hooksPath resolving to a missing or empty directory is treated as a leftover and
+  taken over; a populated directory of the consumer's own is still left alone, now with a test that
+  actually creates it. Checking a config _value_ is not the same as checking that it _does_
+  anything.
+- **Ref:** [#33](https://github.com/marcintk/ha-card-shared/issues/33) · 2026-08-29
+
 ## Design-note links show `.html` as source, or route through a third-party proxy
 
 - **Root cause:** GitHub renders a linked `.html` file as source, not a page; `raw.githack.com`

@@ -1,6 +1,6 @@
 ---
 name: ship-it
-description: Ship a reviewed branch from /code-it — commit, PR, explain-diff comment, CI, squash-merge. Use when the user says "/ship-it", "ship it", or a code-it branch is reviewed and ready for a PR.
+description: Ship a reviewed branch from /code-it — finalize commit, PR, explain-diff comment, CI, rebase-merge. Use when the user says "/ship-it", "ship it", or a code-it branch is reviewed and ready for a PR.
 disable-model-invocation: true
 ---
 
@@ -22,7 +22,9 @@ lines — what changed, why it matters, the risk if wrong — before asking, not
    returned for the PR comment) and fills the README row's Explain-diff link. Status is already
    `approved` from `/design-it`; this step doesn't touch it.
 3. `commit-it` for the message (Conventional Commits, the mandated trailers), then `git commit -F
--`. If `pre-commit` rewrites files or fails, fix and re-commit — loop until it passes.
+-`. Each slice is already its own commit from `/code-it`; this commit covers only what step 2
+   produced — the explain-diff HTML and the `docs/design-notes/README.md` row. If `pre-commit`
+   rewrites files or fails, fix and re-commit — loop until it passes.
 4. `git push -u origin HEAD`.
 5. `gh pr create` — title from the issue, body summarizing the change and linking `#<n>`.
 6. Fill the README row's PR link with the number from step 5.
@@ -30,7 +32,7 @@ lines — what changed, why it matters, the risk if wrong — before asking, not
 8. Overwrite the issue body with a final snapshot: what shipped, links to the note and the PR.
 9. **[HUMAN]** Wait for "merge it".
 10. `gh run watch` — wait for CI green.
-11. `gh pr merge --squash --delete-branch`.
+11. `gh pr merge --rebase --delete-branch` — each `/code-it` slice commit lands on `main`.
 12. `git checkout main && git pull`.
 13. `node .claude/hooks/skill-guard.mjs phase clear`.
 

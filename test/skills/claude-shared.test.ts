@@ -52,6 +52,7 @@ describe("skill set", () => {
     "explain-it",
     "commit-it",
     "brainstorm-it",
+    "show-it",
   ];
   const entryPoints = ["design-it", "code-it", "ship-it", "release-it"];
 
@@ -110,6 +111,31 @@ describe("skill set", () => {
     expect(src).toContain("/design-it");
   });
 
+  it("code-it's per-slice loop shows the change and commits it", () => {
+    const src = readFileSync(`${root}/harness/skills/code-it/SKILL.md`, "utf8");
+    expect(src).toContain("show-it");
+    expect(src).toContain("commit-it");
+    expect(src).toContain("git commit");
+  });
+
+  it("commit-it is documented as a code-it caller, not just ship-it", () => {
+    const src = readFileSync(`${root}/harness/skills/commit-it/SKILL.md`, "utf8");
+    expect(src).toContain("code-it");
+  });
+
+  it("ship-it rebase-merges so slice commits reach main", () => {
+    const src = readFileSync(`${root}/harness/skills/ship-it/SKILL.md`, "utf8");
+    expect(src).toContain("gh pr merge --rebase");
+    expect(src).not.toContain("--squash");
+  });
+
+  it("show-it is repo-agnostic — config comes from the consumer, not the skill", () => {
+    const src = readFileSync(`${root}/harness/skills/show-it/SKILL.md`, "utf8");
+    expect(src).toContain("## Show-It");
+    expect(src).toContain("npm run show");
+    expect(existsSync(`${root}/harness/skills/show-it/scripts/preview-web.mjs`)).toBe(true);
+  });
+
   // Every SKILL.md declares who may invoke it: a `**Invocation:**` body marker whose wording
   // matches the frontmatter — `disable-model-invocation: true` iff the marker says "HUMAN only".
   it("every skill declares its invocation, marker matching frontmatter", () => {
@@ -117,6 +143,7 @@ describe("skill set", () => {
       "explain-it": "**Invocation:** HUMAN or AI",
       "brainstorm-it": "**Invocation:** HUMAN or AI",
       "commit-it": "**Invocation:** AI (sub-skill)",
+      "show-it": "**Invocation:** HUMAN or AI",
     };
     for (const n of entryPoints) {
       const src = readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8");

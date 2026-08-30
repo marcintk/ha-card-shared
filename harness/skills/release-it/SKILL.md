@@ -45,7 +45,7 @@ changed, why it matters, the risk if wrong — before asking, not a status recap
    git push -u origin HEAD
    gh pr create --title "chore: bump version to X.Y.Z" --body "Release prep for vX.Y.Z."
    ```
-   Wait for CI, then `gh pr merge --squash --delete-branch` — same as any `/ship-it` PR.
+   Wait for CI, then `gh pr merge --rebase --delete-branch` — same as any `/ship-it` PR.
 8. Tag the merged commit on `main` — a tag is not a commit, so the `main` guard never fires:
    ```bash
    git checkout main && git pull

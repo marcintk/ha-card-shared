@@ -391,7 +391,7 @@
   <header class="titleblock">
     <p class="eyebrow">Harness walkthrough &middot; pipeline stage 3 of 4</p>
     <h1>Inside <span style="color:var(--accent)">ship-it</span></h1>
-    <p class="standfirst">The delivery phase. It takes one reviewed <code class="mono" style="font-size:0.85em">code-it</code> branch to a squash-merged PR &mdash; commit, PR, explain-diff, CI, merge &mdash; and clears the pipeline state on the way out.</p>
+    <p class="standfirst">The delivery phase. It takes one reviewed <code class="mono" style="font-size:0.85em">code-it</code> branch to a rebase-merged PR &mdash; finalize commit, PR, explain-diff, CI, merge &mdash; and clears the pipeline state on the way out.</p>
     <dl class="facts">
       <div><dt>invocation</dt><dd>HUMAN only</dd></div>
       <div><dt>input</dt><dd>a reviewed branch</dd></div>
@@ -413,7 +413,7 @@
   <section>
     <span class="section-num">01</span>
     <h2>What it does</h2>
-    <p class="lede">Never runs ahead of <code class="mono">/code-it</code> &mdash; a branch with unreviewed or unaccepted slices means stop and point back at it, not ship anyway. Thirteen steps, one commit, one PR, and exactly one <code class="mono">[HUMAN]</code> gate: <em>"merge it"</em>. Same <code class="mono">- [ ]</code> / <code class="mono">- [x]</code> discipline as the rest of the pipeline.</p>
+    <p class="lede">Never runs ahead of <code class="mono">/code-it</code> &mdash; a branch with unreviewed or unaccepted slices means stop and point back at it, not ship anyway. Thirteen steps, one finalize commit on top of the slice commits, one PR, and exactly one <code class="mono">[HUMAN]</code> gate: <em>"merge it"</em>. Same <code class="mono">- [ ]</code> / <code class="mono">- [x]</code> discipline as the rest of the pipeline.</p>
 
     <div class="legend" aria-hidden="true">
       <span><span class="dot skill"></span> skill acts</span>
@@ -443,8 +443,8 @@
       <li class="step skill">
         <div class="marker">step<b>[ ]</b>3</div>
         <div class="step-body">
-          <div class="step-head"><h3>Commit</h3><span class="role">skill &middot; commit-it</span></div>
-          <p><code class="mono">commit-it</code> writes the message only &mdash; Conventional Commits subject, a body only for a non-obvious <em>why</em>, and the two mandated trailers (<code class="mono">Co-Authored-By</code>, <code class="mono">Claude-Session</code>). Then <code class="mono">git commit -F -</code>. If <code class="mono">pre-commit</code> rewrites files or fails, fix and re-commit &mdash; loop until it passes.</p>
+          <div class="step-head"><h3>Finalize commit</h3><span class="role">skill &middot; commit-it</span></div>
+          <p>Each slice is already its own commit from <code class="mono">/code-it</code>; this commit covers only what step&nbsp;2 produced &mdash; the explain-diff HTML and the <code class="mono">docs/design-notes/README.md</code> row. <code class="mono">commit-it</code> writes the message only &mdash; Conventional Commits subject, a body only for a non-obvious <em>why</em>, and the two mandated trailers (<code class="mono">Co-Authored-By</code>, <code class="mono">Claude-Session</code>). Then <code class="mono">git commit -F -</code>. If <code class="mono">pre-commit</code> rewrites files or fails, fix and re-commit &mdash; loop until it passes.</p>
           <div class="calls"><span class="k">calls</span><span class="chip">harness/skills/commit-it</span><span class="chip">.githooks/pre-commit</span></div>
         </div>
       </li>
@@ -511,7 +511,7 @@
         <div class="marker">step<b>[ ]</b>11</div>
         <div class="step-body">
           <div class="step-head"><h3>Merge</h3><span class="role">skill</span></div>
-          <p><code class="mono">gh pr merge --squash --delete-branch</code>. One commit lands on <code class="mono">main</code> for the whole issue; the feature branch is gone.</p>
+          <p><code class="mono">gh pr merge --rebase --delete-branch</code>. Every <code class="mono">/code-it</code> slice commit plus the finalize commit lands on <code class="mono">main</code> in order; the feature branch is gone.</p>
           <div class="calls"><span class="k">calls</span><span class="chip">gh</span></div>
         </div>
       </li>
@@ -520,7 +520,7 @@
         <div class="marker">step<b>[ ]</b>12</div>
         <div class="step-body">
           <div class="step-head"><h3>Sync main</h3><span class="role">skill</span></div>
-          <p><code class="mono">git checkout main &amp;&amp; git pull</code> &mdash; the local checkout catches up with the squash commit.</p>
+          <p><code class="mono">git checkout main &amp;&amp; git pull</code> &mdash; the local checkout catches up with the rebased commits.</p>
         </div>
       </li>
 
@@ -543,7 +543,7 @@
 
     <figure>
       <div class="scroll">
-        <svg viewBox="0 0 1200 250" role="img" aria-label="ship-it runs steps 1 to 13 under the ship-phase guardrail that blocks source and test writes and npm version. Prepare, then land the commit through two git hooks, then open the PR and its record trail, then a single human merge-it gate, then watch CI, squash-merge, sync main and clear the phase.">
+        <svg viewBox="0 0 1200 250" role="img" aria-label="ship-it runs steps 1 to 13 under the ship-phase guardrail that blocks source and test writes and npm version. Prepare, then land the finalize commit through two git hooks, then open the PR and its record trail, then a single human merge-it gate, then watch CI, rebase-merge, sync main and clear the phase.">
           <defs>
             <marker id="arrH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-soft)"/>
@@ -573,7 +573,7 @@
 
             <rect class="svg-box" x="772" y="86" width="240" height="52" rx="8"/>
             <text class="svg-sub" x="892" y="106" text-anchor="middle" font-size="9">steps 10&ndash;13</text>
-            <text class="svg-label" x="892" y="122" text-anchor="middle" font-size="10.5">CI &middot; squash-merge &middot; pull &middot; clear</text>
+            <text class="svg-label" x="892" y="122" text-anchor="middle" font-size="10.5">CI &middot; rebase-merge &middot; pull &middot; clear</text>
           </g>
 
           <path class="svg-edge" d="M186 112 L210 112" marker-end="url(#arrH)"/>
@@ -592,7 +592,7 @@
           <text class="svg-sub" x="1118" y="126" text-anchor="middle" font-size="9.5" style="fill:var(--done)">&rarr; /release-it</text>
         </svg>
       </div>
-      <figcaption>One commit, one PR, one human gate. Steps 5&ndash;8 update the PR body, the README row, the PR comment and the issue body in the same run &mdash; the record is finished before the merge, not after.</figcaption>
+      <figcaption>One PR, one human gate. Steps 5&ndash;8 update the PR body, the README row, the PR comment and the issue body in the same run &mdash; the record is finished before the merge, not after.</figcaption>
     </figure>
   </section>
 
@@ -706,7 +706,7 @@
         <h3>External</h3>
         <div class="use-row">
           <span class="path">gh</span>
-          <span class="what"><code class="mono">pr create</code> (5), <code class="mono">pr comment --body-file</code> (7), issue body edit (8), <code class="mono">run watch</code> (10), <code class="mono">pr merge --squash --delete-branch</code> (11).</span>
+          <span class="what"><code class="mono">pr create</code> (5), <code class="mono">pr comment --body-file</code> (7), issue body edit (8), <code class="mono">run watch</code> (10), <code class="mono">pr merge --rebase --delete-branch</code> (11).</span>
         </div>
         <div class="use-row">
           <span class="path">git</span>
@@ -748,8 +748,8 @@
         <p><code>pre-commit</code> and <code>pre-push</code> fire on the real git operation. Formatting, types and 100% coverage are <em>enforced</em> at commit and push, not trusted to have been kept.</p>
       </div>
       <div class="card">
-        <h3><span class="n">d</span> Squash-merge, delete branch</h3>
-        <p>One commit lands on <code>main</code> per issue, so history stays one-issue-one-commit &mdash; the same shape as the design-note and <code>LESSONS.md</code> records.</p>
+        <h3><span class="n">d</span> Rebase-merge, delete branch</h3>
+        <p>Each reviewed <code>/code-it</code> slice lands on <code>main</code> as its own commit, followed by the finalize commit &mdash; history mirrors the note's slices, and every commit on <code>main</code> passed review and the suite.</p>
       </div>
       <div class="card">
         <h3><span class="n">e</span> One human gate, well briefed</h3>

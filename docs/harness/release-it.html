@@ -475,7 +475,7 @@
         <div class="marker">step<b>[ ]</b>7</div>
         <div class="step-body">
           <div class="step-head"><h3>Bump on a release branch &rarr; PR</h3><span class="role">skill</span></div>
-          <p><code class="mono">git checkout -b release/vX.Y.Z</code>; <code class="mono">npm version &lt;bump&gt; --no-git-tag-version</code> (edits <code class="mono">package.json</code> only &mdash; no commit, no tag, because a bare <code class="mono">npm version</code> shells out to a plain <code class="mono">git commit</code> and <code class="mono">pre-commit</code> blocks every commit on <code class="mono">main</code>); <code class="mono">git commit -am</code>; push; <code class="mono">gh pr create</code>; wait for CI; <code class="mono">gh pr merge --squash --delete-branch</code> &mdash; a normal PR like any <code class="mono">/ship-it</code>.</p>
+          <p><code class="mono">git checkout -b release/vX.Y.Z</code>; <code class="mono">npm version &lt;bump&gt; --no-git-tag-version</code> (edits <code class="mono">package.json</code> only &mdash; no commit, no tag, because a bare <code class="mono">npm version</code> shells out to a plain <code class="mono">git commit</code> and <code class="mono">pre-commit</code> blocks every commit on <code class="mono">main</code>); <code class="mono">git commit -am</code>; push; <code class="mono">gh pr create</code>; wait for CI; <code class="mono">gh pr merge --rebase --delete-branch</code> &mdash; a normal PR like any <code class="mono">/ship-it</code>.</p>
           <div class="calls"><span class="k">calls</span><span class="chip">npm version</span><span class="chip">git</span><span class="chip">gh</span><span class="chip">.githooks/pre-commit</span></div>
         </div>
       </li>
@@ -600,7 +600,7 @@
 
     <figure>
       <div class="scroll">
-        <svg viewBox="0 0 1120 340" role="img" aria-label="Left: npm version run on main creates a commit and a tag, and pre-commit blocks the commit to main, so it fails. Right: on a release branch, npm version with no-git-tag-version edits package.json only with no commit; git commit on the branch, a PR, and a squash-merge land the bump on main; then git tag vX.Y.Z is applied directly to main because a tag is not a commit and the guard never fires; pushing the tag runs release.yml which drafts the GitHub Release.">
+        <svg viewBox="0 0 1120 340" role="img" aria-label="Left: npm version run on main creates a commit and a tag, and pre-commit blocks the commit to main, so it fails. Right: on a release branch, npm version with no-git-tag-version edits package.json only with no commit; git commit on the branch, a PR, and a rebase-merge land the bump on main; then git tag vX.Y.Z is applied directly to main because a tag is not a commit and the guard never fires; pushing the tag runs release.yml which drafts the GitHub Release.">
           <defs>
             <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-soft)"/>
@@ -639,7 +639,7 @@
             <text class="svg-sub" x="675" y="91" text-anchor="middle" font-size="8.5">release/vX.Y.Z &middot; package.json only, no commit</text>
 
             <rect class="svg-box" x="560" y="130" width="230" height="52" rx="9"/>
-            <text class="svg-label" x="675" y="152" text-anchor="middle" font-size="10">git commit -am &rarr; PR &rarr; squash-merge</text>
+            <text class="svg-label" x="675" y="152" text-anchor="middle" font-size="10">git commit -am &rarr; PR &rarr; rebase-merge</text>
             <text class="svg-sub" x="675" y="169" text-anchor="middle" font-size="8.5">through pre-commit + CI, like any change</text>
 
             <rect class="svg-box" x="560" y="204" width="230" height="40" rx="9" style="stroke:var(--accent)"/>

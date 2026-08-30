@@ -137,10 +137,16 @@ describe("setup-claude.js", () => {
     expect(link).toBe(join(sharedRoot, "harness", "design-methods", "glossary.md"));
   });
 
+  it("symlinks the harness tools into .claude/tools/", () => {
+    run();
+    const link = readlinkSync(join(tmp, ".claude", "tools", "pr-cost.mjs"));
+    expect(link).toBe(join(sharedRoot, "harness", "tools", "pr-cost.mjs"));
+  });
+
   it("writes .claude/.gitignore so the generated link dirs are never committed", () => {
     run();
     const ignore = readFileSync(join(tmp, ".claude", ".gitignore"), "utf8");
-    for (const dir of ["skills", "agents", "hooks", "design-methods"]) {
+    for (const dir of ["skills", "agents", "hooks", "design-methods", "tools"]) {
       expect(ignore).toContain(`/${dir}/`);
     }
   });

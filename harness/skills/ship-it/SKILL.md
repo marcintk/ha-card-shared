@@ -28,7 +28,8 @@ lines — what changed, why it matters, the risk if wrong — before asking, not
 4. `git push -u origin HEAD`.
 5. `gh pr create` — title from the issue, body summarizing the change and linking `#<n>`.
 6. Fill the README row's PR link with the number from step 5.
-7. `gh pr comment <pr> --body-file` the step 2 GFM.
+7. `gh pr comment <pr> --body-file` the step 2 GFM, with the PR's cost digest
+   (`node .claude/tools/pr-cost.mjs <pr>`) appended as its last line.
 8. Overwrite the issue body with a final snapshot: what shipped, links to the note and the PR.
 9. **[HUMAN]** Wait for "merge it".
 10. `gh run watch` — wait for CI green.

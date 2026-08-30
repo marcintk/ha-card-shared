@@ -32,8 +32,8 @@ including chores, docs, and trivial edits:
   anything non-trivial, approved design note with slices declared.
 - **`/code-it <issue#>`** — TDD phase. Red test, minimal fix, review, `show-it`, then a commit —
   per slice, until the note is fully implemented.
-- **`/ship-it`** — finalize commit, PR, explain-diff comment, rebase-merge (each slice commit
-  lands on `main`).
+- **`/ship-it`** — finalize commit, PR, explain-diff + cost-digest comment, rebase-merge (each
+  slice commit lands on `main`).
 - **`/release-it`** — batched across several merged PRs: bump semver, tag, draft release notes.
 
 No issue yet? `/design-it` with no number scans the repo for a deepening opportunity and files
@@ -51,3 +51,9 @@ browser preview for a UI bundle, a before/after HTML report for a library or CLI
 opts in by adding a `show` npm script or a `## Show-It` block to its `CLAUDE.md` (`kind:`
 `web` | `other-ui` | `non-ui`, plus `build:`, `serve-dir:`, `entry:`, `port:`, `inputs:` as
 needed); with neither, `/show-it` auto-detects and falls back to an annotated diff.
+
+`node .claude/tools/pr-cost.mjs <pr#> [--since <ref>] [--all]` prints the token / dollar digest
+for the session(s) that produced a PR — `Used Σ191k(⊕289,⇄99.8%) ↑174 | $0.0407 4.0AIU` —
+from the `Claude-Session` trailers `commit-it` stamps on every commit. `/ship-it` appends it to
+the PR comment; `/release-it` puts the batch total in the release notes. Local transcripts only,
+so it runs on the dev box, not CI.

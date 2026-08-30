@@ -130,7 +130,7 @@ function mergeHooks() {
 function writeClaudeGitignore() {
   mkdirSync(claudeDir, { recursive: true });
   const path = join(claudeDir, ".gitignore");
-  const want = ["/skills/", "/agents/", "/hooks/", "/design-methods/", "/skill-guard/"];
+  const want = ["/skills/", "/agents/", "/hooks/", "/design-methods/", "/tools/", "/skill-guard/"];
   let current = "";
   try {
     current = readFileSync(path, "utf8");
@@ -227,3 +227,4 @@ linkInto("harness/hooks", "hooks");
 linkInto("harness/skills", "skills");
 linkInto("harness/agents", "agents");
 linkInto("harness/design-methods", "design-methods");
+linkInto("harness/tools", "tools");

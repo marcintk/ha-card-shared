@@ -1,13 +1,13 @@
 ---
 name: commit-it
-description: Write a Conventional Commits message for the staged change, with the mandated Co-Authored-By / Claude-Session trailers. Message only — the caller runs git commit. Called by ship-it.
+description: Write a Conventional Commits message for the staged change, with the mandated Co-Authored-By / Claude-Session trailers. Message only — the caller runs git commit. Called by code-it (once per accepted slice) and ship-it (the finalize commit).
 ---
 
 # Commit-It
 
-**Invocation:** AI (sub-skill) — `ship-it` calls it, so its frontmatter carries no invocation
-block. Outputs the message only. Does **not** stage, commit, amend, or push — the caller does
-that and loops until `pre-commit` passes.
+**Invocation:** AI (sub-skill) — `code-it` calls it per accepted slice and `ship-it` for the
+finalize commit, so its frontmatter carries no invocation block. Outputs the message only. Does
+**not** stage, commit, amend, or push — the caller does that and loops until `pre-commit` passes.
 
 ## Subject
 

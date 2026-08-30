@@ -501,12 +501,12 @@
         <div class="marker">step<b>[ ]</b>4</div>
         <div class="step-body">
           <div class="step-head"><h3>Per slice, in order</h3><span class="role">loop</span></div>
-          <p>The eight-step cycle below, repeated for every slice the note declared. Slices run in the note's order; a slice is finished only when a human accepts it.</p>
+          <p>The ten-step cycle below, repeated for every slice the note declared. Slices run in the note's order; a slice is finished only when a human accepts it and it is committed.</p>
 
           <div class="subloop">
             <div class="subhead">
               <span class="turn" aria-hidden="true">&#8630;</span>
-              <b>The slice cycle &mdash; 4.1 to 4.8</b>
+              <b>The slice cycle &mdash; 4.1 to 4.10</b>
               <span class="note">the two guard markers (4.2 / 4.5) are what make the order un-skippable</span>
             </div>
             <ol class="substeps">
@@ -558,19 +558,35 @@
                   <div class="calls"><span class="k">spawns</span><span class="chip">harness/agents/reviewer.md</span><span class="chip">/code-review</span><span class="chip">/simplify</span></div>
                 </div>
               </li>
-              <li class="substep human">
+              <li class="substep skill">
                 <div class="sid">4.7</div>
+                <div>
+                  <div class="sh"><h4>Show it</h4><span class="role">skill &middot; show-it</span></div>
+                  <p><code class="mono">show-it</code> renders what the slice looks like &mdash; a browser preview for a UI bundle, a self-contained before/after HTML report for a library / CLI / pure-logic change &mdash; so the human eyeballs the effect before the gate. Read-only with respect to tracked source.</p>
+                  <div class="calls"><span class="k">calls</span><span class="chip">harness/skills/show-it</span></div>
+                </div>
+              </li>
+              <li class="substep human">
+                <div class="sid">4.8</div>
                 <div>
                   <div class="sh"><h4>Accept &mdash; or grill</h4><span class="role">human</span></div>
                   <p>Accept, or grill and loop back to 4.1 for this slice. A third loop on the same slice &rarr; stop and run <code class="mono">/design-it &lt;n&gt;</code> to re-open the design, not a fourth patch.</p>
                 </div>
               </li>
               <li class="substep skill">
-                <div class="sid">4.8</div>
+                <div class="sid">4.9</div>
                 <div>
                   <div class="sh"><h4>Record</h4><span class="role">skill &middot; explain-it</span></div>
                   <p><code class="mono">explain-it slice</code> updates the note with what this slice changed; <code class="mono">explain-it compound</code> appends the transferable learning to <code class="mono">LESSONS.md</code> &mdash; or is told there's nothing to compound. Not every slice earns an entry.</p>
                   <div class="calls"><span class="k">calls</span><span class="chip">harness/skills/explain-it</span></div>
+                </div>
+              </li>
+              <li class="substep skill">
+                <div class="sid">4.10</div>
+                <div>
+                  <div class="sh"><h4>Commit the slice</h4><span class="role">skill &middot; commit-it</span></div>
+                  <p><code class="mono">commit-it</code> writes the Conventional Commits message with the mandated trailers; <code class="mono">git commit -F -</code> lands the reviewed, green slice as its own commit. If <code class="mono">pre-commit</code> rewrites files or fails, fix and re-commit until it passes. <code class="mono">/ship-it</code> rebase-merges, so each slice commit reaches <code class="mono">main</code>.</p>
+                  <div class="calls"><span class="k">calls</span><span class="chip">harness/skills/commit-it</span><span class="k">runs</span><span class="chip">git commit</span></div>
                 </div>
               </li>
             </ol>
@@ -582,7 +598,7 @@
         <div class="marker">step<b>[x]</b>5</div>
         <div class="step-body">
           <div class="step-head"><h3>Coverage gate</h3><span class="role">phase complete</span></div>
-          <p>Once every slice is accepted: <code class="mono">npm run test:coverage</code> must hold 100%. Output: <strong>a branch, every slice reviewed and accepted, coverage green</strong> &mdash; ready for <code class="mono">/ship-it</code>.</p>
+          <p>Once every slice is accepted: <code class="mono">npm run test:coverage</code> must hold 100%. Output: <strong>a branch, every slice reviewed, accepted and committed, coverage green</strong> &mdash; ready for <code class="mono">/ship-it</code>.</p>
           <div class="calls"><span class="k">runs</span><span class="chip">npm run test:coverage</span></div>
         </div>
       </li>
@@ -630,7 +646,7 @@
           <text class="svg-sub" x="705" y="66" text-anchor="middle" font-size="10" style="fill:var(--accent)">step 4 &mdash; once per slice in the note</text>
           <rect class="svg-box" x="580" y="88" width="250" height="70" rx="10" style="stroke:var(--accent)"/>
           <text class="svg-label" x="705" y="116" text-anchor="middle" font-size="11">the slice cycle</text>
-          <text class="svg-sub" x="705" y="134" text-anchor="middle" font-size="9.5">4.1 &rarr; 4.8 &nbsp;&middot;&nbsp; red / green / review</text>
+          <text class="svg-sub" x="705" y="134" text-anchor="middle" font-size="9.5">4.1 &rarr; 4.10 &nbsp;&middot;&nbsp; red / green / review / show / commit</text>
 
           <path class="svg-edge" d="M464 111 L540 111" marker-end="url(#arrR)"/>
           <path class="svg-edge" d="M590 158 C590 188 820 188 820 160" marker-end="url(#arrR)"/>
@@ -655,7 +671,7 @@
 
     <figure>
       <div class="scroll">
-        <svg viewBox="0 0 1180 430" role="img" aria-label="The eight-step slice cycle. test-writer writes one failing test without touching src. The skill sets the red marker, which is the only thing that lets code-writer write src. After the suite is green the skill clears the marker, src re-locks, the reviewer runs code-review and simplify with no git access, and a human accepts or sends the slice back. A third failed loop reopens the design.">
+        <svg viewBox="0 0 1180 430" role="img" aria-label="The ten-step slice cycle. test-writer writes one failing test without touching src. The skill sets the red marker, which is the only thing that lets code-writer write src. After the suite is green the skill clears the marker, src re-locks, the reviewer runs code-review and simplify with no git access, show-it renders the slice for a human, and the human accepts or sends the slice back. On accept the skill records the note and LESSONS, then commit-it lands the slice as its own commit. A third failed loop reopens the design.">
           <defs>
             <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-soft)"/>
@@ -721,33 +737,45 @@
           <path class="svg-edge" d="M285 120 L285 74" marker-end="url(#arrRed)" style="stroke:var(--red)"/>
           <path class="svg-edge" d="M810 120 L810 74" marker-end="url(#arrC)" style="stroke:var(--green)"/>
 
-          <!-- 4.7 human -->
-          <rect class="svg-box" x="470" y="250" width="240" height="64" rx="10" style="stroke:var(--human)"/>
-          <text class="svg-sub" x="590" y="274" text-anchor="middle" font-size="9" font-family="JetBrains Mono, monospace" style="fill:var(--human)">4.7 &middot; human</text>
-          <text class="svg-label" x="590" y="292" text-anchor="middle" font-size="11" font-family="JetBrains Mono, monospace">accept &mdash; or grill</text>
+          <!-- 4.7 show-it -->
+          <rect class="svg-box" x="760" y="250" width="190" height="64" rx="10" style="stroke:var(--accent)"/>
+          <text class="svg-sub" x="855" y="274" text-anchor="middle" font-size="9" font-family="JetBrains Mono, monospace" style="fill:var(--accent)">4.7 &middot; skill &middot; show-it</text>
+          <text class="svg-label" x="855" y="292" text-anchor="middle" font-size="11" font-family="JetBrains Mono, monospace">render the slice</text>
 
-          <!-- 4.8 record -->
-          <rect class="svg-box" x="760" y="250" width="240" height="64" rx="10" style="stroke:var(--accent)"/>
-          <text class="svg-sub" x="880" y="274" text-anchor="middle" font-size="9" font-family="JetBrains Mono, monospace" style="fill:var(--accent)">4.8 &middot; skill &middot; explain-it</text>
-          <text class="svg-label" x="880" y="292" text-anchor="middle" font-size="11" font-family="JetBrains Mono, monospace">note + LESSONS</text>
+          <!-- 4.8 human -->
+          <rect class="svg-box" x="558" y="250" width="190" height="64" rx="10" style="stroke:var(--human)"/>
+          <text class="svg-sub" x="653" y="274" text-anchor="middle" font-size="9" font-family="JetBrains Mono, monospace" style="fill:var(--human)">4.8 &middot; human</text>
+          <text class="svg-label" x="653" y="292" text-anchor="middle" font-size="11" font-family="JetBrains Mono, monospace">accept &mdash; or grill</text>
 
-          <path class="svg-edge" d="M985 190 C985 220 720 220 700 246" marker-end="url(#arrC)"/>
-          <path class="svg-edge" d="M710 282 L760 282" marker-end="url(#arrC)"/>
-          <text class="svg-edge-label" x="735" y="274" text-anchor="middle" font-size="9">accept</text>
+          <!-- 4.9 record -->
+          <rect class="svg-box" x="356" y="250" width="190" height="64" rx="10" style="stroke:var(--accent)"/>
+          <text class="svg-sub" x="451" y="274" text-anchor="middle" font-size="9" font-family="JetBrains Mono, monospace" style="fill:var(--accent)">4.9 &middot; skill &middot; explain-it</text>
+          <text class="svg-label" x="451" y="292" text-anchor="middle" font-size="11" font-family="JetBrains Mono, monospace">note + LESSONS</text>
+
+          <!-- 4.10 commit -->
+          <rect class="svg-box" x="154" y="250" width="190" height="64" rx="10" style="stroke:var(--accent)"/>
+          <text class="svg-sub" x="249" y="274" text-anchor="middle" font-size="9" font-family="JetBrains Mono, monospace" style="fill:var(--accent)">4.10 &middot; skill &middot; commit-it</text>
+          <text class="svg-label" x="249" y="292" text-anchor="middle" font-size="11" font-family="JetBrains Mono, monospace">commit the slice</text>
+
+          <path class="svg-edge" d="M985 190 C985 220 890 224 950 250" marker-end="url(#arrC)"/>
+          <path class="svg-edge" d="M760 282 L748 282" marker-end="url(#arrC)"/>
+          <path class="svg-edge" d="M558 282 L546 282" marker-end="url(#arrC)"/>
+          <text class="svg-edge-label" x="552" y="274" text-anchor="middle" font-size="9">accept</text>
+          <path class="svg-edge" d="M356 282 L344 282" marker-end="url(#arrC)"/>
 
           <!-- grill loop back to 4.1 -->
-          <path class="svg-edge" d="M470 270 C300 250 105 240 105 194" marker-end="url(#arrC)" style="stroke:var(--human)"/>
-          <text class="svg-edge-label" x="250" y="238" text-anchor="middle" font-size="9.5" style="fill:var(--human)">grill &rarr; loop back to 4.1 (same slice)</text>
+          <path class="svg-edge" d="M558 268 C380 244 105 240 105 194" marker-end="url(#arrC)" style="stroke:var(--human)"/>
+          <text class="svg-edge-label" x="300" y="236" text-anchor="middle" font-size="9.5" style="fill:var(--human)">grill &rarr; loop back to 4.1 (same slice)</text>
 
           <!-- 3rd loop escape -->
-          <rect class="svg-box" x="470" y="356" width="240" height="52" rx="10" style="stroke:var(--red);fill:var(--red-soft)"/>
-          <text class="svg-label" x="590" y="386" text-anchor="middle" font-size="10.5" font-family="JetBrains Mono, monospace" style="fill:var(--red)">3rd loop &rarr; /design-it &lt;n&gt;</text>
-          <path class="svg-edge" d="M590 314 L590 354" marker-end="url(#arrC)" style="stroke:var(--red)"/>
-          <text class="svg-edge-label" x="678" y="340" text-anchor="middle" font-size="9" style="fill:var(--red)">not a 4th patch</text>
+          <rect class="svg-box" x="533" y="356" width="240" height="52" rx="10" style="stroke:var(--red);fill:var(--red-soft)"/>
+          <text class="svg-label" x="653" y="386" text-anchor="middle" font-size="10.5" font-family="JetBrains Mono, monospace" style="fill:var(--red)">3rd loop &rarr; /design-it &lt;n&gt;</text>
+          <path class="svg-edge" d="M653 314 L653 354" marker-end="url(#arrC)" style="stroke:var(--red)"/>
+          <text class="svg-edge-label" x="741" y="340" text-anchor="middle" font-size="9" style="fill:var(--red)">not a 4th patch</text>
 
           <!-- next slice -->
-          <path class="svg-edge" d="M1000 300 C1095 300 1100 224 1055 224 L150 224 C105 224 105 210 105 194" marker-end="url(#arrC)" style="stroke:var(--accent)"/>
-          <text class="svg-edge-label" x="560" y="238" text-anchor="middle" font-size="9.5" style="fill:var(--accent)">accepted &rarr; next slice starts at 4.1</text>
+          <path class="svg-edge" d="M154 292 C70 300 70 210 105 194" marker-end="url(#arrC)" style="stroke:var(--accent)"/>
+          <text class="svg-edge-label" x="150" y="330" text-anchor="middle" font-size="9.5" style="fill:var(--accent)">committed &rarr; next slice at 4.1</text>
         </svg>
       </div>
       <figcaption>Two agents that never see each other's reasoning: <code class="mono">test-writer</code> gets the seam and the expected behavior only; <code class="mono">code-writer</code> gets the failing test only. Between them sits the red marker &mdash; set at 4.2, cleared at 4.5 &mdash; which is the sole condition under which the hook permits a <code class="mono">src/</code> write. Three failed review loops on one slice route the work back to <code class="mono">/design-it</code>, not a fourth attempt.</figcaption>
@@ -758,7 +786,7 @@
   <section>
     <span class="section-num">04</span>
     <h2>What it uses</h2>
-    <p class="lede">Three sub-agents with deliberately narrow briefs, one sub-skill for the record, two slash commands, and the same hook as <code class="mono">design-it</code> &mdash; in a different phase, with an extra per-slice marker.</p>
+    <p class="lede">Three sub-agents with deliberately narrow briefs, three sub-skills &mdash; show it, record it, commit it &mdash; two slash commands, and the same hook as <code class="mono">design-it</code> &mdash; in a different phase, with an extra per-slice marker.</p>
 
     <div class="uses">
       <div class="use-group">
@@ -786,10 +814,18 @@
       </div>
 
       <div class="use-group">
-        <h3>Sub-skill</h3>
+        <h3>Sub-skills</h3>
+        <div class="use-row">
+          <span class="path">harness/skills/show-it</span>
+          <span class="what">At 4.7, renders what the slice looks like &mdash; a browser preview for a UI bundle, a self-contained before/after HTML report for a library / CLI / pure-logic change &mdash; so the human eyeballs the effect before the gate. Read-only with respect to tracked source.</span>
+        </div>
         <div class="use-row">
           <span class="path">harness/skills/explain-it</span>
           <span class="what"><code class="mono">slice</code> updates the design note with what each slice changed; <code class="mono">compound</code> prepends a deduped "symptom &rarr; root cause &rarr; guardrail" entry to <code class="mono">LESSONS.md</code>, or no-ops when a slice taught nothing reusable.</span>
+        </div>
+        <div class="use-row">
+          <span class="path">harness/skills/commit-it</span>
+          <span class="what">At 4.10, writes the Conventional Commits message with the mandated trailers; the skill then runs <code class="mono">git commit -F -</code> so the reviewed, green slice is its own commit.</span>
         </div>
       </div>
 
@@ -813,7 +849,7 @@
         </div>
         <div class="use-row">
           <span class="path">LESSONS.md</span>
-          <span class="what">Re-grepped at step 2 for the problem class; appended at 4.8 via <code class="mono">explain-it compound</code>.</span>
+          <span class="what">Re-grepped at step 2 for the problem class; appended at 4.9 via <code class="mono">explain-it compound</code>.</span>
         </div>
         <div class="use-row">
           <span class="path">npm run test:coverage &middot; git</span>

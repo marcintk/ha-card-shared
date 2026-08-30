@@ -479,8 +479,8 @@
         <div class="marker">step<b>[ ]</b>7</div>
         <div class="step-body">
           <div class="step-head"><h3>Post the explain-diff comment</h3><span class="role">skill</span></div>
-          <p><code class="mono">gh pr comment &lt;pr&gt; --body-file</code> with the GFM string from step 2 &mdash; the reviewable walkthrough lives on the PR itself, not just in the diff.</p>
-          <div class="calls"><span class="k">calls</span><span class="chip">gh</span></div>
+          <p><code class="mono">gh pr comment &lt;pr&gt; --body-file</code> with the GFM string from step 2 &mdash; the reviewable walkthrough lives on the PR itself, not just in the diff. Its last line is the PR's cost digest from <code class="mono">node .claude/tools/pr-cost.mjs &lt;pr&gt;</code> &mdash; <code class="mono">Used &Sigma;191k(&oplus;289,&#8646;99.8%) &uarr;174 | $0.0407&nbsp;&nbsp;4.0AIU</code> &mdash; reconstructed from the <code class="mono">Claude-Session</code> trailers on the branch's commits.</p>
+          <div class="calls"><span class="k">calls</span><span class="chip">gh</span><span class="chip">harness/tools/pr-cost.mjs</span></div>
         </div>
       </li>
 

@@ -64,6 +64,7 @@ changed, why it matters, the risk if wrong — before asking, not a status recap
      Write "Nothing — drop-in." if there genuinely is none.
    - `**Full changelog**: https://github.com/marcintk/ha-card-shared/compare/<prev-tag>...<tag>`
      (`<prev-tag>` = the previous release tag, `git describe --tags --abbrev=0 HEAD^`).
+   - `**Cost**: <digest>` — the batch total from `node .claude/tools/pr-cost.mjs --since <prev-tag>`.
 10. **[HUMAN]** Publish the draft from the GitHub Releases UI once the notes and the
     `dist/<project>.js` asset check out.
 11. `node .claude/hooks/skill-guard.mjs phase clear`.

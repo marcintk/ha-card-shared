@@ -129,6 +129,14 @@ describe("skill set", () => {
     expect(src).not.toContain("--squash");
   });
 
+  it("ship-it and release-it emit the pr-cost digest", () => {
+    expect(existsSync(`${root}/harness/tools/pr-cost.mjs`)).toBe(true);
+    expect(existsSync(`${root}/harness/tools/model-rates.json`)).toBe(true);
+    for (const n of ["ship-it", "release-it"]) {
+      expect(readFileSync(`${root}/harness/skills/${n}/SKILL.md`, "utf8")).toContain("pr-cost.mjs");
+    }
+  });
+
   it("show-it is repo-agnostic — config comes from the consumer, not the skill", () => {
     const src = readFileSync(`${root}/harness/skills/show-it/SKILL.md`, "utf8");
     expect(src).toContain("## Show-It");

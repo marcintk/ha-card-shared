@@ -5,12 +5,12 @@ description: Owns the design-note lifecycle under docs/design-notes/ plus the LE
 
 # Explain-It
 
-**Invocation:** HUMAN or AI — `design-it` / `code-it` / `ship-it` call it; a human may run
-`explain-it <phase> <n> <slug>` directly to redo a phase. Frontmatter carries no invocation block.
+**Invocation:** HUMAN or AI — `design-it` / `code-it` / `ship-it` call it instead of carrying the
+capture logic themselves; a human may run `explain-it <phase> <n> <slug>` directly to redo a
+phase. Frontmatter carries no invocation block.
 
-Single owner of `docs/design-notes/` and `LESSONS.md`. `/design-it`, `/code-it`, and `/ship-it`
-call this instead of carrying the capture logic themselves. One design note per issue, committed
-in that issue's PR.
+Single owner of `docs/design-notes/` and `LESSONS.md`. One design note per issue, committed in
+that issue's PR.
 
 Phases: `start`, `approve`, `slice`, `compound`, `finalize`. Args: `<n>` issue number, `<slug>`
 kebab issue slug.
@@ -42,9 +42,9 @@ Edit the note with what the last vertical slice changed. `/code-it` calls this a
 ## compound `<n> <slug>`
 
 Runs after a slice is accepted, before `finalize` — so the entry ships in the same PR.
-Append the transferable learning to `LESSONS.md` (repo root), the by-symptom log consulted
-before new work. Distinct from the design note: the note is per-issue detail, this is one
-greppable "if you see X, the cause was Y, and Z now guards it" line for the next run.
+Append the transferable learning to `LESSONS.md` (repo root): one greppable "if you see X, the
+cause was Y, and Z now guards it" line for the next run — distinct from the design note's
+per-issue detail.
 
 1. If the caller says there is nothing to compound — a typo, a version bump, anything that
    taught nothing reusable — no-op and return. Not every run earns an entry.
@@ -82,14 +82,21 @@ Status is already `approved` from the `approve` phase; this phase renders the di
 is one.
 
 1. Render the explain-diff (both formats) with the bundled renderer:
-   1. Gather the diff — `git diff main...HEAD`, `git log main...HEAD --oneline`.
+   1. Gather the **production diff** to explain — `git diff main...HEAD` scoped to source
+      paths, tests excluded (prod lives under `src/`, plus `harness/` in this repo): pass
+      `-- src harness ':(exclude)test/**' ':(exclude)**/*.test.*'`. For orientation only, not
+      to walk through: `git diff main...HEAD --stat` and `git log main...HEAD --oneline`, so
+      you see what tests/config moved.
    2. `mkdir -p docs/design-notes/.work` (gitignored — a handoff scratch space scoped to this
       repo, not the machine-wide `/tmp` every sibling card repo also writes into).
    3. Write a JSON content spec to `docs/design-notes/.work/issue-<n>-explain-spec.json`:
       - `title`, `subtitle` (`Prepared YYYY-MM-DD · PR #NNN`), `slug` (kebab).
       - `sections[]` — **background** (deep context for beginners + narrow context for this
         change), **intuition** (the essence, concrete toy-data examples, figures),
-        **code** (high-level tour, grouped sensibly). Each section has both `html` (rich, may
+        **code** (high-level tour of the production source files changed, grouped sensibly —
+        do not walk through test files; at most one line naming the tests added as the
+        guardrail, and summarize snapshot/fixture/config churn rather than touring it). Each
+        section has both `html` (rich, may
         use `.diagram`/`.flow`/`.box`/`.callout` classes — no ASCII diagrams) and `md`
         (markdown only, no raw HTML — GitHub strips it; fenced code + tables OK).
       - `quiz[]` — five medium-difficulty questions, exactly 4 options each, exactly 1
@@ -104,8 +111,7 @@ is one.
         docs/design-notes/.work/issue-<n>-explain-spec.json --format gfm \
         -o docs/design-notes/.work/issue-<n>-explain-diff.md
       ```
-      The HTML ships in the PR diff; the `.md` is the GFM string returned below. `xdg-open` the
-      HTML (guarded).
+      The HTML ships in the PR diff. `xdg-open` the HTML (guarded).
 2. Update the `docs/design-notes/README.md` row: fill the **Explain-diff** link (same
    `marcintk.github.io/ha-card-shared/design-notes/` path for `issue-<n>-explain-diff.html`). The
    PR link isn't known yet — `ship-it` fills that in once `gh pr create` returns.

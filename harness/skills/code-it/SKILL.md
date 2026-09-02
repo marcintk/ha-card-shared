@@ -1,6 +1,6 @@
 ---
 name: code-it
-description: TDD implementation phase — turns an approved design-it note into a reviewed, coverage-green branch, one red-green slice at a time. Use when the user says "/code-it", "implement issue <n>", or wants to build a change whose design note is already approved.
+description: TDD implementation phase — turns an approved design-it note into a reviewed, coverage-green branch, one red-green slice at a time. Use when the user says "/code-it", "implement issue <n>", or wants to build a change whose design note is already approved. `<n>` is optional — with none, it resolves the issue from the lone approved note.
 disable-model-invocation: true
 ---
 
@@ -8,8 +8,9 @@ disable-model-invocation: true
 
 **Invocation:** HUMAN only — `disable-model-invocation` keeps the model from auto-running it.
 
-Approved design note → reviewed branch. Never runs ahead of `/design-it` — an unapproved or
-missing note means stop and point back at it, not infer one.
+Approved design note → reviewed branch. `/code-it <n>` takes the issue number; bare `/code-it`
+resolves it from the lone approved note (Step 2). Never runs ahead of `/design-it` — an
+unapproved or missing note means stop and point back at it, not infer one.
 
 Print each step as `- [ ] …` before starting it, `- [x] …` once done. Never skip one silently —
 if a step can't be honestly checked, stop and ask. Every `[HUMAN]` step opens with 2–3 lines —
@@ -18,8 +19,12 @@ what changed, why it matters, the risk if wrong — before asking, not a status 
 ## Steps
 
 1. `node .claude/hooks/skill-guard.mjs phase code`.
-2. Read the note's declared slices and re-grep `LESSONS.md` for the problem class — a fresh
-   context (a resumed session) gets the same guardrail check `/design-it` already did once.
+2. Resolve the issue, then read the note. `<n>` given → use it; omitted → the lone
+   `docs/design-notes/README.md` row with status `approved` and PR `—` supplies `<n>` and
+   `<slug>` (cross-check the slug against the current branch; 0 rows → stop and point at
+   `/design-it`; >1 → list them and ask for the number). Echo `Working issue #<n> — <title>`.
+   Then read the note's declared slices and re-grep `LESSONS.md` for the problem class — a
+   fresh context (a resumed session) gets the same guardrail check `/design-it` already did once.
 3. Branch, if not already on one: `git checkout -b <type>/<slug>`.
 4. Per slice, in order:
    1. **[SUBAGENT: `test-writer`]** Given only the seam and expected behavior from the

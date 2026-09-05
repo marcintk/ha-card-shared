@@ -2,8 +2,8 @@
 .serena/
 node_modules/
 coverage/
-fixtures/**/dist/
-fixtures/**/coverage/
+test/smoke/dist/
+test/smoke/coverage/
 __pycache__/
 docs/design-notes/.work/
 

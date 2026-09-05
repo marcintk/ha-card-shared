@@ -53,10 +53,6 @@ updates:
   `dist/card.js`, so each card's Lovelace resource URL is recognisable. Needs a one-time asset
   rename per consumer (`hacs.json` `filename` first — HACS installs break without it) and an
   end-user resource-URL update.
-- **Self-contained skill harness** — the `/fix-it`, `/feature-it`, `/ship-it` pipelines no
-  longer need marketplace plugins (`ponytail`, `caveman`, `tdd-guard`) or user-global skills
-  (`grilling`, `improve-codebase-architecture`). Everything ships in `skills/`, `agents/`,
-  `hooks/`. New `skill-guard` PreToolUse hook enforces per-skill / per-role guardrails.
 - **Manual step** — `major` only because it needs one-time consumer work: bump the pin, rename
   the bundle asset (`hacs.json` `filename`, resource URL), check the Claude Code version. The
   npm package API is unchanged.

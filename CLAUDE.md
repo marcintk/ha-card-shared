@@ -2,7 +2,7 @@
 
 # ha-card-shared — Claude Context
 
-This is the shared toolchain repo itself, not a card project. The workflow in CLAUDE-SHARED.md applies for all code changes.
+Shared TypeScript + Rollup + Vitest + Biome toolchain for Home Assistant cards. No embedded Claude workflow — the dev harness now lives in `agent-harness`.
 
 ## Releasing and consumer pickup
 

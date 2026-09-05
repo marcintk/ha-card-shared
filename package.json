@@ -13,8 +13,7 @@
     "vitest.base.mjs",
     "CLAUDE.md",
     "CLAUDE-SHARED.md",
-    "README.md",
-    "harness/"
+    "README.md"
   ],
   "exports": {
     "./vitest.base.mjs": "./vitest.base.mjs",
@@ -35,17 +34,15 @@
   "scripts": {
     "build": "rollup -c rollup.lib.config.mjs",
     "typecheck": "tsc --noEmit",
-    "typecheck:harness": "tsc --noEmit -p tsconfig.harness.json",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "check": "biome check --write src/ test/ harness/",
-    "check:ci": "tsc --noEmit && tsc --noEmit -p tsconfig.harness.json && biome check src/ test/ harness/ && prettier --check \"**/*.md\"",
+    "check": "biome check --write src/ test/",
+    "check:ci": "tsc --noEmit && biome check src/ test/ && prettier --check \"**/*.md\"",
     "format:md": "prettier --write \"**/*.md\"",
-    "postinstall": "node harness/setup-claude.js",
     "smoke": "npm run smoke:typecheck && npm run smoke:build && npm run smoke:test",
-    "smoke:typecheck": "tsc --noEmit -p fixtures/smoke/tsconfig.json",
-    "smoke:build": "cd fixtures/smoke && rollup -c",
-    "smoke:test": "vitest run --root fixtures/smoke --coverage"
+    "smoke:typecheck": "tsc --noEmit -p test/smoke/tsconfig.json",
+    "smoke:build": "cd test/smoke && rollup -c",
+    "smoke:test": "vitest run --root test/smoke --coverage"
   },
   "peerDependencies": {
     "@biomejs/biome": ">=2",

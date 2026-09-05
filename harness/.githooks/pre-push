@@ -1,3 +1,0 @@
-#!/bin/sh
-set -e                       # abort on first failure — no partial pushes
-npm run test:coverage        # run tests + enforce 100% coverage threshold

@@ -1,24 +1,21 @@
 # ha-card-shared
 
 Shared build toolchain for `ha-*` Home Assistant card projects: TypeScript, Rollup, Vitest, Biome,
-and Prettier configs, plus reusable GitHub Actions workflows and git hooks.
+and Prettier configs, plus reusable GitHub Actions workflows.
 
 ## Install
 
-Always pin to a release tag — never a bare SHA or `main`. Updating is the same command with a newer
-tag (dependabot does it for you once pinned).
+Pin to a release tag — never a bare SHA or `main`. Dependabot bumps it once pinned.
 
 ```bash
 npm install github:marcintk/ha-card-shared#vX.Y.Z --save-dev
 ```
 
-The exported configs expect these tools installed in the consumer (declared as peer deps):
-`rollup`, `@rollup/plugin-{node-resolve,terser,typescript}`, `typescript`, `vitest`,
-`@vitest/coverage-v8`, `jsdom`, `@biomejs/biome`, `prettier`.
+Peer deps the configs expect in the consumer: `rollup`,
+`@rollup/plugin-{node-resolve,terser,typescript}`, `typescript`, `vitest`, `@vitest/coverage-v8`,
+`jsdom`, `@biomejs/biome`, `prettier`.
 
 ## Exports
-
-Use each export by extending or referencing it from the matching consumer file:
 
 | Export                                | Wire-up in consumer                                                                      |
 | ------------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -31,31 +28,30 @@ Use each export by extending or referencing it from the matching consumer file:
 | `ha-card-shared/runtime`              | `import { SubscriptionManager, DebugMetrics, timeAgo } from "ha-card-shared/runtime"`    |
 | `ha-card-shared/test-utils`           | `import { snapHtml } from "ha-card-shared/test-utils"` in `test/snapshot.test.ts`        |
 
-`cardBundle` bundles `src/index.ts` → `dist/<project>.js` — the name comes from `cardBundle`'s
-`name` option, defaulting to `package.json`'s `name`, and falls back to `card` when npm metadata is
-absent. It stamps `__CARD_VERSION__` from the
-`VERSION` env (set from the git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest).
-`globals.d.ts` types that global plus the HA `customCards` window hook.
+`cardBundle` bundles `src/index.ts` → `dist/<project>.js` (name from `cardBundle`'s `name` option,
+default `package.json` `name`, fallback `card`). It stamps `__CARD_VERSION__` from the `VERSION` env
+(git tag at release; `0.0.0-dev` otherwise; `"test"` under vitest). `globals.d.ts` types that global
+plus the HA `customCards` window hook.
 
-## Required files
-
-Every consumer project must have:
+## Required consumer files
 
 - **`README.md`** — card purpose, configuration, usage.
-- **`test/snapshot.test.ts`** — all `toMatchSnapshot()` calls live here and nowhere else. Use `snapHtml` from `ha-card-shared/test-utils` to normalize Lit marker IDs before snapshotting HTML.
-- **`CLAUDE.md`** — `@node_modules/ha-card-shared/CLAUDE-SHARED.md` on line 1, then `## Design Invariants` and `## Architecture Notes` sections with card-specific content.
+- **`test/snapshot.test.ts`** — all `toMatchSnapshot()` calls live here only; normalize with
+  `snapHtml` from `ha-card-shared/test-utils` before snapshotting HTML.
+- **`CLAUDE.md`** — `@node_modules/ha-card-shared/CLAUDE-SHARED.md` on line 1, then
+  `## Design Invariants` and `## Architecture Notes`.
 
 ## Shared workflows
 
-Reusable workflows for consumer repos. Pin refs to a release tag — dependabot keeps them current.
+Pin `uses:` refs to a release tag; Dependabot keeps them current.
 
-| Workflow                      | Purpose                                                       |
-| ----------------------------- | ------------------------------------------------------------- |
-| `shared-build-and-test.yml`   | lint, typecheck, test with coverage report                    |
-| `shared-publish-release.yml`  | validate tag, build bundle, create GitHub Release             |
-| `shared-deploy-demo-page.yml` | build + deploy GitHub Pages demo (requires `docs/index.html`) |
-| `shared-hacs-validation.yml`  | validate HACS compatibility                                   |
-| `shared-migration-check.yml`  | open a tracking issue when a bump needs a manual recipe       |
+| Workflow                      | Purpose                                                    |
+| ----------------------------- | ---------------------------------------------------------- |
+| `shared-build-and-test.yml`   | lint, typecheck, test with coverage                        |
+| `shared-publish-release.yml`  | validate tag, build bundle, create GitHub Release          |
+| `shared-deploy-demo-page.yml` | build + deploy GitHub Pages demo (needs `docs/index.html`) |
+| `shared-hacs-validation.yml`  | validate HACS compatibility                                |
+| `shared-migration-check.yml`  | open a tracking issue when a bump needs a manual recipe    |
 
 ```yaml
 jobs:
@@ -63,15 +59,9 @@ jobs:
     uses: marcintk/ha-card-shared/.github/workflows/shared-build-and-test.yml@vX.Y.Z
 ```
 
-### Migration check
-
-`shared-migration-check.yml` is pull-based: the consumer runs it on a schedule
-and it opens an issue **only** when the version you currently pin has a
-`recipe.<pinned>_<next>.md` in this repo — i.e. the bump needs manual steps.
-It walks one step at a time and keeps at most one open `shared-migration`
-issue. Plain ref-bumps (no recipe) are left to Dependabot.
-
-Add this caller to each consumer (`.github/workflows/migration-check.yml`):
+`shared-migration-check.yml` is pull-based: the consumer runs it on a schedule and it opens one
+`shared-migration` issue only when the pinned version has a `recipe.<pinned>_<next>.md` here.
+Caller (`.github/workflows/migration-check.yml`):
 
 ```yaml
 name: Migration Check
@@ -89,27 +79,21 @@ jobs:
 
 ## Migrating consumers
 
-Step-by-step migrations live in [`recipes/`](recipes/), one file per version transition.
+Version-transition recipes live in [`recipes/`](recipes/). Keep consumers current with
+[`recipes/dependabot.md`](recipes/dependabot.md).
 
-After migrating, keep consumers current automatically: [`recipes/dependabot.md`](recipes/dependabot.md).
+## Releasing
 
-## Releasing ha-card-shared
-
-Tag-driven. Every change reaches `main` through a PR, where `self-check.yml` runs actionlint,
-shellcheck, the smoke build, and verifies committed `dist/` matches a fresh build (rebuild with
-`npm run build` and commit if it drifts). Pushing a `vX.Y.Z` tag then runs `release.yml`, which validates the
-tag is a valid semver strictly greater than the previous release and publishes a GitHub Release
-(pre-release tags like `vX.Y.Z-beta.1` publish as GitHub pre-releases).
-
-The version bump is a PR like any other — `pre-commit` blocks direct commits to `main`, and
-`npm version`'s own commit is no exception — then the tag goes on `main` after merge, since a tag
-is not a commit and never trips that guard:
+Tag-driven. Every change reaches `main` through a PR where `self-check.yml` runs actionlint, the
+smoke build, and checks committed `dist/` matches a fresh `npm run build`. Pushing a `vX.Y.Z` tag
+runs `release.yml`, which validates the tag is semver strictly greater than the last release and
+publishes a GitHub Release (`vX.Y.Z-beta.1` → pre-release).
 
 ```bash
 git checkout -b release/vX.Y.Z
 npm version patch|minor|major --no-git-tag-version   # edits package.json only
 git commit -am "chore: bump version to X.Y.Z" && git push -u origin HEAD
-gh pr create --title "chore: bump version to X.Y.Z" --fill   # then merge once CI is green
+gh pr create --title "chore: bump version to X.Y.Z" --fill   # merge once CI is green
 
 git checkout main && git pull
 git tag vX.Y.Z && git push origin vX.Y.Z
